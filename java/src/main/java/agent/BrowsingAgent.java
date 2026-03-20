@@ -19,46 +19,46 @@ public class BrowsingAgent {
                 After each action, assess the result and decide what to do next — don't stop until the task is done.
                 When asked to find a link or element 'like X', match by text content or semantic meaning.
                 If something unexpected happens (login wall, cookie banner, CAPTCHA), handle it before continuing.
-                When writing Java tests, use Playwright for Java (com.microsoft.playwright) — no Selenium, no ChromeDriver.
-                When writing tests: include EVERY step you performed — cookie banner dismissal, popups, overlays — nothing skipped.
+                Call logAction after every meaningful browser interaction — record what you did and why.
+                Use startTimer / stopTimer around slow steps (page load, search results, navigation).
+                When writing Playwright Java tests: never manage the browser in main() — use a proper test runner pattern.
+                If a cookie consent banner appeared, dismissing it must be the FIRST step after navigation.
+                Use the logged actions and measured timings to write the test — include every step, nothing skipped.
+                Set per-step timeouts to 2-3x the observed duration from your timers.
+                If a test fails and a screenshot path is returned, describe what you see in it to understand the failure.
                 """)
         String chat(String message);
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 1) {
-            System.out.println("Usage:");
-            System.out.println("  test <journey> [--filename <file>] [--max-retries <n>]");
+        if (args.length < 2 || !args[0].equals("test")) {
+            System.out.println("Usage: test <journey> [--filename <file>] [--max-retries <n>]");
             System.exit(1);
         }
 
-        // --- Parse args ---
-        String command = args[0];
         String journey = null;
         String filename = "TestGenerated.java";
         int maxRetries = 3;
 
         for (int i = 1; i < args.length; i++) {
             switch (args[i]) {
-                case "--filename" -> filename = args[++i];
+                case "--filename"    -> filename = args[++i];
                 case "--max-retries" -> maxRetries = Integer.parseInt(args[++i]);
-                default -> journey = args[i];
+                default              -> journey = args[i];
             }
         }
 
-        if (!command.equals("test") || journey == null) {
-            System.err.println("Error: expected: test <journey> [--filename <file>] [--max-retries <n>]");
+        if (journey == null) {
+            System.err.println("Error: journey description required.");
             System.exit(1);
         }
 
         // --- Start MCP ---
-        StdioMcpTransport transport = new StdioMcpTransport.Builder()
-                .command(List.of("npx", "-y", "@playwright/mcp@latest"))
-                .logEvents(false)
-                .build();
-
         McpClient mcpClient = new DefaultMcpClient.Builder()
-                .transport(transport)
+                .transport(new StdioMcpTransport.Builder()
+                        .command(List.of("npx", "-y", "@playwright/mcp@latest"))
+                        .logEvents(false)
+                        .build())
                 .build();
 
         // --- Build model ---
@@ -68,34 +68,33 @@ public class BrowsingAgent {
             System.exit(1);
         }
 
-        OpenAiChatModel model = OpenAiChatModel.builder()
-                .apiKey(apiKey)
-                .modelName("gpt-5.4")
-                .build();
+        TestTools tools = new TestTools();
 
-        // --- Build agent ---
         Assistant assistant = AiServices.builder(Assistant.class)
-                .chatModel(model)
+                .chatModel(OpenAiChatModel.builder().apiKey(apiKey).modelName("gpt-5.4").build())
                 .toolProvider(McpToolProvider.builder().mcpClients(List.of(mcpClient)).build())
-                .tools(new TestTools())
+                .tools(tools)
                 .chatMemory(MessageWindowChatMemory.withMaxMessages(50))
                 .build();
 
-        // --- Generate test ---
+        // --- Phase 1: navigate and log actions ---
         System.out.println("\033[1mJourney:\033[0m " + journey + "\n");
-        String prompt = String.format(
-                "Follow this user journey step by step in the browser, noting every action you take " +
-                "(including dismissing cookie banners, popups, or overlays): %s\n\n" +
-                "Then write a Playwright Java test that reproduces every step exactly. " +
-                "Save it as '%s' using createJavaFile, then run it with runJavaFile. " +
-                "If it fails, read the error, fix the test, and run again. " +
-                "Retry at most %d times before giving up.",
-                journey, filename, maxRetries
+        assistant.chat(
+                "Follow this user journey step by step in the browser. " +
+                "Call logAction after every interaction and use startTimer/stopTimer around slow steps. " +
+                "Journey: " + journey
         );
 
-        String result = assistant.chat(prompt);
-        System.out.println("\n" + result + "\n");
+        // --- Phase 2: write and validate test ---
+        String actionSummary = tools.actionSummary();
+        String result = assistant.chat(
+                "Using your logged actions below, write a Playwright Java test that reproduces every step exactly.\n\n" +
+                "Logged actions:\n" + actionSummary + "\n\n" +
+                "Save it as '" + filename + "' using createJavaFile, then run it with runJavaFile. " +
+                "If it fails, read the error and screenshot description, fix and retry at most " + maxRetries + " times."
+        );
 
+        System.out.println("\n" + result + "\n");
         mcpClient.close();
     }
 
