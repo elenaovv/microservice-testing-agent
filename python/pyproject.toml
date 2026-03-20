@@ -1,0 +1,12 @@
+[project]
+name = "browsing-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic-ai>=1.70.0",
+    "pytest>=8.0.0",
+    "pytest-playwright>=0.5.0",
+    "pytest-timeout>=2.3.0",
+]

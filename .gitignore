@@ -1,0 +1,17 @@
+# Generated test output (both agents write here)
+generated-tests/
+
+# Python
+__pycache__/
+*.py[oc]
+.venv/
+
+# Java
+target/
+*.class
+
+# Sessions (saved browser state)
+.sessions/
+
+# Misc
+.pytest_cache/
