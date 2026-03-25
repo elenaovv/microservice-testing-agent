@@ -34,7 +34,9 @@ agent = Agent(
         "If a cookie consent banner appeared, dismissing it must be the FIRST step after navigation. "
         "Use the logged actions and measured timings to write the test — include every step, nothing skipped. "
         "Use `expect(locator).to_be_visible()` before interacting with elements so failures are clear. "
-        "Set per-step timeouts to 2-3x the observed duration from your timers."
+        "Set per-step timeouts to 2-3x the observed duration from your timers. "
+        "Always add an `if __name__ == '__main__':` block at the bottom that launches Playwright directly "
+        "and calls the test function, so the file can also be run with `python test_foo.py`."
     ),
 )
 
