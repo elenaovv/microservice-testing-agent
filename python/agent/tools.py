@@ -12,7 +12,12 @@ from pydantic_ai import BinaryContent, RunContext
 from agent.agent import agent
 from core.executor import run_generated_test
 from core.models import Deps
-from core.reporting import build_execution_report, render_execution_report
+from core.reporting import (
+    build_execution_report,
+    load_journey_guide,
+    render_execution_report,
+    write_execution_report,
+)
 
 GENERATED_TESTS_DIR = Path("generated-tests")
 
@@ -70,7 +75,9 @@ def run_test_file(ctx: RunContext[Deps], filename: str) -> str | list:
         filename=filename,
         generated_tests_dir=GENERATED_TESTS_DIR,
     )
-    report = build_execution_report(result)
+    journey_guide = load_journey_guide(filename)
+    report = build_execution_report(result, journey_guide=journey_guide)
+    write_execution_report(report)
     report_text = render_execution_report(report)
     for line in report_text.splitlines():
         _log(f"  {line}")

@@ -1,5 +1,6 @@
 # Generated test output (both agents write here)
 generated-tests/
+test-results/
 
 # Python
 __pycache__/

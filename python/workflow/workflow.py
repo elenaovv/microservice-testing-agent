@@ -1,5 +1,10 @@
 from agent.agent import agent
 from core.models import Deps
+from core.reporting import (
+    build_journey_guide,
+    render_journey_guide_summary,
+    write_journey_guide,
+)
 from prompts.generator import (
     build_browse_prompt,
     build_test_generation_prompt,
@@ -27,6 +32,13 @@ async def generate_test(
             deps=deps,
             usage_limits=AGENT_USAGE_LIMITS,
         )
+        journey_guide = build_journey_guide(
+            test_filename=filename,
+            requested_journey=journey,
+            capture=deps.capture,
+            msa_spec=msa_spec,
+        )
+        write_journey_guide(journey_guide)
 
         result = await agent.run(
             build_test_generation_prompt(
@@ -41,7 +53,12 @@ async def generate_test(
             usage_limits=AGENT_USAGE_LIMITS,
         )
 
-    return str(result.output)
+    return "\n\n".join(
+        [
+            render_journey_guide_summary(journey_guide),
+            str(result.output),
+        ]
+    )
 
 
 async def run_browser_task(url: str, task: str) -> str:
