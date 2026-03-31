@@ -49,48 +49,48 @@ role so the `test` workflow reads more like an execution map than a waterfall.
 ```mermaid
 flowchart LR
     subgraph CLI ["CLI Layer"]
-        CMD_RUN["`run` command"]
-        CMD_TEST["`test` command"]
-        MAIN["`main.py`"]
+        CMD_RUN["run command"]
+        CMD_TEST["test command"]
+        MAIN["main.py"]
     end
 
     USER_INPUT["User journey or task"]
 
     subgraph WF ["Workflow Layer"]
-        WORKFLOW["`workflow/workflow.py`"]
+        WORKFLOW["workflow/workflow.py"]
         BROWSE_PROMPT["Browse prompt"]
         TEST_PROMPT["Test-generation prompt"]
     end
 
     subgraph CONTEXT ["Domain Context"]
-        SPEC["`spec/msa.yaml`"]
+        SPEC["spec/msa.yaml"]
     end
 
     subgraph AGENT ["Agent Runtime"]
-        AGENT_CORE["`agent/agent.py`<br/>PydanticAI agent + Playwright MCP"]
-        TOOLS["`agent/tools.py`<br/>log_action / timers / file write / test run"]
+        AGENT_CORE["agent/agent.py<br/>PydanticAI agent + Playwright MCP"]
+        TOOLS["agent/tools.py<br/>log_action / timers / file write / test run"]
     end
 
     subgraph CAPTURE ["Journey Capture"]
-        CAPTURE_MODEL["`JourneyCapture`"]
-        GUIDE["`JourneyGuide`"]
-        COVERAGE["`CoverageSnapshot`"]
+        CAPTURE_MODEL["JourneyCapture"]
+        GUIDE["JourneyGuide"]
+        COVERAGE["CoverageSnapshot"]
     end
 
     subgraph ARTIFACTS ["Generated Artifacts"]
-        TEST_FILE["`generated-tests/*.py`"]
-        JOURNEY_MD["`test-results/*.journey.md`"]
-        JOURNEY_JSON["`test-results/*.journey.json`"]
-        REPORT_JSON["`test-results/*.report.json`"]
+        TEST_FILE["generated-tests/*.py"]
+        JOURNEY_MD["test-results/*.journey.md"]
+        JOURNEY_JSON["test-results/*.journey.json"]
+        REPORT_JSON["test-results/*.report.json"]
     end
 
     subgraph EXECUTION ["Execution Layer"]
-        EXECUTOR["`core/executor.py`<br/>pytest subprocess"]
-        REPORTING["`core/reporting.py`<br/>journey + execution reporting"]
+        EXECUTOR["core/executor.py<br/>pytest subprocess"]
+        REPORTING["core/reporting.py<br/>journey + execution reporting"]
     end
 
     subgraph SYSTEM ["System Under Test"]
-        UI["Docker app UI<br/>`localhost:8080`"]
+        UI["Docker app UI<br/>localhost:8080"]
         API["MSA endpoints behind UI gateway"]
     end
 
