@@ -1,14 +1,47 @@
 from pathlib import Path
+import re
 
 from core.models import JourneyCapture
 
 MSA_SPEC_PATH = Path(__file__).resolve().parent.parent / "spec" / "msa.yaml"
+FILENAME_STOPWORDS = {
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "into",
+    "then",
+    "that",
+    "this",
+    "user",
+    "users",
+    "ticket",
+    "tickets",
+    "point",
+    "train",
+    "route",
+    "page",
+}
 
 
 def load_msa_spec(path: Path = MSA_SPEC_PATH) -> str:
     if not path.exists():
         raise FileNotFoundError(f"MSA specification file not found: {path}")
     return path.read_text(encoding="utf-8").strip()
+
+
+def derive_python_test_filename(journey: str) -> str:
+    tokens = [
+        token
+        for token in re.findall(r"[a-z0-9]+", journey.lower())
+        if len(token) > 2 and token not in FILENAME_STOPWORDS
+    ]
+    if not tokens:
+        return "journey_test.py"
+    if tokens[0] == "book":
+        tokens[0] = "booking"
+    return f"{'_'.join(tokens[:3])}_test.py"
 
 
 def build_browse_prompt(journey: str, msa_spec: str) -> str:

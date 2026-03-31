@@ -57,7 +57,7 @@ def stop_timer(ctx: RunContext[Deps], name: str) -> str:
 @agent.tool
 def create_python_test_file(ctx: RunContext[Deps], filename: str, code: str) -> str:
     """
-    Create a pytest-playwright test file in generated-tests/. Filename must start with test_ and end with .py.
+    Create a pytest-playwright test file in generated-tests/. Filename must end with .py.
     Make sure the test is an executable python file. So that it can be run using `uv run python test_generated.py`
     """
     GENERATED_TESTS_DIR.mkdir(exist_ok=True)

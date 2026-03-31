@@ -98,6 +98,19 @@ class ExecutionArtifact:
     kind: str
     path: Path
 
+    def to_dict(self) -> dict:
+        return {
+            "kind": self.kind,
+            "path": str(self.path),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ExecutionArtifact":
+        return cls(
+            kind=data["kind"],
+            path=Path(data["path"]),
+        )
+
 
 @dataclass
 class ExecutionResult:
@@ -200,15 +213,68 @@ class JourneyGuide:
 
 
 @dataclass(slots=True)
+class Phase1Metrics:
+    generated_test: bool
+    generated_test_lines: int
+    generated_test_bytes: int
+    generated_test_hash: str
+    syntax_valid: bool
+    blocked: bool
+    suspected_false_positive: bool
+    gui_element_count: int
+    frontend_api_call_count: int
+    frontend_api_calls_by_service: dict[str, int] = field(default_factory=dict)
+    failure_kind: str = ""
+    failure_signature: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "generated_test": self.generated_test,
+            "generated_test_lines": self.generated_test_lines,
+            "generated_test_bytes": self.generated_test_bytes,
+            "generated_test_hash": self.generated_test_hash,
+            "syntax_valid": self.syntax_valid,
+            "blocked": self.blocked,
+            "suspected_false_positive": self.suspected_false_positive,
+            "gui_element_count": self.gui_element_count,
+            "frontend_api_call_count": self.frontend_api_call_count,
+            "frontend_api_calls_by_service": dict(self.frontend_api_calls_by_service),
+            "failure_kind": self.failure_kind,
+            "failure_signature": self.failure_signature,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Phase1Metrics":
+        return cls(
+            generated_test=bool(data.get("generated_test", False)),
+            generated_test_lines=int(data.get("generated_test_lines", 0)),
+            generated_test_bytes=int(data.get("generated_test_bytes", 0)),
+            generated_test_hash=str(data.get("generated_test_hash", "")),
+            syntax_valid=bool(data.get("syntax_valid", False)),
+            blocked=bool(data.get("blocked", False)),
+            suspected_false_positive=bool(data.get("suspected_false_positive", False)),
+            gui_element_count=int(data.get("gui_element_count", 0)),
+            frontend_api_call_count=int(data.get("frontend_api_call_count", 0)),
+            frontend_api_calls_by_service=dict(
+                data.get("frontend_api_calls_by_service", {})
+            ),
+            failure_kind=str(data.get("failure_kind", "")),
+            failure_signature=str(data.get("failure_signature", "")),
+        )
+
+
+@dataclass(slots=True)
 class ExecutionReport:
     filename: str
     status: str
     exit_code: int
     summary: str
     details: str
+    requested_journey: str | None = None
     artifacts: list[ExecutionArtifact] = field(default_factory=list)
     report_path: Path | None = None
     coverage: CoverageSnapshot | None = None
+    phase1: Phase1Metrics | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -217,19 +283,39 @@ class ExecutionReport:
             "exit_code": self.exit_code,
             "summary": self.summary,
             "details": self.details,
+            "requested_journey": self.requested_journey,
             "report_path": str(self.report_path) if self.report_path else None,
             "coverage": self.coverage.to_dict() if self.coverage else None,
+            "phase1": self.phase1.to_dict() if self.phase1 else None,
             "artifacts": [
-                {
-                    "kind": artifact.kind,
-                    "path": str(artifact.path),
-                }
+                artifact.to_dict()
                 for artifact in self.artifacts
             ],
         }
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), indent=2)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ExecutionReport":
+        report_path = data.get("report_path")
+        coverage = data.get("coverage")
+        phase1 = data.get("phase1")
+        return cls(
+            filename=data["filename"],
+            status=data["status"],
+            exit_code=int(data["exit_code"]),
+            summary=data["summary"],
+            details=data.get("details", ""),
+            requested_journey=data.get("requested_journey"),
+            artifacts=[
+                ExecutionArtifact.from_dict(item)
+                for item in data.get("artifacts", [])
+            ],
+            report_path=Path(report_path) if report_path else None,
+            coverage=CoverageSnapshot.from_dict(coverage) if coverage else None,
+            phase1=Phase1Metrics.from_dict(phase1) if phase1 else None,
+        )
 
 
 @dataclass

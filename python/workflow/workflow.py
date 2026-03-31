@@ -1,13 +1,18 @@
+from datetime import datetime, timezone
+
 from agent.agent import agent
 from core.models import Deps
 from core.reporting import (
+    append_phase1_history,
     build_journey_guide,
+    load_execution_report,
     render_journey_guide_summary,
     write_journey_guide,
 )
 from prompts.generator import (
     build_browse_prompt,
     build_test_generation_prompt,
+    derive_python_test_filename,
     load_msa_spec,
     validate_python_test_filename,
 )
@@ -17,14 +22,16 @@ AGENT_USAGE_LIMITS = UsageLimits(request_limit=200)
 
 
 async def generate_test(
-    filename: str,
+    filename: str | None,
     journey: str,
     max_retries: int = 5,
 ) -> str:
+    filename = filename or derive_python_test_filename(journey)
     validate_python_test_filename(filename)
 
     deps = Deps()
     msa_spec = load_msa_spec()
+    run_started_at = datetime.now(timezone.utc).timestamp()
 
     async with agent:
         nav = await agent.run(
@@ -52,6 +59,15 @@ async def generate_test(
             deps=deps,
             usage_limits=AGENT_USAGE_LIMITS,
         )
+
+    final_report = load_execution_report(filename)
+    if (
+        final_report is not None
+        and final_report.report_path is not None
+        and final_report.report_path.exists()
+        and final_report.report_path.stat().st_mtime >= run_started_at
+    ):
+        append_phase1_history(final_report)
 
     return "\n\n".join(
         [

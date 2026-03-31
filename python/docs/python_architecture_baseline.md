@@ -144,6 +144,10 @@ flowchart LR
 - `main.py`
   - CLI parsing
   - command dispatch only
+  - defaults generated test filenames from the journey text when `--filename` is omitted
+- `conftest.py`
+  - captures frontend `/api/` requests during generated test execution
+  - persists per-run network artifacts under `test-results/`
 - `workflow/`
   - owns the `run` and `test` orchestration
   - keeps `main.py` unchanged via `workflow/__init__.py`
@@ -180,7 +184,8 @@ For `uv run python main.py test "<journey>" --filename test_foo.py --max-retries
 8. The agent writes `generated-tests/<test_name>.py`.
 9. The agent runs the generated test through `core/executor.py`.
 10. `core/reporting.py` writes `test-results/<test_name>.report.json`.
-11. The execution report includes the saved journey artifacts plus a first-pass coverage snapshot.
+11. `workflow.py` appends the final run to a Phase 1 history file and refreshes a summary table.
+12. The execution report includes the saved journey artifacts plus a first-pass coverage snapshot and Phase 1 metrics.
 
 ## Persisted Artifacts
 
@@ -194,6 +199,12 @@ For each generated test name `test_foo.py`, the runtime now persists:
   - machine-readable journey and coverage data
 - `test-results/test_foo.report.json`
   - execution result plus artifact references
+- `test-results/test_foo.network.json`
+  - frontend API calls observed during pytest execution
+- `test-results/phase1-runs.jsonl`
+  - append-only history of completed top-level `test` runs
+- `test-results/phase1-summary.md`
+  - aggregated Phase 1 table across recorded runs
 
 ## Typed Contracts In Use
 
@@ -226,6 +237,13 @@ The current Python flow already uses these core contracts:
   - saved report path
   - related artifacts
   - optional `CoverageSnapshot`
+- `Phase1Metrics`
+  - generated test count and size
+  - syntax-valid and blocked classification
+  - suspected false-positive flag
+  - generated test variability hash
+  - GUI element count heuristic
+  - frontend API call totals and per-service counts
 
 ## Coverage Model Today
 
@@ -234,6 +252,7 @@ Coverage is intentionally conservative at this stage.
 - UI coverage is based on logged browser actions and timers.
 - Endpoint coverage is heuristic: journey text plus logged actions are matched against endpoints declared in `spec/msa.yaml`.
 - Service coverage is derived from the matched endpoint set and acts as a first-pass node or microservice coverage estimate.
+- Phase 1 summary metrics are aggregated from `phase1-runs.jsonl` so multiple runs of the same journey can be compared over time.
 - DOM-node coverage is not implemented yet.
 
 This is enough to support later evaluation work without pretending that true backend or UI instrumentation already exists.

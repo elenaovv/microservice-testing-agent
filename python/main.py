@@ -21,7 +21,10 @@ def parse_args() -> argparse.Namespace:
 
     test_parser = subparsers.add_parser("test", help="Generate and validate a pytest-playwright test")
     test_parser.add_argument("journey", help="User journey to test")
-    test_parser.add_argument("--filename", default="test_generated.py", help="Output filename (default: test_generated.py)")
+    test_parser.add_argument(
+        "--filename",
+        help="Output filename (defaults to a journey-based name such as booking_test.py)",
+    )
     test_parser.add_argument("--max-retries", type=int, default=5, help="Max fix attempts if test fails (default: 5)")
 
     return parser.parse_args()
