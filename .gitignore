@@ -12,6 +12,7 @@ target/
 
 # Sessions (saved browser state)
 .sessions/
-
+.playwright-mcp/
+.env
 # Misc
 .pytest_cache/

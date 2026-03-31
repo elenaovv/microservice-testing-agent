@@ -1,0 +1,188 @@
+##############################################################################
+# TrainTicket MSA Specification — Login & Admin Login scope
+#
+# All endpoints are accessed through the UI gateway (ts-ui-dashboard) which
+# reverse-proxies to the underlying microservices.  The base URL is the value
+# of the BASE_URL environment variable (default:
+# http://docker-compose-manifests-ts-ui-dashboard-1:8080).
+##############################################################################
+
+msa:
+  gateway:
+    description: 'The ts-ui-dashboard container acts as a reverse-proxy.  Every /api/v1/*
+      call goes through it.  Selenium and RestAssured should always target the gateway,
+      never individual service containers.
+
+      '
+  known_credentials:
+    client_user:
+      username: fdse_microservice
+      password: '111111'
+      role: ROLE_USER
+    admin_user:
+      username: admin
+      password: '222222'
+      role: ROLE_ADMIN
+  services:
+    ts-auth-service:
+      summary: Manages user auth — login, token dispatch, user CRUD.
+      endpoints:
+      - path: /api/v1/users/login
+        method: POST
+        description: Login — returns JWT token on success
+        request_body:
+          username: string
+          password: string
+          verificationCode: string (optional — client login sends it)
+        response:
+          status: 1 on success, 0 on failure
+          data:
+            userId: uuid
+            username: string
+            token: jwt-string
+        x_contract:
+          request:
+            content_type:
+              set: true
+              value: application/json
+            body:
+              username:
+                type: string
+                required: true
+              password:
+                type: string
+                required: true
+              verificationCode:
+                type: string
+                required: false
+                notes: UI client login may require it.
+          response:
+            status_code: 200
+            json:
+              status:
+                type:
+                - string
+                - integer
+                allowed:
+                - '0'
+                - '1'
+                - 0
+                - 1
+              token:
+                type:
+                - string
+                - 'null'
+                nullable: true
+                treat_string_null_as_null: true
+          generator_hints:
+            restassured:
+              base_uri: http://localhost:8080
+              path: /api/v1/users/login
+      - path: /api/v1/auth
+        method: POST
+        description: Create a new user
+      - path: /api/v1/users
+        method: GET
+        description: Get all users (requires admin token)
+      - path: /api/v1/users/{userId}
+        method: DELETE
+        description: Delete one user
+    ts-verification-code-service:
+      summary: Generates and verifies captcha images.
+      endpoints:
+      - path: /api/v1/verifycode/generate
+        method: GET
+        description: Returns a captcha image (PNG). Sets a cookie for verification.
+        x_contract:
+          response:
+            status_code: 200
+            body:
+              kind: binary
+              format: png
+              validate:
+                magic_bytes: png
+                non_empty: true
+            headers:
+              Content-Type:
+                required: false
+                expected_prefix: image/
+                notes: Header may be omitted by gateway/proxy; validate by body magic-bytes.
+              Set-Cookie:
+                required: false
+                notes: May set a cookie used for captcha verification.
+          request:
+            content_type:
+              set: false
+            notes: No JSON body; do not set Content-Type in request.
+      - path: /api/v1/verifycode/verify/{verifyCode}
+        method: GET
+        description: Check if the user-supplied code matches the captcha.
+    ts-user-service:
+      summary: User profile CRUD.
+      endpoints:
+      - path: /api/v1/userservice/users
+        method: GET
+        description: Get all users
+      - path: /api/v1/userservice/users/{userName}
+        method: GET
+        description: Get user by username
+      - path: /api/v1/userservice/users/id/{userId}
+        method: GET
+        description: Get user by id
+      - path: /api/v1/userservice/users/register
+        method: POST
+        description: Register a new user
+      - path: /api/v1/userservice/users/{userId}
+        method: DELETE
+        description: Delete user by id
+    ts-admin-user-service:
+      summary: Admin CRUD for user management.
+      endpoints:
+      - path: /api/v1/adminuserservice/users
+        method: GET
+        description: Get all user information
+      - path: /api/v1/adminuserservice/users
+        method: PUT
+        description: Update user information
+      - path: /api/v1/adminuserservice/users
+        method: POST
+        description: Add one user entity
+      - path: /api/v1/adminuserservice/users/{userId}
+        method: DELETE
+        description: Delete one user entity
+  x_spec_version: '2026-03-02'
+  x_sources:
+  - https://github.com/FudanSELab/train-ticket/wiki
+  - https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+  - https://github.com/FudanSELab/train-ticket/wiki/User-Guide
+  x_gateway:
+    base_url_env: BASE_URL
+    default_base_url: http://localhost:8080
+    request_routing: All /api/v1/* calls go through the UI gateway (ts-ui-dashboard).
+    restassured:
+      base_uri_must_not_include_path: true
+      use_request_path_in_get_post: true
+  x_test_data_defaults:
+    travel:
+      from: Shang Hai
+      to: Su Zhou
+      date_format: MMDD
+      date_example: '0101'
+      default_train_type: All
+      advanced_train_type: Cheapest
+      notes: Matches the reference TrainTicket Selenium booking flow and current UI control labels more closely than the older placeholder route.
+  x_validation_rules:
+    binary_magic_bytes:
+      png:
+      - '0x89'
+      - '0x50'
+      - '0x4E'
+      - '0x47'
+    headers:
+      content_type_required_for_binary: false
+      content_type_expected_prefix_for_png: image/
+      allow_missing_headers:
+      - Content-Type
+      - Set-Cookie
+    json_nullability:
+      treat_string_null_as_null: true
