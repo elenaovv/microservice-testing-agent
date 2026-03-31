@@ -41,6 +41,104 @@ flowchart LR
     REPORT --> RESULT
 ```
 
+## Grouped Runtime View
+
+This view keeps the same Python architecture, but groups the moving parts by
+role so the `test` workflow reads more like an execution map than a waterfall.
+
+```mermaid
+flowchart LR
+    subgraph CLI ["CLI Layer"]
+        CMD_RUN["`run` command"]
+        CMD_TEST["`test` command"]
+        MAIN["`main.py`"]
+    end
+
+    USER_INPUT["User journey or task"]
+
+    subgraph WF ["Workflow Layer"]
+        WORKFLOW["`workflow/workflow.py`"]
+        BROWSE_PROMPT["Browse prompt"]
+        TEST_PROMPT["Test-generation prompt"]
+    end
+
+    subgraph CONTEXT ["Domain Context"]
+        SPEC["`spec/msa.yaml`"]
+    end
+
+    subgraph AGENT ["Agent Runtime"]
+        AGENT_CORE["`agent/agent.py`<br/>PydanticAI agent + Playwright MCP"]
+        TOOLS["`agent/tools.py`<br/>log_action / timers / file write / test run"]
+    end
+
+    subgraph CAPTURE ["Journey Capture"]
+        CAPTURE_MODEL["`JourneyCapture`"]
+        GUIDE["`JourneyGuide`"]
+        COVERAGE["`CoverageSnapshot`"]
+    end
+
+    subgraph ARTIFACTS ["Generated Artifacts"]
+        TEST_FILE["`generated-tests/*.py`"]
+        JOURNEY_MD["`test-results/*.journey.md`"]
+        JOURNEY_JSON["`test-results/*.journey.json`"]
+        REPORT_JSON["`test-results/*.report.json`"]
+    end
+
+    subgraph EXECUTION ["Execution Layer"]
+        EXECUTOR["`core/executor.py`<br/>pytest subprocess"]
+        REPORTING["`core/reporting.py`<br/>journey + execution reporting"]
+    end
+
+    subgraph SYSTEM ["System Under Test"]
+        UI["Docker app UI<br/>`localhost:8080`"]
+        API["MSA endpoints behind UI gateway"]
+    end
+
+    USER_INPUT --> MAIN
+    MAIN --> CMD_RUN
+    MAIN --> CMD_TEST
+
+    CMD_TEST --> WORKFLOW
+    SPEC --> BROWSE_PROMPT
+    SPEC --> TEST_PROMPT
+    WORKFLOW --> BROWSE_PROMPT
+    WORKFLOW --> TEST_PROMPT
+    WORKFLOW --> AGENT_CORE
+
+    BROWSE_PROMPT --> AGENT_CORE
+    AGENT_CORE --> TOOLS
+    TOOLS --> CAPTURE_MODEL
+    CAPTURE_MODEL --> REPORTING
+    REPORTING --> GUIDE
+    GUIDE --> COVERAGE
+    REPORTING --> JOURNEY_MD
+    REPORTING --> JOURNEY_JSON
+
+    TEST_PROMPT --> AGENT_CORE
+    CAPTURE_MODEL --> TEST_PROMPT
+    GUIDE --> TEST_PROMPT
+    AGENT_CORE --> TEST_FILE
+
+    TEST_FILE --> TOOLS
+    TOOLS --> EXECUTOR
+    EXECUTOR --> UI
+    UI --> API
+    EXECUTOR --> REPORTING
+    GUIDE --> REPORTING
+    REPORTING --> REPORT_JSON
+
+    CMD_RUN --> AGENT_CORE
+
+    style CLI fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    style WF fill:#f3e8ff,stroke:#7c3aed,color:#4c1d95
+    style CONTEXT fill:#fef3c7,stroke:#d97706,color:#78350f
+    style AGENT fill:#ede9fe,stroke:#7c3aed,color:#3b0764
+    style CAPTURE fill:#dcfce7,stroke:#16a34a,color:#14532d
+    style ARTIFACTS fill:#ecfeff,stroke:#0891b2,color:#164e63
+    style EXECUTION fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    style SYSTEM fill:#e0f0ff,stroke:#1d63ed,color:#003f7f
+```
+
 ## Package Responsibilities
 
 - `main.py`
