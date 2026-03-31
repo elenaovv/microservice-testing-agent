@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 
 from agent.agent import agent
 from core.models import Deps
+from core.phase1_utils import append_phase1_history
 from core.reporting import (
-    append_phase1_history,
     build_journey_guide,
     load_execution_report,
     render_journey_guide_summary,
