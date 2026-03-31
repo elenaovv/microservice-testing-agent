@@ -71,12 +71,18 @@ def create_python_test_file(ctx: RunContext[Deps], filename: str, code: str) -> 
 def run_test_file(ctx: RunContext[Deps], filename: str) -> str | list:
     """Run a pytest file from generated-tests/. Returns output and a screenshot if the test failed."""
     _log(f"Running {filename} ...")
+    evaluation = ctx.deps.evaluation
     result = run_generated_test(
         filename=filename,
         generated_tests_dir=GENERATED_TESTS_DIR,
+        base_url=evaluation.base_url if evaluation else None,
     )
     journey_guide = load_journey_guide(filename)
-    report = build_execution_report(result, journey_guide=journey_guide)
+    report = build_execution_report(
+        result,
+        journey_guide=journey_guide,
+        evaluation=evaluation,
+    )
     write_execution_report(report)
     report_text = render_execution_report(report)
     for line in report_text.splitlines():

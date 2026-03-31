@@ -44,11 +44,12 @@ def derive_python_test_filename(journey: str) -> str:
     return f"{'_'.join(tokens[:3])}_test.py"
 
 
-def build_browse_prompt(journey: str, msa_spec: str) -> str:
+def build_browse_prompt(journey: str, msa_spec: str, base_url: str) -> str:
     return (
         "Follow this user journey step by step in the browser. "
         "Call log_action after every interaction and use start_timer/stop_timer around slow steps. "
-        "Use the MSA specification below as domain context, but verify the actual UI live before deciding the flow.\n\n"
+        "Use the MSA specification below as domain context, but verify the actual UI live before deciding the flow. "
+        f"The UI under test is served from {base_url}; navigate there before you start browsing.\n\n"
         f"Journey: {journey}\n\n"
         f"MSA specification:\n{msa_spec}"
     )
@@ -60,10 +61,14 @@ def build_test_generation_prompt(
     max_retries: int,
     msa_spec: str,
     capture: JourneyCapture,
+    base_url: str,
 ) -> str:
     return (
         "Using the MSA specification, your logged actions, and your recorded timings below, "
-        "write a pytest-playwright test that reproduces every step exactly.\n\n"
+        "write a pytest-playwright test that reproduces every step exactly. "
+        "Use `import os` and define `BASE_URL = os.environ.get(\"BASE_URL\", "
+        f"\"{base_url}\")` once near the top of the file. "
+        "Always navigate with `page.goto(BASE_URL, ...)` instead of hardcoding the URL.\n\n"
         f"Journey: {journey}\n\n"
         f"MSA specification:\n{msa_spec}\n\n"
         f"Logged actions:\n{capture.action_summary()}\n\n"

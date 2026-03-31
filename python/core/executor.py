@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -18,6 +19,7 @@ def run_generated_test(
     filename: str,
     generated_tests_dir: Path,
     test_results_dir: Path = TEST_RESULTS_DIR,
+    base_url: str | None = None,
 ) -> ExecutionResult:
     test_path = generated_tests_dir / filename
     if not test_path.exists():
@@ -27,9 +29,15 @@ def run_generated_test(
             stderr=f"File not found: {test_path}",
         )
 
+    env = None
+    if base_url:
+        env = os.environ.copy()
+        env["BASE_URL"] = base_url
+
     result = subprocess.run(
         ["uv", "run", "pytest", str(test_path), *PYTEST_ARGS],
         capture_output=True,
+        env=env,
         text=True,
     )
 

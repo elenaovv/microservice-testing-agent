@@ -25,6 +25,7 @@ agent = Agent(
         "Call log_action after every meaningful browser interaction — record what you did and why. "
         "Use start_timer / stop_timer around slow steps (page load, search results, navigation). "
         "When writing pytest-playwright tests: always use the `page` fixture, never manage the browser yourself. "
+        "Do not hardcode the app URL; read it from `BASE_URL` with a localhost fallback and navigate with `page.goto(BASE_URL, ...)`. "
         "Always call `page.set_default_timeout(8000)` at the start of the test so failures are fast. "
         "If a cookie consent banner appeared, dismissing it must be the FIRST step after navigation. "
         "When MSA specification text is provided in the prompt, use it as domain context, but verify the actual UI live. "

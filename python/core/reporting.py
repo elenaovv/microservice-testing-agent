@@ -18,6 +18,7 @@ from core.coverage_utils import (
 )
 from core.models import (
     CoverageSnapshot,
+    EvaluationContext,
     ExecutionArtifact,
     ExecutionReport,
     ExecutionResult,
@@ -117,6 +118,7 @@ def build_execution_report(
     journey_guide: JourneyGuide | None = None,
     generated_tests_dir: Path = GENERATED_TESTS_DIR,
     test_results_dir: Path = TEST_RESULTS_DIR,
+    evaluation: EvaluationContext | None = None,
 ) -> ExecutionReport:
     status = "passed" if result.succeeded else "failed"
     summary = (
@@ -168,6 +170,7 @@ def build_execution_report(
         summary=summary,
         details=result.output.strip(),
         requested_journey=requested_journey,
+        evaluation=evaluation,
         artifacts=artifacts,
         coverage=coverage,
         phase1=phase1,
@@ -269,6 +272,17 @@ def render_execution_report(report: ExecutionReport) -> str:
                 )
             )
             lines.append(f"- coverage.operations: {operation_summary}")
+
+    if report.evaluation is not None:
+        lines.append(f"- evaluation.variant: {report.evaluation.variant_label}")
+        lines.append(f"- evaluation.run_kind: {report.evaluation.run_kind}")
+        lines.append(f"- evaluation.base_url: {report.evaluation.base_url}")
+        if report.evaluation.mutation_id:
+            lines.append(f"- evaluation.mutation_id: {report.evaluation.mutation_id}")
+        if report.evaluation.fault_service:
+            lines.append(
+                f"- evaluation.fault_service: {report.evaluation.fault_service}"
+            )
 
     if report.phase1 is not None:
         lines.append(f"- phase1.blocked: {report.phase1.blocked}")

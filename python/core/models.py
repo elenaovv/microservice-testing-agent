@@ -284,6 +284,34 @@ class Phase1Metrics:
 
 
 @dataclass(slots=True)
+class EvaluationContext:
+    variant_label: str = "original"
+    mutation_id: str = ""
+    fault_service: str = ""
+    base_url: str = "http://localhost:8080"
+    run_kind: str = "generated"
+
+    def to_dict(self) -> dict:
+        return {
+            "variant_label": self.variant_label,
+            "mutation_id": self.mutation_id,
+            "fault_service": self.fault_service,
+            "base_url": self.base_url,
+            "run_kind": self.run_kind,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "EvaluationContext":
+        return cls(
+            variant_label=str(data.get("variant_label", "original")),
+            mutation_id=str(data.get("mutation_id", "")),
+            fault_service=str(data.get("fault_service", "")),
+            base_url=str(data.get("base_url", "http://localhost:8080")),
+            run_kind=str(data.get("run_kind", "generated")),
+        )
+
+
+@dataclass(slots=True)
 class ExecutionReport:
     filename: str
     status: str
@@ -291,6 +319,7 @@ class ExecutionReport:
     summary: str
     details: str
     requested_journey: str | None = None
+    evaluation: EvaluationContext | None = None
     artifacts: list[ExecutionArtifact] = field(default_factory=list)
     report_path: Path | None = None
     coverage: CoverageSnapshot | None = None
@@ -304,6 +333,7 @@ class ExecutionReport:
             "summary": self.summary,
             "details": self.details,
             "requested_journey": self.requested_journey,
+            "evaluation": self.evaluation.to_dict() if self.evaluation else None,
             "report_path": str(self.report_path) if self.report_path else None,
             "coverage": self.coverage.to_dict() if self.coverage else None,
             "phase1": self.phase1.to_dict() if self.phase1 else None,
@@ -321,6 +351,7 @@ class ExecutionReport:
         report_path = data.get("report_path")
         coverage = data.get("coverage")
         phase1 = data.get("phase1")
+        evaluation = data.get("evaluation")
         return cls(
             filename=data["filename"],
             status=data["status"],
@@ -328,6 +359,7 @@ class ExecutionReport:
             summary=data["summary"],
             details=data.get("details", ""),
             requested_journey=data.get("requested_journey"),
+            evaluation=EvaluationContext.from_dict(evaluation) if evaluation else None,
             artifacts=[
                 ExecutionArtifact.from_dict(item)
                 for item in data.get("artifacts", [])
@@ -342,3 +374,4 @@ class ExecutionReport:
 class Deps:
     capture: JourneyCapture = field(default_factory=JourneyCapture)
     active_timers: dict[str, float] = field(default_factory=dict)
+    evaluation: EvaluationContext | None = None

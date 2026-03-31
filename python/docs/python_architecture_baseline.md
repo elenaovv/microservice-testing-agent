@@ -184,8 +184,8 @@ For `uv run python main.py test "<journey>" --filename test_foo.py --max-retries
 8. The agent writes `generated-tests/<test_name>.py`.
 9. The agent runs the generated test through `core/executor.py`.
 10. `core/reporting.py` writes `test-results/<test_name>.report.json`.
-11. `workflow.py` appends the final run to a Phase 1 history file and refreshes a summary table.
-12. The execution report includes the saved journey artifacts plus a first-pass coverage snapshot and Phase 1 metrics.
+11. `workflow.py` appends the final run to an evaluation history file and refreshes a summary table.
+12. The execution report includes the saved journey artifacts plus a first-pass coverage snapshot, Phase 1 metrics, and optional Phase 3 evaluation metadata.
 
 ## Persisted Artifacts
 
@@ -201,10 +201,10 @@ For each generated test name `test_foo.py`, the runtime now persists:
   - execution result plus artifact references
 - `test-results/test_foo.network.json`
   - frontend API calls observed during pytest execution
-- `test-results/phase1-runs.jsonl`
-  - append-only history of completed top-level `test` runs
-- `test-results/phase1-summary.md`
-  - aggregated Phase 1 and Phase 2 tables across recorded runs
+- `test-results/evaluation-runs.jsonl`
+  - append-only history of completed `test` and `retest` runs
+- `test-results/evaluation-summary.md`
+  - aggregated Phase 1, Phase 2, and Phase 3 tables across recorded runs
 
 ## Typed Contracts In Use
 
@@ -254,7 +254,7 @@ Coverage is intentionally conservative at this stage.
 - Endpoint coverage is heuristic: journey text plus logged actions are matched against endpoints declared in `spec/msa.yaml`.
 - Service coverage is derived from the matched endpoint set and acts as a first-pass node or microservice coverage estimate.
 - Phase 2 operation coverage uses observed frontend `/api/` requests from pytest execution and maps them to MSA operations per service.
-- Phase 1 summary metrics are aggregated from `phase1-runs.jsonl` so multiple runs of the same journey can be compared over time.
+- Evaluation metrics are aggregated from `evaluation-runs.jsonl` so multiple runs of the same journey or mutation variant can be compared over time.
 - DOM-node coverage is not implemented yet.
 
 This is enough to support later evaluation work without pretending that true backend or UI instrumentation already exists.
@@ -274,4 +274,4 @@ The next reasonable additions are:
 1. Add explicit UI-node coverage if later evaluation needs DOM-level evidence instead of action logs.
 2. Persist a portable test report format alongside the existing JSON artifacts.
 3. Optionally split browse and synthesize into separately invokable workflow stages.
-4. Add Phase 3 fault-comparison views across original and mutated TrainTicket variants.
+4. Expand Phase 3 only if later evaluation needs deeper mutation-level attribution than variant, mutation ID, and fault-service tagging.

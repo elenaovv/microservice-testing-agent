@@ -7,15 +7,23 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core.models import ExecutionReport, ExecutionResult, Phase1Metrics
 from core.coverage_utils import count_api_calls_by_service, load_msa_spec_text
+from core.models import ExecutionReport, ExecutionResult, Phase1Metrics
+from core.mutation_utils import (
+    build_phase3_fault_rows,
+    build_phase3_mutation_rows,
+    build_phase3_operation_rows,
+    evaluation_fields,
+    has_phase3_context,
+)
 
 GUI_PATTERN = re.compile(
     r"(page\.(?:get_by_[a-z_]+|locator|click|fill|check|uncheck|press|select_option|hover)\([^\n]+\)|expect\([^\n]+\))"
 )
 TEST_RESULTS_DIR = Path("test-results")
-PHASE1_HISTORY_FILENAME = "phase1-runs.jsonl"
-PHASE1_SUMMARY_FILENAME = "phase1-summary.md"
+EVALUATION_HISTORY_FILENAME = "evaluation-runs.jsonl"
+LEGACY_HISTORY_FILENAME = "phase1-runs.jsonl"
+EVALUATION_SUMMARY_FILENAME = "evaluation-summary.md"
 
 
 def network_filename_for_test(filename: str) -> str:
@@ -23,12 +31,16 @@ def network_filename_for_test(filename: str) -> str:
     return f"{base_name}.network.json"
 
 
-def phase1_history_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
-    return output_dir / PHASE1_HISTORY_FILENAME
+def evaluation_history_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
+    return output_dir / EVALUATION_HISTORY_FILENAME
 
 
-def phase1_summary_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
-    return output_dir / PHASE1_SUMMARY_FILENAME
+def legacy_history_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
+    return output_dir / LEGACY_HISTORY_FILENAME
+
+
+def evaluation_summary_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
+    return output_dir / EVALUATION_SUMMARY_FILENAME
 
 
 def load_network_capture(
@@ -178,39 +190,38 @@ def build_phase1_metrics(
     )
 
 
-def append_phase1_history(
+def append_evaluation_history(
     report: ExecutionReport,
     output_dir: Path = TEST_RESULTS_DIR,
 ) -> Path:
     output_dir.mkdir(exist_ok=True)
     record = report.to_dict()
     record["recorded_at"] = datetime.now(timezone.utc).isoformat()
-    history_path = phase1_history_path(output_dir)
+    history_path = evaluation_history_path(output_dir)
     with history_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(record))
         handle.write("\n")
-    write_phase1_summary(output_dir=output_dir)
+    write_evaluation_summary(output_dir=output_dir)
     return history_path
 
 
-def load_phase1_history(output_dir: Path = TEST_RESULTS_DIR) -> list[dict]:
-    history_path = phase1_history_path(output_dir)
-    if not history_path.exists():
-        return []
-
+def load_evaluation_history(output_dir: Path = TEST_RESULTS_DIR) -> list[dict]:
     records: list[dict] = []
-    for line in history_path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped:
+    for history_path in (legacy_history_path(output_dir), evaluation_history_path(output_dir)):
+        if not history_path.exists():
             continue
-        records.append(json.loads(stripped))
+        for line in history_path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            records.append(json.loads(stripped))
     return records
 
 
-def write_phase1_summary(output_dir: Path = TEST_RESULTS_DIR) -> Path:
-    records = load_phase1_history(output_dir)
-    summary_path = phase1_summary_path(output_dir)
-    summary_path.write_text(render_phase1_summary(records), encoding="utf-8")
+def write_evaluation_summary(output_dir: Path = TEST_RESULTS_DIR) -> Path:
+    records = load_evaluation_history(output_dir)
+    summary_path = evaluation_summary_path(output_dir)
+    summary_path.write_text(render_evaluation_summary(records), encoding="utf-8")
     return summary_path
 
 
@@ -311,9 +322,9 @@ def build_phase2_operation_rows(grouped_records: dict[str, list[dict]]) -> list[
     return rows
 
 
-def render_phase1_summary(records: list[dict]) -> str:
+def render_evaluation_summary(records: list[dict]) -> str:
     lines = [
-        "# Phase 1 Metrics",
+        "# Evaluation Metrics",
         "",
         f"Recorded runs: {len(records)}",
         "Target runs per journey for statistical relevance: 10",
@@ -321,7 +332,7 @@ def render_phase1_summary(records: list[dict]) -> str:
     ]
 
     if not records:
-        lines.append("No Phase 1 runs recorded yet.")
+        lines.append("No evaluation runs recorded yet.")
         return "\n".join(lines)
 
     grouped: dict[str, list[dict]] = defaultdict(list)
@@ -331,7 +342,7 @@ def render_phase1_summary(records: list[dict]) -> str:
 
     lines.extend(
         [
-            "## Journey Summary",
+            "## Phase 1 Journey Summary",
             "",
             "| Journey | Runs | Generated | Pass | Fail | Blocked | Syntax invalid | Suspected FP | Variants | Stability | Same fault | Avg GUI | Avg API | Avg lines |",
             "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | ---: | ---: |",
@@ -378,10 +389,10 @@ def render_phase1_summary(records: list[dict]) -> str:
     lines.extend(
         [
             "",
-            "## Recent Runs",
+            "## Phase 1 Recent Runs",
             "",
-            "| Recorded at | Journey | File | Status | Blocked | Failure kind | GUI | API | Lines |",
-            "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: |",
+            "| Recorded at | Journey | File | Variant | Mutation | Run kind | Status | Blocked | Failure kind | GUI | API | Lines |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: |",
         ]
     )
 
@@ -391,11 +402,15 @@ def render_phase1_summary(records: list[dict]) -> str:
         reverse=True,
     )[:20]:
         phase1 = record.get("phase1") or {}
+        variant_label, mutation_id, _, run_kind = evaluation_fields(record)
         lines.append(
-            "| {recorded_at} | {journey} | {filename} | {status} | {blocked} | {failure_kind} | {gui} | {api} | {lines_count} |".format(
+            "| {recorded_at} | {journey} | {filename} | {variant} | {mutation_id} | {run_kind} | {status} | {blocked} | {failure_kind} | {gui} | {api} | {lines_count} |".format(
                 recorded_at=escape_md_cell(str(record.get("recorded_at", ""))),
                 journey=escape_md_cell(str(record.get("requested_journey") or "")),
                 filename=escape_md_cell(str(record.get("filename", ""))),
+                variant=escape_md_cell(variant_label),
+                mutation_id=escape_md_cell(mutation_id or "-"),
+                run_kind=escape_md_cell(run_kind),
                 status=escape_md_cell(str(record.get("status", ""))),
                 blocked=phase1.get("blocked", False),
                 failure_kind=escape_md_cell(str(phase1.get("failure_kind", ""))),
@@ -410,7 +425,7 @@ def render_phase1_summary(records: list[dict]) -> str:
         lines.extend(
             [
                 "",
-                "## Failure Distribution",
+                "## Phase 1 Failure Distribution",
                 "",
                 "| Journey | Failure kind | Failure signature | Count |",
                 "| --- | --- | --- | ---: |",
@@ -423,7 +438,7 @@ def render_phase1_summary(records: list[dict]) -> str:
         lines.extend(
             [
                 "",
-                "## Frontend API Calls By Service",
+                "## Phase 1 Frontend API Calls By Service",
                 "",
                 "| Journey | Service | Calls |",
                 "| --- | --- | ---: |",
@@ -444,4 +459,50 @@ def render_phase1_summary(records: list[dict]) -> str:
         )
         lines.extend(phase2_rows)
 
+    if any(has_phase3_context(record) for record in records):
+        phase3_mutation_rows = build_phase3_mutation_rows(grouped)
+        if phase3_mutation_rows:
+            lines.extend(
+                [
+                    "",
+                    "## Phase 3 Mutation Effectiveness",
+                    "",
+                    "| Journey | Variant | Mutation | Fault service | Original pass | Original fail | Variant pass | Variant fail | Mutation detected | New or different faults |",
+                    "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |",
+                ]
+            )
+            lines.extend(phase3_mutation_rows)
+
+        phase3_fault_rows = build_phase3_fault_rows(records)
+        if phase3_fault_rows:
+            lines.extend(
+                [
+                    "",
+                    "## Phase 3 Fault Distribution",
+                    "",
+                    "| Journey | Variant | Mutation | Fault service | Failure kind | Failure signature | Count |",
+                    "| --- | --- | --- | --- | --- | --- | ---: |",
+                ]
+            )
+            lines.extend(phase3_fault_rows)
+
+        phase3_operation_rows = build_phase3_operation_rows(grouped)
+        if phase3_operation_rows:
+            lines.extend(
+                [
+                    "",
+                    "## Phase 3 Operation Coverage By Variant",
+                    "",
+                    "| Journey | Variant | Mutation | Fault service | Service | Covered ops | Total ops | Coverage | Operations |",
+                    "| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |",
+                ]
+            )
+            lines.extend(phase3_operation_rows)
+
     return "\n".join(lines)
+
+
+append_phase1_history = append_evaluation_history
+load_phase1_history = load_evaluation_history
+write_phase1_summary = write_evaluation_summary
+render_phase1_summary = render_evaluation_summary
