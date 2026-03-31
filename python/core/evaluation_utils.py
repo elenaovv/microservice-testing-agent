@@ -1,4 +1,4 @@
-"""Phase 1 metrics: test analysis, failure inference, and summary rendering."""
+"""Evaluation metrics: run analysis, history, and summary rendering across phases."""
 
 import ast
 import json

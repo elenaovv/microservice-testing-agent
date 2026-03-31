@@ -2,7 +2,7 @@
 
 Heavy analysis helpers live in:
   - core.coverage_utils  – MSA spec parsing and endpoint/service inference
-  - core.phase1_utils    – Phase 1 metrics, failure analysis, and summary rendering
+  - core.evaluation_utils – run metrics, failure analysis, and summary rendering
 """
 
 import json
@@ -24,7 +24,7 @@ from core.models import (
     JourneyCapture,
     JourneyGuide,
 )
-from core.phase1_utils import build_phase1_metrics, load_network_capture
+from core.evaluation_utils import build_phase1_metrics, load_network_capture
 
 TEST_RESULTS_DIR = Path("test-results")
 GENERATED_TESTS_DIR = Path("generated-tests")
