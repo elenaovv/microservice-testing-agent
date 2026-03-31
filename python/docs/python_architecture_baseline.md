@@ -204,7 +204,7 @@ For each generated test name `test_foo.py`, the runtime now persists:
 - `test-results/phase1-runs.jsonl`
   - append-only history of completed top-level `test` runs
 - `test-results/phase1-summary.md`
-  - aggregated Phase 1 table across recorded runs
+  - aggregated Phase 1 and Phase 2 tables across recorded runs
 
 ## Typed Contracts In Use
 
@@ -222,6 +222,7 @@ The current Python flow already uses these core contracts:
   - timed-step count
   - endpoint candidate count
   - service candidate count
+  - operation totals and covered operations per service
   - candidate endpoint and service labels
   - caveat notes about heuristic coverage
 - `JourneyGuide`
@@ -252,6 +253,7 @@ Coverage is intentionally conservative at this stage.
 - UI coverage is based on logged browser actions and timers.
 - Endpoint coverage is heuristic: journey text plus logged actions are matched against endpoints declared in `spec/msa.yaml`.
 - Service coverage is derived from the matched endpoint set and acts as a first-pass node or microservice coverage estimate.
+- Phase 2 operation coverage uses observed frontend `/api/` requests from pytest execution and maps them to MSA operations per service.
 - Phase 1 summary metrics are aggregated from `phase1-runs.jsonl` so multiple runs of the same journey can be compared over time.
 - DOM-node coverage is not implemented yet.
 
@@ -261,7 +263,7 @@ This is enough to support later evaluation work without pretending that true bac
 
 The architecture is cleaner than before, but a few gaps remain:
 
-1. Coverage is still heuristic and spec-driven, not instrumented from network traffic or DOM traversal.
+1. UI coverage is still heuristic, and backend coverage still depends on frontend-observed traffic rather than direct service instrumentation.
 2. Reporting is persisted as JSON and markdown, but not yet as JUnit or another external test-report format.
 3. The workflow still relies on one agent runtime across browse, synthesize, and execute phases.
 
@@ -269,7 +271,7 @@ The architecture is cleaner than before, but a few gaps remain:
 
 The next reasonable additions are:
 
-1. Capture actual request or route usage from the browser to replace heuristic endpoint matching.
-2. Add explicit UI-node coverage if later evaluation needs DOM-level evidence instead of action logs.
-3. Persist a portable test report format alongside the existing JSON artifacts.
-4. Optionally split browse and synthesize into separately invokable workflow stages.
+1. Add explicit UI-node coverage if later evaluation needs DOM-level evidence instead of action logs.
+2. Persist a portable test report format alongside the existing JSON artifacts.
+3. Optionally split browse and synthesize into separately invokable workflow stages.
+4. Add Phase 3 fault-comparison views across original and mutated TrainTicket variants.

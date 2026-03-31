@@ -9,9 +9,12 @@ import json
 from pathlib import Path
 
 from core.coverage_utils import (
+    apply_operation_coverage,
     dedupe_preserve_order,
     extract_service_name,
     infer_endpoint_candidates,
+    load_msa_spec_text,
+    service_operation_totals,
 )
 from core.models import (
     CoverageSnapshot,
@@ -21,7 +24,7 @@ from core.models import (
     JourneyCapture,
     JourneyGuide,
 )
-from core.phase1_utils import build_phase1_metrics
+from core.phase1_utils import build_phase1_metrics, load_network_capture
 
 TEST_RESULTS_DIR = Path("test-results")
 GENERATED_TESTS_DIR = Path("generated-tests")
@@ -83,6 +86,9 @@ def build_coverage_snapshot(
         service_candidate_count=len(service_candidates),
         endpoint_candidates=endpoint_candidates,
         service_candidates=service_candidates,
+        service_operation_totals=service_operation_totals(msa_spec),
+        service_operation_covered={},
+        covered_operations_by_service={},
         notes=notes,
     )
 
@@ -139,6 +145,16 @@ def build_execution_report(
                     path=journey_guide.json_path,
                 )
             )
+    network_capture = load_network_capture(
+        result.filename,
+        output_dir=test_results_dir,
+    )
+    if coverage is not None and network_capture is not None:
+        coverage = apply_operation_coverage(
+            coverage=coverage,
+            requests=list(network_capture.get("requests", [])),
+            msa_spec=load_msa_spec_text(),
+        )
     phase1 = build_phase1_metrics(
         result=result,
         generated_tests_dir=generated_tests_dir,
@@ -245,6 +261,14 @@ def render_execution_report(report: ExecutionReport) -> str:
         lines.append(
             f"- coverage.services: {report.coverage.service_candidate_count}"
         )
+        if report.coverage.service_operation_totals:
+            operation_summary = ", ".join(
+                f"{service}={report.coverage.service_operation_covered.get(service, 0)}/{total}"
+                for service, total in sorted(
+                    report.coverage.service_operation_totals.items()
+                )
+            )
+            lines.append(f"- coverage.operations: {operation_summary}")
 
     if report.phase1 is not None:
         lines.append(f"- phase1.blocked: {report.phase1.blocked}")

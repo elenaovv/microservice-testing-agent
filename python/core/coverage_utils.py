@@ -3,7 +3,7 @@
 import re
 from pathlib import Path
 
-from core.models import JourneyCapture
+from core.models import CoverageSnapshot, JourneyCapture
 
 MSA_SPEC_PATH = Path(__file__).resolve().parent.parent / "spec" / "msa.yaml"
 
@@ -146,11 +146,23 @@ def infer_endpoint_candidates(
     return dedupe_preserve_order(candidates)
 
 
-def match_service_for_request(
+def endpoint_operation_label(endpoint: dict[str, str]) -> str:
+    return f"{endpoint.get('method', '').upper()} {endpoint.get('path', '')}".strip()
+
+
+def service_operation_totals(msa_spec: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for endpoint in extract_spec_endpoints(msa_spec):
+        service = endpoint.get("service", "unmapped")
+        counts[service] = counts.get(service, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def match_endpoint_for_request(
     request_path: str,
     request_method: str,
     endpoints: list[dict[str, str]],
-) -> str:
+) -> dict[str, str] | None:
     for endpoint in endpoints:
         endpoint_method = endpoint.get("method", "").upper()
         if endpoint_method and endpoint_method != request_method:
@@ -162,8 +174,23 @@ def match_service_for_request(
             r"[^/]+",
         ) + "$"
         if re.match(endpoint_regex, request_path):
-            return endpoint.get("service", "unmapped")
-    return "unmapped"
+            return endpoint
+    return None
+
+
+def match_service_for_request(
+    request_path: str,
+    request_method: str,
+    endpoints: list[dict[str, str]],
+) -> str:
+    endpoint = match_endpoint_for_request(
+        request_path=request_path,
+        request_method=request_method,
+        endpoints=endpoints,
+    )
+    if endpoint is None:
+        return "unmapped"
+    return endpoint.get("service", "unmapped")
 
 
 def count_api_calls_by_service(
@@ -180,3 +207,45 @@ def count_api_calls_by_service(
         service_name = match_service_for_request(path, method, endpoints)
         counts[service_name] += 1
     return dict(sorted(counts.items()))
+
+
+def covered_operations_by_service(
+    requests: list[dict],
+    msa_spec: str,
+) -> dict[str, list[str]]:
+    endpoints = extract_spec_endpoints(msa_spec)
+    covered: dict[str, list[str]] = {}
+    for request in requests:
+        method = str(request.get("method", "")).upper()
+        path = str(request.get("path", ""))
+        endpoint = match_endpoint_for_request(path, method, endpoints)
+        if endpoint is None:
+            continue
+        service = endpoint.get("service", "unmapped")
+        covered.setdefault(service, [])
+        covered[service].append(endpoint_operation_label(endpoint))
+
+    return {
+        service: dedupe_preserve_order(operations)
+        for service, operations in sorted(covered.items())
+    }
+
+
+def apply_operation_coverage(
+    coverage: CoverageSnapshot,
+    requests: list[dict],
+    msa_spec: str,
+) -> CoverageSnapshot:
+    totals = service_operation_totals(msa_spec)
+    covered = covered_operations_by_service(requests, msa_spec)
+    updated = coverage.clone()
+    updated.service_operation_totals = totals
+    updated.covered_operations_by_service = covered
+    updated.service_operation_covered = {
+        service: len(operations)
+        for service, operations in covered.items()
+    }
+    for service in totals:
+        updated.service_operation_covered.setdefault(service, 0)
+        updated.covered_operations_by_service.setdefault(service, [])
+    return updated

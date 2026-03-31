@@ -279,6 +279,38 @@ def build_service_rows(grouped_records: dict[str, list[dict]]) -> list[str]:
     return rows
 
 
+def build_phase2_operation_rows(grouped_records: dict[str, list[dict]]) -> list[str]:
+    rows: list[str] = []
+    for journey, records in sorted(grouped_records.items()):
+        totals: dict[str, int] = {}
+        covered_operations: dict[str, set[str]] = defaultdict(set)
+        for record in records:
+            coverage = record.get("coverage") or {}
+            for service, total in dict(coverage.get("service_operation_totals", {})).items():
+                totals[str(service)] = int(total)
+            for service, operations in dict(
+                coverage.get("covered_operations_by_service", {})
+            ).items():
+                covered_operations[str(service)].update(str(item) for item in operations)
+
+        for service, total in sorted(totals.items()):
+            covered = sorted(covered_operations.get(service, set()))
+            coverage_pct = 0.0
+            if total > 0:
+                coverage_pct = (len(covered) / total) * 100
+            rows.append(
+                "| {journey} | {service} | {covered_count} | {total} | {coverage_pct:.1f}% | {operations} |".format(
+                    journey=escape_md_cell(journey),
+                    service=escape_md_cell(service),
+                    covered_count=len(covered),
+                    total=total,
+                    coverage_pct=coverage_pct,
+                    operations=escape_md_cell(", ".join(covered) if covered else "-"),
+                )
+            )
+    return rows
+
+
 def render_phase1_summary(records: list[dict]) -> str:
     lines = [
         "# Phase 1 Metrics",
@@ -398,5 +430,18 @@ def render_phase1_summary(records: list[dict]) -> str:
             ]
         )
         lines.extend(service_rows)
+
+    phase2_rows = build_phase2_operation_rows(grouped)
+    if phase2_rows:
+        lines.extend(
+            [
+                "",
+                "## Phase 2 Operation Coverage By Service",
+                "",
+                "| Journey | Service | Covered ops | Total ops | Coverage | Operations |",
+                "| --- | --- | ---: | ---: | ---: | --- |",
+            ]
+        )
+        lines.extend(phase2_rows)
 
     return "\n".join(lines)

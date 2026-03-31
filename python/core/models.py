@@ -148,6 +148,9 @@ class CoverageSnapshot:
     service_candidate_count: int
     endpoint_candidates: list[str] = field(default_factory=list)
     service_candidates: list[str] = field(default_factory=list)
+    service_operation_totals: dict[str, int] = field(default_factory=dict)
+    service_operation_covered: dict[str, int] = field(default_factory=dict)
+    covered_operations_by_service: dict[str, list[str]] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -159,6 +162,12 @@ class CoverageSnapshot:
             "service_candidate_count": self.service_candidate_count,
             "endpoint_candidates": self.endpoint_candidates.copy(),
             "service_candidates": self.service_candidates.copy(),
+            "service_operation_totals": dict(self.service_operation_totals),
+            "service_operation_covered": dict(self.service_operation_covered),
+            "covered_operations_by_service": {
+                service: operations.copy()
+                for service, operations in self.covered_operations_by_service.items()
+            },
             "notes": self.notes.copy(),
         }
 
@@ -172,8 +181,19 @@ class CoverageSnapshot:
             service_candidate_count=int(data.get("service_candidate_count", 0)),
             endpoint_candidates=list(data.get("endpoint_candidates", [])),
             service_candidates=list(data.get("service_candidates", [])),
+            service_operation_totals=dict(data.get("service_operation_totals", {})),
+            service_operation_covered=dict(data.get("service_operation_covered", {})),
+            covered_operations_by_service={
+                service: list(operations)
+                for service, operations in dict(
+                    data.get("covered_operations_by_service", {})
+                ).items()
+            },
             notes=list(data.get("notes", [])),
         )
+
+    def clone(self) -> "CoverageSnapshot":
+        return CoverageSnapshot.from_dict(self.to_dict())
 
 
 @dataclass
