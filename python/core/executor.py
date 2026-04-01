@@ -4,14 +4,14 @@ from pathlib import Path
 
 from core.models import ExecutionArtifact, ExecutionResult
 
-TEST_RESULTS_DIR = Path("test-results")
+TEST_RESULTS_DIR = Path("runtime-results")
 PYTEST_ARGS = (
     "-v",
     "--tb=short",
     "--headed",
     "--timeout=30",
     "--screenshot=only-on-failure",
-    "--output=test-results",
+    "--output=runtime-results",
 )
 
 

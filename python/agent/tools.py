@@ -62,7 +62,7 @@ def create_python_test_file(ctx: RunContext[Deps], filename: str, code: str) -> 
     """
     GENERATED_TESTS_DIR.mkdir(exist_ok=True)
     path = GENERATED_TESTS_DIR / filename
-    path.write_text(code)
+    path.write_text(code, encoding="utf-8")
     _log(f"{path} ({len(code.splitlines())} lines)")
     return f"Created {path}"
 

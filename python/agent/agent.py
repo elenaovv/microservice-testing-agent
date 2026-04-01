@@ -38,4 +38,4 @@ agent = Agent(
 )
 
 # Import tools so that @agent.tool decorators are registered when this module loads
-import agent.tools  # noqa: E402, F401
+from . import tools as _tools  # noqa: E402, F401
