@@ -6,7 +6,6 @@ import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-
 from core.coverage_utils import count_api_calls_by_service, load_msa_spec_text
 from core.models import ExecutionReport, ExecutionResult, Phase1Metrics
 from core.mutation_utils import (
@@ -47,7 +46,7 @@ def load_network_capture(
         return None
     return json.loads(network_path.read_text(encoding="utf-8"))
 
-
+# Syntax and failure analysis helpers.
 def test_syntax_is_valid(code: str) -> bool:
     if not code.strip():
         return False
@@ -115,7 +114,7 @@ def count_gui_elements_checked(code: str) -> int:
         return 0
     return len({match.group(1).strip() for match in GUI_PATTERN.finditer(code)})
 
-
+# Per-run metric extraction and persistence.
 def build_phase1_metrics(
     result: ExecutionResult,
     generated_tests_dir: Path,
@@ -200,7 +199,7 @@ def write_evaluation_summary(output_dir: Path = TEST_RESULTS_DIR) -> Path:
     summary_path.write_text(render_evaluation_summary(records), encoding="utf-8")
     return summary_path
 
-
+# Summary aggregation and markdown rendering.
 def count_status(records: list[dict], status: str) -> int:
     return sum(1 for record in records if record.get("status") == status)
 
