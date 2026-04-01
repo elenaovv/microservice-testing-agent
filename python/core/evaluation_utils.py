@@ -25,23 +25,18 @@ EVALUATION_HISTORY_FILENAME = "evaluation-runs.jsonl"
 LEGACY_HISTORY_FILENAME = "phase1-runs.jsonl"
 EVALUATION_SUMMARY_FILENAME = "evaluation-summary.md"
 
-
 def network_filename_for_test(filename: str) -> str:
     base_name = Path(filename).stem
     return f"{base_name}.network.json"
 
-
 def evaluation_history_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
     return output_dir / EVALUATION_HISTORY_FILENAME
-
 
 def legacy_history_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
     return output_dir / LEGACY_HISTORY_FILENAME
 
-
 def evaluation_summary_path(output_dir: Path = TEST_RESULTS_DIR) -> Path:
     return output_dir / EVALUATION_SUMMARY_FILENAME
-
 
 def load_network_capture(
     test_filename: str,
@@ -53,11 +48,6 @@ def load_network_capture(
     return json.loads(network_path.read_text(encoding="utf-8"))
 
 
-# ---------------------------------------------------------------------------
-# Syntax / quality analysis
-# ---------------------------------------------------------------------------
-
-
 def test_syntax_is_valid(code: str) -> bool:
     if not code.strip():
         return False
@@ -66,7 +56,6 @@ def test_syntax_is_valid(code: str) -> bool:
     except SyntaxError:
         return False
     return True
-
 
 def infer_blocked(output: str, syntax_valid: bool) -> bool:
     output_lower = output.lower()
@@ -79,7 +68,6 @@ def infer_blocked(output: str, syntax_valid: bool) -> bool:
         "collected 0 items",
     )
     return any(marker in output_lower for marker in blocked_markers)
-
 
 def infer_failure_kind(output: str, syntax_valid: bool) -> str:
     if not output.strip():
@@ -99,7 +87,6 @@ def infer_failure_kind(output: str, syntax_valid: bool) -> str:
         return "locator-failure"
     return "runtime-failure"
 
-
 def infer_failure_signature(output: str, failure_kind: str) -> str:
     if not output.strip() or failure_kind == "no-output":
         return ""
@@ -111,13 +98,11 @@ def infer_failure_signature(output: str, failure_kind: str) -> str:
             return normalize_failure_line(stripped)
     return normalize_failure_line(output.splitlines()[-1].strip())
 
-
 def normalize_failure_line(line: str) -> str:
     normalized = re.sub(r"\d+\.\d+s", "<time>", line)
     normalized = re.sub(r"0x[0-9a-fA-F]+", "<addr>", normalized)
     normalized = re.sub(r"\b\d+\b", "<n>", normalized)
     return normalized[:180]
-
 
 def infer_suspected_false_positive(result: ExecutionResult, code: str) -> bool:
     if result.failed or not code.strip():
@@ -125,16 +110,10 @@ def infer_suspected_false_positive(result: ExecutionResult, code: str) -> bool:
     has_assertion = "expect(" in code or re.search(r"(^|\s)assert(\s|\()", code) is not None
     return not has_assertion
 
-
 def count_gui_elements_checked(code: str) -> int:
     if not code.strip():
         return 0
     return len({match.group(1).strip() for match in GUI_PATTERN.finditer(code)})
-
-
-# ---------------------------------------------------------------------------
-# Phase 1 metrics builder
-# ---------------------------------------------------------------------------
 
 
 def build_phase1_metrics(
@@ -189,7 +168,6 @@ def build_phase1_metrics(
         failure_signature=failure_signature,
     )
 
-
 def append_evaluation_history(
     report: ExecutionReport,
     output_dir: Path = TEST_RESULTS_DIR,
@@ -204,7 +182,6 @@ def append_evaluation_history(
     write_evaluation_summary(output_dir=output_dir)
     return history_path
 
-
 def load_evaluation_history(output_dir: Path = TEST_RESULTS_DIR) -> list[dict]:
     records: list[dict] = []
     for history_path in (legacy_history_path(output_dir), evaluation_history_path(output_dir)):
@@ -217,7 +194,6 @@ def load_evaluation_history(output_dir: Path = TEST_RESULTS_DIR) -> list[dict]:
             records.append(json.loads(stripped))
     return records
 
-
 def write_evaluation_summary(output_dir: Path = TEST_RESULTS_DIR) -> Path:
     records = load_evaluation_history(output_dir)
     summary_path = evaluation_summary_path(output_dir)
@@ -225,22 +201,14 @@ def write_evaluation_summary(output_dir: Path = TEST_RESULTS_DIR) -> Path:
     return summary_path
 
 
-# ---------------------------------------------------------------------------
-# Summary rendering
-# ---------------------------------------------------------------------------
-
-
 def count_status(records: list[dict], status: str) -> int:
     return sum(1 for record in records if record.get("status") == status)
-
 
 def count_true(records: list[dict], key: str) -> int:
     return sum(1 for record in records if bool(record.get(key)))
 
-
 def count_false(records: list[dict], key: str) -> int:
     return sum(1 for record in records if key in record and not bool(record.get(key)))
-
 
 def average_int(records: list[dict], key: str) -> float:
     values = [int(record.get(key, 0)) for record in records]
@@ -248,15 +216,28 @@ def average_int(records: list[dict], key: str) -> float:
         return 0.0
     return sum(values) / len(values)
 
-
 def format_stability(most_common: int, total: int) -> str:
     if total == 0:
         return "0%"
     return f"{(most_common / total) * 100:.0f}% ({most_common}/{total})"
 
-
 def escape_md_cell(value: str) -> str:
     return value.replace("|", "\\|").replace("\n", " ").strip()
+
+def add_column_guide(
+    lines: list[str],
+    title: str,
+    descriptions: list[str],
+) -> None:
+    lines.extend(
+        [
+            f"### {title}",
+            "",
+        ]
+    )
+    for description in descriptions:
+        lines.append(f"- {description}")
+    lines.append("")
 
 
 def build_fault_rows(grouped_records: dict[str, list[dict]]) -> list[str]:
@@ -340,6 +321,86 @@ def render_evaluation_summary(records: list[dict]) -> str:
         journey = str(record.get("requested_journey") or record.get("filename") or "unknown")
         grouped[journey].append(record)
 
+    fault_rows = build_fault_rows(grouped)
+    service_rows = build_service_rows(grouped)
+    phase2_rows = build_phase2_operation_rows(grouped)
+    has_phase3 = any(has_phase3_context(record) for record in records)
+    phase3_mutation_rows = build_phase3_mutation_rows(grouped) if has_phase3 else []
+    phase3_fault_rows = build_phase3_fault_rows(records) if has_phase3 else []
+    phase3_operation_rows = build_phase3_operation_rows(grouped) if has_phase3 else []
+
+    lines.extend(
+        [
+            "## Column Guide",
+            "",
+        ]
+    )
+    add_column_guide(
+        lines,
+        "Phase 1 Journey Summary",
+        [
+            "`Journey` is the requested journey text or filename fallback; `Runs`, `Generated`, `Pass`, and `Fail` are run counts.",
+            "`Blocked` means the run failed before meaningful execution, `Syntax invalid` means invalid Python, `Suspected FP` means a likely false positive, `Variants` counts distinct generated code hashes, `Stability` is the share of runs using the most common hash, `Same fault` checks whether all failures share one signature, and `Avg GUI`/`Avg API`/`Avg lines` are averages for GUI checks, frontend API calls, and test size.",
+        ],
+    )
+    add_column_guide(
+        lines,
+        "Phase 1 Recent Runs",
+        [
+            "`Recorded at` is the UTC append time; `Journey`, `File`, `Variant`, `Mutation`, and `Run kind` identify what was executed.",
+            "`Status` is the final result, `Blocked` and `Failure kind` explain failed runs, and `GUI`/`API`/`Lines` record the per-run GUI count, frontend API count, and test size.",
+        ],
+    )
+    if fault_rows:
+        add_column_guide(
+            lines,
+            "Phase 1 Failure Distribution",
+            [
+                "`Journey` is the grouping key, `Failure kind` is the normalized category, `Failure signature` is the normalized fault fingerprint, and `Count` is how often that fault appeared.",
+            ],
+        )
+    if service_rows:
+        add_column_guide(
+            lines,
+            "Phase 1 Frontend API Calls By Service",
+            [
+                "`Journey` is the grouping key, `Service` is inferred from observed frontend requests plus the MSA spec, and `Calls` is the total frontend `/api/` call count across recorded runs.",
+            ],
+        )
+    if phase2_rows:
+        add_column_guide(
+            lines,
+            "Phase 2 Operation Coverage By Service",
+            [
+                "`Journey` is the grouping key, `Service` is the MSA service name, `Covered ops` is the number of distinct observed operations, `Total ops` is the spec total, `Coverage` is covered divided by total, and `Operations` lists the matched labels.",
+            ],
+        )
+    if phase3_mutation_rows:
+        add_column_guide(
+            lines,
+            "Phase 3 Mutation Effectiveness",
+            [
+                "`Journey`, `Variant`, `Mutation`, and `Fault service` identify the compared system state; `Original pass`/`Original fail` and `Variant pass`/`Variant fail` summarize outcomes.",
+                "`Mutation detected` means the variant failed where the original passed, and `New or different faults` means the variant produced failure signatures not seen in the original.",
+            ],
+        )
+    if phase3_fault_rows:
+        add_column_guide(
+            lines,
+            "Phase 3 Fault Distribution",
+            [
+                "`Journey`, `Variant`, `Mutation`, and `Fault service` identify the compared system state; `Failure kind` and `Failure signature` describe the fault; `Count` is how often it occurred for that variant.",
+            ],
+        )
+    if phase3_operation_rows:
+        add_column_guide(
+            lines,
+            "Phase 3 Operation Coverage By Variant",
+            [
+                "`Journey`, `Variant`, `Mutation`, and `Fault service` identify the compared system state; `Service` is the MSA service name; `Covered ops`, `Total ops`, `Coverage`, and `Operations` show per-variant API operation coverage.",
+            ],
+        )
+
     lines.extend(
         [
             "## Phase 1 Journey Summary",
@@ -420,7 +481,6 @@ def render_evaluation_summary(records: list[dict]) -> str:
             )
         )
 
-    fault_rows = build_fault_rows(grouped)
     if fault_rows:
         lines.extend(
             [
@@ -433,7 +493,6 @@ def render_evaluation_summary(records: list[dict]) -> str:
         )
         lines.extend(fault_rows)
 
-    service_rows = build_service_rows(grouped)
     if service_rows:
         lines.extend(
             [
@@ -446,7 +505,6 @@ def render_evaluation_summary(records: list[dict]) -> str:
         )
         lines.extend(service_rows)
 
-    phase2_rows = build_phase2_operation_rows(grouped)
     if phase2_rows:
         lines.extend(
             [
@@ -459,8 +517,7 @@ def render_evaluation_summary(records: list[dict]) -> str:
         )
         lines.extend(phase2_rows)
 
-    if any(has_phase3_context(record) for record in records):
-        phase3_mutation_rows = build_phase3_mutation_rows(grouped)
+    if has_phase3:
         if phase3_mutation_rows:
             lines.extend(
                 [
@@ -473,7 +530,6 @@ def render_evaluation_summary(records: list[dict]) -> str:
             )
             lines.extend(phase3_mutation_rows)
 
-        phase3_fault_rows = build_phase3_fault_rows(records)
         if phase3_fault_rows:
             lines.extend(
                 [
@@ -486,7 +542,6 @@ def render_evaluation_summary(records: list[dict]) -> str:
             )
             lines.extend(phase3_fault_rows)
 
-        phase3_operation_rows = build_phase3_operation_rows(grouped)
         if phase3_operation_rows:
             lines.extend(
                 [
@@ -500,9 +555,3 @@ def render_evaluation_summary(records: list[dict]) -> str:
             lines.extend(phase3_operation_rows)
 
     return "\n".join(lines)
-
-
-append_phase1_history = append_evaluation_history
-load_phase1_history = load_evaluation_history
-write_phase1_summary = write_evaluation_summary
-render_phase1_summary = render_evaluation_summary
