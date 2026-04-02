@@ -11,10 +11,12 @@ from core.reporting import (
     build_journey_guide,
     load_journey_guide,
     load_execution_report,
-    render_execution_report,
-    render_journey_guide_summary,
     write_execution_report,
     write_journey_guide,
+)
+from core.report_rendering import (
+    render_execution_report,
+    render_journey_guide_summary,
 )
 from prompts.generator import (
     build_browse_prompt,
