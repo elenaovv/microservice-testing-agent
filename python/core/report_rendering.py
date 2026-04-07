@@ -66,6 +66,9 @@ def render_execution_report(report: ExecutionReport) -> str:
         lines.append(
             f"- phase1.frontend_api_calls: {report.phase1.frontend_api_call_count}"
         )
+        lines.append(
+            f"- phase1.unmapped_api_calls: {len(report.phase1.unmapped_api_calls)}"
+        )
         if report.phase1.failure_kind:
             lines.append(f"- phase1.failure_kind: {report.phase1.failure_kind}")
 

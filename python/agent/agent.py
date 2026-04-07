@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStdio
@@ -6,6 +8,8 @@ from core.models import Deps
 
 load_dotenv()
 
+MODEL_NAME = os.environ.get("OPENAI_MODEL", "openai:gpt-5.4").strip() or "openai:gpt-5.4"
+
 mcp = MCPServerStdio(
     "npx",
     ["-y", "@playwright/mcp@latest"],
@@ -13,8 +17,7 @@ mcp = MCPServerStdio(
 )
 
 agent = Agent(
-    #"openai:gpt-5.4",
-    "openai:gpt-5.4-nano",
+    MODEL_NAME,
     deps_type=Deps,
     mcp_servers=[mcp],
     retries=5,
