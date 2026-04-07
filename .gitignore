@@ -17,3 +17,5 @@ target/
 .env
 # Misc
 .pytest_cache/
+
+.vscode/
