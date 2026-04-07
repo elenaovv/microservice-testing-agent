@@ -65,7 +65,8 @@ def build_browse_prompt(journey: str, msa_spec: str, base_url: str) -> str:
         f"The UI under test is served from {base_url}; navigate there before you start browsing.\n\n"
         f"Journey: {journey}\n\n"
         f"MSA specification:\n{msa_spec}\n\n"
-        "Final required step: after you finish exploring the journey, call browser_network_requests and include the full JSON result at the end of your response."
+        "If the browser tooling exposes `browser_network_requests`, call it after exploration and include the JSON result in your final response. "
+        "If that tool is not available, finish the exploration normally."
     )
 
 
