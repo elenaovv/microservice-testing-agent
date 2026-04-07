@@ -1,0 +1,1124 @@
+﻿##############################################################################
+# TrainTicket MSA Specification - documentation-derived architecture baseline
+#
+# Purpose:
+# - Domain context for prompt generation
+# - Endpoint/service mapping input for coverage inference
+#
+# Notes:
+# - Endpoint entries are compiled from TrainTicket public wiki/API documentation
+# - The wiki has minor path-format inconsistencies (leading slash, casing, and
+#   occasional typos). Canonical forms are preserved where unambiguous and
+#   inconsistencies are documented in x_path_normalization.
+##############################################################################
+
+msa:
+  gateway:
+    description: "The ts-ui-dashboard gateway reverse-proxies API calls under /api/v1/* to backend services."
+    usage_note: "All browser and test traffic should target the UI gateway BASE_URL."
+
+  known_credentials:
+    client_user:
+      username: fdse_microservice
+      password: "111111"
+      role: ROLE_USER
+    admin_user:
+      username: admin
+      password: "222222"
+      role: ROLE_ADMIN
+
+  services:
+    ts-auth-service:
+      summary: "Authentication and user auth-related CRUD."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-auth-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-auth-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/users/login
+        method: POST
+        description: Login check and token dispatch.
+      - path: /api/v1/auth
+        method: POST
+        description: Create user in auth context.
+      - path: /api/v1/users
+        method: GET
+        description: Get all users.
+      - path: /api/v1/users/{userId}
+        method: DELETE
+        description: Delete one user.
+
+    ts-verification-code-service:
+      summary: "Captcha image generation and verify-code checks."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-verification-code-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-verification-code-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/verifycode/generate
+        method: GET
+        description: Generate verification code image.
+      - path: /api/v1/verifycode/verify/{verifyCode}
+        method: GET
+        description: Verify user-submitted captcha code.
+
+    ts-user-service:
+      summary: "User profile service."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-user-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-user-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/userservice/users
+        method: GET
+        description: Get all users.
+      - path: /api/v1/userservice/users/{userName}
+        method: GET
+        description: Get user by username.
+      - path: /api/v1/userservice/users/id/{userId}
+        method: GET
+        description: Get user by id.
+      - path: /api/v1/userservice/users/register
+        method: POST
+        description: Register new user.
+      - path: /api/v1/userservice/users/{userId}
+        method: DELETE
+        description: Delete user by id.
+
+    ts-admin-user-service:
+      summary: "Admin CRUD for user management."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-admin-user-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-admin-user-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/adminuserservice/users
+        method: GET
+        description: Get all user information.
+      - path: /api/v1/adminuserservice/users
+        method: PUT
+        description: Update user information.
+      - path: /api/v1/adminuserservice/users
+        method: POST
+        description: Add one user.
+      - path: /api/v1/adminuserservice/users/{userId}
+        method: DELETE
+        description: Delete one user.
+
+    ts-travel-service:
+      summary: "High-speed trip management and search."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-travel-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-travel-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/travelservice/trips/left
+        method: POST
+        description: Query left tickets for high-speed trips.
+      - path: /api/v1/travelservice/trip_detail
+        method: POST
+        description: Query trip detail with left tickets.
+      - path: /api/v1/travelservice/trips
+        method: GET
+        description: Query all trips.
+      - path: /api/v1/travelservice/trips
+        method: POST
+        description: Create trip.
+      - path: /api/v1/travelservice/trips/{tripId}
+        method: GET
+        description: Get trip by id.
+      - path: /api/v1/travelservice/trips/{tripId}
+        method: DELETE
+        description: Delete trip by id.
+      - path: /api/v1/travelservice/trips
+        method: PUT
+        description: Update trip.
+      - path: /api/v1/travelservice/routes/{tripId}
+        method: GET
+        description: Get route by trip id.
+      - path: /api/v1/travelservice/train_types/{tripId}
+        method: GET
+        description: Get train type by trip id.
+      - path: /api/v1/travelservice/admin_trip
+        method: GET
+        description: Admin query for all trips.
+
+    ts-travel2-service:
+      summary: "Normal-train trip management and search."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-travel2-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-travel2-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/travel2service/trips/left
+        method: POST
+        description: Query left tickets for normal trips.
+      - path: /api/v1/travel2service/trip_detail
+        method: POST
+        description: Query trip detail with left tickets.
+      - path: /api/v1/travel2service/trips
+        method: GET
+        description: Query all trips.
+      - path: /api/v1/travel2service/trips
+        method: POST
+        description: Create trip.
+      - path: /api/v1/travel2service/trips/{tripId}
+        method: GET
+        description: Get trip by id.
+      - path: /api/v1/travel2service/trips/{tripId}
+        method: DELETE
+        description: Delete trip by id.
+      - path: /api/v1/travel2service/trips
+        method: PUT
+        description: Update trip.
+      - path: /api/v1/travel2service/routes/{tripId}
+        method: GET
+        description: Get route by trip id.
+      - path: /api/v1/travel2service/train_types/{tripId}
+        method: GET
+        description: Get train type by trip id.
+      - path: /api/v1/travel2service/admin_trip
+        method: GET
+        description: Admin query for all trips.
+
+    ts-route-service:
+      summary: "Route CRUD and route lookup."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-route-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-route-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/routeservice/routes
+        method: GET
+        description: Get all routes.
+      - path: /api/v1/routeservice/routes
+        method: POST
+        description: Create or modify route.
+      - path: /api/v1/routeservice/routes/{routeId}
+        method: GET
+        description: Get route by id.
+      - path: /api/v1/routeservice/routes/{routeId}
+        method: DELETE
+        description: Delete route by id.
+      - path: /api/v1/routeservice/routes/{startId}/{terminalId}
+        method: GET
+        description: Get route by start and terminal station.
+
+    ts-route-plan-service:
+      summary: "Route planning for cheapest, quickest, and minimum-stop strategies."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-route-plan-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-route-plan-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/routeplanservice/routePlan/cheapestRoute
+        method: POST
+        description: Get routes ordered by cheapest option.
+      - path: /api/v1/routeplanservice/routePlan/quickestRoute
+        method: POST
+        description: Get routes ordered by quickest option.
+      - path: /api/v1/routeplanservice/routePlan/minStopStations
+        method: POST
+        description: Get routes ordered by minimum stops.
+
+    ts-travel-plan-service:
+      summary: "Higher-level travel planning APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-travel-plan-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-travel-plan-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/travelplanservice/travelPlan/transferResult
+        method: POST
+        description: Get transfer search result.
+      - path: /api/v1/travelplanservice/travelPlan/cheapest
+        method: POST
+        description: Get cheapest travel plan.
+      - path: /api/v1/travelplanservice/travelPlan/quickest
+        method: POST
+        description: Get quickest travel plan.
+      - path: /api/v1/travelplanservice/travelPlan/minStation
+        method: POST
+        description: Get minimum-station travel plan.
+
+    ts-ticketinfo-service:
+      summary: "Travel info and station-id lookup helper service."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-ticketinfo-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-ticketinfo-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/ticketinfoservice/ticketinfo
+        method: POST
+        description: Query travel info.
+      - path: /api/v1/ticketinfoservice/ticketinfo/{name}
+        method: GET
+        description: Query station id by station name.
+
+    ts-basic-service:
+      summary: "Basic travel and station lookup APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-basic-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-basic-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/basicservice/basic/travel
+        method: POST
+        description: Query basic travel information.
+      - path: /api/v1/basicservice/basic/{stationName}
+        method: GET
+        description: Query station id by station name.
+
+    ts-station-service:
+      summary: "Station CRUD and id-name conversion APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-station-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-station-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/stationservice/stations
+        method: GET
+        description: Get stations.
+      - path: /api/v1/stationservice/stations
+        method: POST
+        description: Create station.
+      - path: /api/v1/stationservice/stations
+        method: PUT
+        description: Update station.
+      - path: /api/v1/stationservice/stations/{stationsId}
+        method: DELETE
+        description: Delete station.
+      - path: /api/v1/stationservice/stations/id/{stationNameForId}
+        method: GET
+        description: Query station id by name.
+      - path: /api/v1/stationservice/stations/idlist
+        method: POST
+        description: Get station id list by names.
+      - path: /api/v1/stationservice/stations/name/{stationIdForName}
+        method: GET
+        description: Query station name by id.
+      - path: /api/v1/stationservice/stations/namelist
+        method: POST
+        description: Get station name list by ids.
+
+    ts-train-service:
+      summary: "Train CRUD and train-type lookups."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-train-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-train-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/trainservice/trains
+        method: GET
+        description: Query train types or train list.
+      - path: /api/v1/trainservice/trains
+        method: POST
+        description: Create train entity.
+      - path: /api/v1/trainservice/trains
+        method: PUT
+        description: Update train entity.
+      - path: /api/v1/trainservice/trains/{id}
+        method: GET
+        description: Get train by id.
+      - path: /api/v1/trainservice/trains/{id}
+        method: DELETE
+        description: Delete train by id.
+      - path: /api/v1/trainservice/trains/byName/{name}
+        method: GET
+        description: Get train type by name.
+
+    ts-seat-service:
+      summary: "Seat allocation and left-ticket computation."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-seat-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-seat-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/seatservice/seats
+        method: POST
+        description: Allocate seat(s).
+      - path: /api/v1/seatservice/seats/left_tickets
+        method: POST
+        description: Get left tickets for interval.
+
+    ts-price-service:
+      summary: "Ticket price query and config APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-price-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-price-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/priceservice/prices/{routeId}/{trainType}
+        method: GET
+        description: Get price by route and train type.
+      - path: /api/v1/priceservice/prices
+        method: GET
+        description: Get all price configs.
+      - path: /api/v1/priceservice/prices
+        method: POST
+        description: Create price config.
+      - path: /api/v1/priceservice/prices
+        method: PUT
+        description: Update price config.
+      - path: /api/v1/priceservice/prices
+        method: DELETE
+        description: Delete price config.
+
+    ts-contacts-service:
+      summary: "Contact CRUD and contact lookup by account or id."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-contacts-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-contacts-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/contactservice/contacts
+        method: GET
+        description: Get all contacts.
+      - path: /api/v1/contactservice/contacts
+        method: POST
+        description: Create contact.
+      - path: /api/v1/contactservice/contacts/admin
+        method: POST
+        description: Create admin contact.
+      - path: /api/v1/contactservice/contacts
+        method: PUT
+        description: Update contact.
+      - path: /api/v1/contactservice/contacts/{contactsId}
+        method: DELETE
+        description: Delete contact by id.
+      - path: /api/v1/contactservice/contacts/account/{accountId}
+        method: GET
+        description: Query contacts by account id.
+      - path: /api/v1/contactservice/contacts/{id}
+        method: GET
+        description: Query contact by id.
+
+    ts-assurance-service:
+      summary: "Assurance type and assurance order APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-assurance-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-assurance-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/assuranceservice/types
+        method: GET
+        description: Get assurance types.
+      - path: /api/v1/assuranceservice/assurances
+        method: GET
+        description: Get all assurance records.
+      - path: /api/v1/assuranceservice/assurances/assuranceid/{assuranceId}
+        method: GET
+        description: Get assurance by assurance id.
+      - path: /api/v1/assuranceservice/assurances/orderid/{orderId}
+        method: GET
+        description: Get assurance by order id.
+      - path: /api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}
+        method: PATCH
+        description: Modify assurance entry.
+      - path: /api/v1/assuranceservice/assurances/{typeIndex}/{orderId}
+        method: GET
+        description: Create assurance entity for order.
+
+    ts-food-service:
+      summary: "Food ordering and food availability by trip/date route."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-food-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-food-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/foodservice/orders
+        method: GET
+        description: Get all food orders.
+      - path: /api/v1/foodservice/orders
+        method: POST
+        description: Create food order.
+      - path: /api/v1/foodservice/createOrderBatch
+        method: POST
+        description: Create food orders in batch.
+      - path: /api/v1/foodservice/orders
+        method: PUT
+        description: Update food order.
+      - path: /api/v1/foodservice/orders/{orderId}
+        method: GET
+        description: Get food order by id.
+      - path: /api/v1/foodservice/orders/{orderId}
+        method: DELETE
+        description: Delete food order by id.
+      - path: /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}
+        method: GET
+        description: Get food options for a trip and date.
+
+    ts-food-map-service:
+      summary: "Food store/train-food mapping APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-food-map-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-food-map-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/foodmapservice/foodstores
+        method: GET
+        description: Get all station food store maps.
+      - path: /api/v1/foodmapservice/foodstores/{stationId}
+        method: GET
+        description: Get station food map by station id.
+      - path: /api/v1/foodmapservice/foodstores
+        method: POST
+        description: Get station food maps by station list.
+      - path: /api/v1/foodmapservice/trainfoods
+        method: GET
+        description: Get all train food maps.
+      - path: /api/v1/foodmapservice/trainfoods/{tripId}
+        method: GET
+        description: Get train food map by trip id.
+
+    ts-train-food-service:
+      summary: "Train food catalog APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-train-food-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-train-food-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/trainfoodservice/trainfoods
+        method: GET
+        description: Get all train foods.
+      - path: /api/v1/trainfoodservice/trainfoods/{tripId}
+        method: GET
+        description: Get train foods by trip id.
+
+    ts-station-food-service:
+      summary: "Station food catalog APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-station-food-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-station-food-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/stationfoodservice/stationfoodstores
+        method: GET
+        description: Get all station food stores.
+      - path: /api/v1/stationfoodservice/stationfoodstores/{stationId}
+        method: GET
+        description: Get station food stores by station id.
+      - path: /api/v1/stationfoodservice/stationfoodstores
+        method: POST
+        description: Query station food stores by station name list.
+      - path: /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}
+        method: GET
+        description: Get station food store by store id.
+
+    ts-food-delivery-service:
+      summary: "Food delivery order APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-food-delivery-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-food-delivery-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/fooddeliveryservice/orders
+        method: POST
+        description: Create food delivery order.
+      - path: /api/v1/fooddeliveryservice/orders/d/{orderId}
+        method: DELETE
+        description: Delete food delivery order.
+      - path: /api/v1/fooddeliveryservice/orders/{orderId}
+        method: GET
+        description: Get food delivery order by id.
+      - path: /api/v1/fooddeliveryservice/orders/all
+        method: GET
+        description: Get all food delivery orders.
+      - path: /api/v1/fooddeliveryservice/orders/store/{storeId}
+        method: GET
+        description: Get delivery orders by store id.
+      - path: /api/v1/fooddeliveryservice/orders/tripid
+        method: PUT
+        description: Update delivery order trip id.
+      - path: /api/v1/fooddeliveryservice/orders/seatno
+        method: PUT
+        description: Update delivery order seat number.
+      - path: /api/v1/fooddeliveryservice/orders/dtime
+        method: PUT
+        description: Update delivery order delivery time.
+
+    ts-preserve-service:
+      summary: "High-speed ticket preserve flow."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-preserve-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-preserve-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/preserveservice/preserve
+        method: POST
+        description: Preserve ticket.
+
+    ts-preserve-other-service:
+      summary: "Normal-train ticket preserve flow."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-preserve-other-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-preserve-other-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/preserveotherservice/preserveOther
+        method: POST
+        description: Preserve ticket for non G/D train orders.
+
+    ts-order-service:
+      summary: "Order APIs for G/D train numbers."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-order-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-order-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/orderservice/order/tickets
+        method: POST
+        description: Query sold/left tickets by date and trip id.
+      - path: /api/v1/orderservice/order
+        method: POST
+        description: Create order.
+      - path: /api/v1/orderservice/order/
+        method: POST
+        description: Create order (alternate path form).
+      - path: /api/v1/orderservice/order/admin
+        method: POST
+        description: Admin create order.
+      - path: /api/v1/orderservice/order/query
+        method: POST
+        description: Query orders.
+      - path: /api/v1/orderservice/order/refresh
+        method: POST
+        description: Refresh order list for account.
+      - path: /api/v1/orderservice/order/{travelDate}/{trainNumber}
+        method: GET
+        description: Query sold tickets by date and train.
+      - path: /api/v1/orderservice/order/price/{orderId}
+        method: GET
+        description: Get order price.
+      - path: /api/v1/orderservice/order/orderPay/{orderId}
+        method: GET
+        description: Pay order.
+      - path: /api/v1/orderservice/order/{orderId}
+        method: GET
+        description: Get order by id.
+      - path: /api/v1/orderservice/order/status/{orderId}/{status}
+        method: GET
+        description: Update order status.
+      - path: /api/v1/orderservice/order/security/{checkDate}/{accountId}
+        method: GET
+        description: Security check over orders.
+      - path: /api/v1/orderservice/order
+        method: PUT
+        description: Update order.
+      - path: /api/v1/orderservice/order/admin
+        method: PUT
+        description: Admin update order.
+      - path: /api/v1/orderservice/order/{orderId}
+        method: DELETE
+        description: Delete order.
+      - path: /api/v1/orderservice/order
+        method: GET
+        description: Get all orders.
+
+    ts-order-other-service:
+      summary: "Order APIs for non G/D train numbers."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-order-other-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-order-other-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/orderOtherService/orderOther/tickets
+        method: POST
+        description: Query sold/left tickets by date and trip id.
+      - path: /api/v1/orderOtherService/orderOther
+        method: POST
+        description: Create order.
+      - path: /api/v1/orderOtherService/orderOther/admin
+        method: POST
+        description: Admin create order.
+      - path: /api/v1/orderOtherService/orderOther/query
+        method: POST
+        description: Query orders.
+      - path: /api/v1/orderOtherService/orderOther/refresh
+        method: POST
+        description: Refresh order list for account.
+      - path: /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}
+        method: GET
+        description: Query sold tickets by date and train.
+      - path: /api/v1/orderOtherService/orderOther/price/{orderId}
+        method: GET
+        description: Get order price.
+      - path: /api/v1/orderOtherService/orderOther/orderPay/{orderId}
+        method: GET
+        description: Pay order.
+      - path: /api/v1/orderOtherService/orderOther/{orderId}
+        method: GET
+        description: Get order by id.
+      - path: /api/v1/orderOtherService/orderOther/status/{orderId}/{status}
+        method: GET
+        description: Update order status.
+      - path: /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}
+        method: GET
+        description: Security check over orders.
+      - path: /api/v1/orderOtherService/orderOther
+        method: PUT
+        description: Update order.
+      - path: /api/v1/orderOtherService/orderOther/admin
+        method: PUT
+        description: Admin update order.
+      - path: /api/v1/orderOtherService/orderOther/{orderId}
+        method: DELETE
+        description: Delete order.
+      - path: /api/v1/orderOtherService/orderOther
+        method: GET
+        description: Get all orders.
+
+    ts-admin-order-service:
+      summary: "Admin-facing order management facade."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-admin-order-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-admin-order-service
+      x_endpoint_confidence: normalized
+      endpoints:
+      - path: /adminorder
+        method: GET
+        description: Get all orders for admin management.
+      - path: /adminorder
+        method: POST
+        description: Add one order from admin side.
+      - path: /adminorder
+        method: PUT
+        description: Modify order from admin side.
+      - path: /adminorder/{orderId}/{trainNumber}
+        method: DELETE
+        description: Delete one order.
+
+    ts-notification-service:
+      summary: "Order and reservation notification APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-notification-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-notification-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/notifyservice/notification/preserve_success
+        method: POST
+        description: Preserve success notification.
+      - path: /api/v1/notifyservice/notification/order_create_success
+        method: POST
+        description: Order creation success notification.
+      - path: /api/v1/notifyservice/notification/order_changed_success
+        method: POST
+        description: Order changed notification.
+      - path: /api/v1/notifyservice/notification/order_cancel_success
+        method: POST
+        description: Order cancel notification.
+
+    ts-payment-service:
+      summary: "External/third-party payment service facade."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-payment-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-payment-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/paymentservice/payment
+        method: POST
+        description: Create payment.
+      - path: /api/v1/paymentservice/payment/money
+        method: POST
+        description: Top-up payment balance.
+      - path: /api/v1/paymentservice/payment
+        method: GET
+        description: Query payment.
+
+    ts-inside-payment-service:
+      summary: "Internal payment and account balance APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-inside-payment-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-inside-payment-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/inside_pay_service/inside_payment
+        method: POST
+        description: Pay for order.
+      - path: /api/v1/inside_pay_service/inside_payment/account
+        method: POST
+        description: Create account.
+      - path: /api/v1/inside_pay_service/inside_payment/{userId}/{money}
+        method: GET
+        description: Top-up money.
+      - path: /api/v1/inside_pay_service/inside_payment/payment
+        method: GET
+        description: Query payment details.
+      - path: /api/v1/inside_pay_service/inside_payment/account
+        method: GET
+        description: Query account details.
+      - path: /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}
+        method: GET
+        description: Drawback money.
+      - path: /api/v1/inside_pay_service/inside_payment/difference
+        method: POST
+        description: Pay fare difference.
+      - path: /api/v1/inside_pay_service/inside_payment/money
+        method: GET
+        description: Query account money.
+
+    ts-cancel-service:
+      summary: "Ticket cancellation and refund calculations."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-cancel-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-cancel-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/cancelservice/cancel/refound/{orderId}
+        method: GET
+        description: Calculate refund amount.
+      - path: /api/v1/cancelservice/cancel/{orderId}/{loginId}
+        method: GET
+        description: Cancel ticket.
+
+    ts-rebook-service:
+      summary: "Ticket rebooking and differential payment flow."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-rebook-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-rebook-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/rebookservice/rebook
+        method: POST
+        description: Endorse/rebook ticket.
+      - path: /api/v1/rebookservice/rebook/difference
+        method: POST
+        description: Pay price difference for rebook.
+
+    ts-security-service:
+      summary: "Security configuration and account checks."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-security-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-security-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/securityservice/securityConfigs
+        method: GET
+        description: Get all security configs.
+      - path: /api/v1/securityservice/securityConfigs
+        method: POST
+        description: Create security config.
+      - path: /api/v1/securityservice/securityConfigs
+        method: PUT
+        description: Update security config.
+      - path: /api/v1/securityservice/securityConfigs/{id}
+        method: DELETE
+        description: Delete security config.
+      - path: /api/v1/securityservice/securityConfigs/{accountId}
+        method: GET
+        description: Check account security settings.
+
+    ts-consign-service:
+      summary: "Consign order creation and query APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-consign-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-consign-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/consignservice/consigns
+        method: POST
+        description: Create consign order.
+      - path: /api/v1/consignservice/consigns
+        method: PUT
+        description: Update consign order.
+      - path: /api/v1/consignservice/consigns/account/{id}
+        method: GET
+        description: Get consign by account id.
+      - path: /api/v1/consignservice/consigns/order/{id}
+        method: GET
+        description: Get consign by order id.
+      - path: /api/v1/consignservice/consigns/{consignee}
+        method: GET
+        description: Get consign by consignee.
+
+    ts-consign-price-service:
+      summary: "Consign price/config APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-consign-price-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-consign-price-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}
+        method: GET
+        description: Get consign price by weight and region.
+      - path: /api/v1/consignpriceservice/consignprice/price
+        method: GET
+        description: Get consign price information.
+      - path: /api/v1/consignpriceservice/consignprice/config
+        method: GET
+        description: Get consign config.
+      - path: /api/v1/consignpriceservice/consignprice
+        method: POST
+        description: Modify consign price config.
+
+    ts-execute-service:
+      summary: "Ticket collect and execute APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-execute-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-execute-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/executeservice/execute/execute/{orderId}
+        method: GET
+        description: Execute ticket.
+      - path: /api/v1/executeservice/execute/collected/{orderId}
+        method: GET
+        description: Collect ticket.
+
+    ts-config-service:
+      summary: "System config CRUD APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-config-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-config-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/configservice/configs
+        method: GET
+        description: Query configs.
+      - path: /api/v1/configservice/configs
+        method: POST
+        description: Create config.
+      - path: /api/v1/configservice/configs
+        method: PUT
+        description: Update config.
+      - path: /api/v1/configservice/configs/{configName}
+        method: DELETE
+        description: Delete config.
+      - path: /api/v1/configservice/configs/{configName}
+        method: GET
+        description: Query config by name.
+
+    ts-voucher-service:
+      summary: "Reimbursement voucher generation APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-voucher-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-voucher-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /getVoucher
+        method: POST
+        description: Generate voucher by order id.
+
+    ts-wait-order-service:
+      summary: "Waitlist order APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-wait-order-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-wait-order-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/waitorderservice/order
+        method: POST
+        description: Create waitlist order.
+      - path: /api/v1/waitorderservice/waitlistorders
+        method: GET
+        description: Get all waitlist orders.
+
+    ts-admin-route-service:
+      summary: "Admin route management APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-admin-route-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-admin-route-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/adminrouteservice/adminroute
+        method: GET
+        description: Get all routes for admin.
+      - path: /api/v1/adminrouteservice/adminroute
+        method: POST
+        description: Add route.
+      - path: /api/v1/adminrouteservice/adminroute/{routeId}
+        method: DELETE
+        description: Delete route.
+
+    ts-admin-travel-service:
+      summary: "Admin travel management APIs."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-admin-travel-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-admin-travel-service
+      x_endpoint_confidence: exact
+      endpoints:
+      - path: /api/v1/admintravelservice/admintravel
+        method: GET
+        description: Get all travel entries.
+      - path: /api/v1/admintravelservice/admintravel
+        method: POST
+        description: Add travel entry.
+      - path: /api/v1/admintravelservice/admintravel
+        method: PUT
+        description: Update travel entry.
+      - path: /api/v1/admintravelservice/admintravel/{tripId}
+        method: DELETE
+        description: Delete travel entry.
+
+    ts-admin-basic-info-service:
+      summary: "Admin CRUD facade for contacts, stations, trains, configs, prices."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-admin-basic-info-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-admin-basic-info-service
+      x_endpoint_confidence: normalized
+      endpoints:
+      - path: /adminbasic/contacts
+        method: GET
+        description: Get all contact info for admin.
+      - path: /adminbasic/stations
+        method: GET
+        description: Get all station info for admin.
+      - path: /adminbasic/trains
+        method: GET
+        description: Get all train info for admin.
+      - path: /adminbasic/configs
+        method: GET
+        description: Get all config info for admin.
+      - path: /adminbasic/prices
+        method: GET
+        description: Get all price info for admin.
+
+    ts-ui-dashboard:
+      summary: "Frontend gateway/UI container (no service-local API catalog in this spec)."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-ui-dashboard
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-ui-dashboard
+      x_endpoint_confidence: ambiguous
+      endpoints: []
+
+    ts-ui-test:
+      summary: "UI test repository/service entry from upstream wiki."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-ui-test
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-ui-test
+      x_endpoint_confidence: ambiguous
+      endpoints: []
+
+    ts-news-service:
+      summary: "News/test content service in upstream list."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-news-service
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-news-service
+      x_endpoint_confidence: ambiguous
+      endpoints: []
+
+    ts-common:
+      summary: "Shared utility module listed by upstream; no API surface."
+      x_doc_ref:
+        page: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+        section: ts-common
+        anchor: https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference#ts-common
+      x_endpoint_confidence: ambiguous
+      endpoints: []
+
+  x_spec_version: "2026-04-02"
+  x_scope:
+    description: "Expanded TrainTicket API coverage using public TrainTicket wiki documentation."
+    includes:
+    - auth and verification flows
+    - booking, preserve, order, and order refresh flows
+    - route/travel/seat/price supporting services
+    - related admin and utility services listed in wiki
+
+  x_architecture:
+    system_type: "Train ticket booking system based on microservice architecture."
+    microservice_count: 41
+    languages_frameworks:
+    - "Java: Spring Boot, Spring Cloud"
+    - "Node.js: Express"
+    - "Python: Django"
+    - "Go: Webgo"
+    data_stores:
+    - Mongo
+    - MySQL
+
+  x_deployment_access:
+    quick_start:
+      docker_compose_homepage: http://localhost:8080
+      kubernetes_homepage: "[Node IP]:32677"
+    user_guide:
+      docker_compose_or_local_homepage: "serverIP:8080"
+      kubernetes_homepage: "serverIP:32677"
+
+  x_observability:
+    documented_tools:
+    - Zipkin
+    - Jaeger
+    - Prometheus
+    - Weave Scope
+
+  x_user_journeys:
+    booking_flow_summary:
+    - "Login, search tickets, choose Booking, select contact/options, confirm and submit."
+    - "Open Order List and verify created order; optionally pay to finish buy flow."
+    admin_flow_summary:
+    - "Use admin-panel (or /adminlogin.html) with admin credentials to manage resources."
+
+  x_path_normalization:
+    policy:
+    - "Endpoint path values are stored in canonical API form when documentation is consistent."
+    - "When public docs contain inconsistent forms, notes are captured below."
+    documented_inconsistencies:
+    - "Some wiki rows omit leading '/' (for example api/v1/configservice/configs)."
+    - "Some invocation rows use orderService vs orderservice casing variants."
+    - "Some rows include typos such as double slash in waitlist path examples."
+    caution_examples:
+    - "/api/v1/orderService/order (casing variant appears in some invocation text)"
+    - "/api/v1/waitorderservice//waitlistorders (double slash shown in wiki text)"
+
+  x_sources:
+  - https://github.com/FudanSELab/train-ticket/wiki
+  - https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+  - https://github.com/FudanSELab/train-ticket/wiki/User-Guide
+  - https://github.com/FudanSELab/train-ticket/wiki/Quick-Start
+  - https://github.com/FudanSELab/train-ticket/wiki/Installation-Guide
+  - https://github.com/FudanSELab/train-ticket/wiki/Monitoring-Mechanism
+
+  x_gateway:
+    base_url_env: BASE_URL
+    default_base_url: http://localhost:8080
+    request_routing: All /api/v1/* calls go through the UI gateway (ts-ui-dashboard).
+
+
+
+

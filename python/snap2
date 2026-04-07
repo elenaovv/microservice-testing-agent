@@ -1,0 +1,36 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link [ref=e4] [cursor=pointer]:
+      - /url: javascript:;
+    - generic [ref=e5]: 
+    - text: 
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - link "admin-panel" [ref=e9] [cursor=pointer]:
+          - /url: adminlogin.html
+      - listitem [ref=e10]:
+        - link " FullScreen" [ref=e11] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e13]:
+        - generic [ref=e14]: Not Login
+      - listitem [ref=e15]:
+        - img [ref=e18]
+      - listitem [ref=e19]:
+        - link "" [ref=e20] [cursor=pointer]:
+          - /url: "#"
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e24]: Management
+      - list [ref=e26]:
+        - listitem [ref=e27]
+        - listitem [ref=e31]
+        - listitem [ref=e34]
+        - listitem [ref=e37]
+        - listitem [ref=e40]
+    - generic [ref=e45]:
+      - generic [ref=e47]: Ticket Booking
+      - generic [ref=e51]:
+        - heading "Ticket Reserve" [level=3] [ref=e53]: Ticket Reserve
+        - list [ref=e59]
+        - heading "Tickets Searching Result" [level=3] [ref=e71]
+        - table [ref=e73]
