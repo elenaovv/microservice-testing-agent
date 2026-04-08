@@ -25,6 +25,7 @@ from prompts.generator import (
     build_test_generation_prompt,
     derive_python_test_filename,
     load_msa_spec,
+    load_system_description,
     validate_python_test_filename,
 )
 from pydantic_ai.usage import UsageLimits
@@ -136,6 +137,7 @@ async def generate_test(
     mutation_id: str = "",
     fault_service: str = "",
     base_url: str | None = None,
+    use_case_context: str = "",
 ) -> str:
     filename = filename or derive_python_test_filename(journey)
     validate_python_test_filename(filename)
@@ -149,6 +151,7 @@ async def generate_test(
     )
     deps = Deps(evaluation=evaluation)
     msa_spec = load_msa_spec()
+    system_description = load_system_description()
     run_started_at = datetime.now(timezone.utc).timestamp()
 
     async with agent:
@@ -157,6 +160,8 @@ async def generate_test(
                 journey=journey,
                 msa_spec=msa_spec,
                 base_url=evaluation.base_url,
+                system_description=system_description,
+                use_case_context=use_case_context,
             ),
             deps=deps,
             usage_limits=AGENT_USAGE_LIMITS,
@@ -181,6 +186,8 @@ async def generate_test(
                 capture=deps.capture,
                 browse_network_requests=browse_network_requests,
                 base_url=evaluation.base_url,
+                system_description=system_description,
+                use_case_context=use_case_context,
             ),
             message_history=nav.all_messages(),
             deps=deps,
