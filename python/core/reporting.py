@@ -102,6 +102,7 @@ def build_journey_guide(
     requested_journey: str,
     capture: JourneyCapture,
     msa_spec: str,
+    browse_network_requests: list[dict[str, str]] | None = None,
 ) -> JourneyGuide:
     coverage = build_coverage_snapshot(
         requested_journey=requested_journey,
@@ -113,6 +114,7 @@ def build_journey_guide(
         requested_journey=requested_journey,
         capture=capture.clone(),
         coverage=coverage,
+        browse_network_requests=list(browse_network_requests or []),
     )
 
 
