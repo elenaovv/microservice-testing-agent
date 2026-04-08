@@ -5,6 +5,8 @@ from pathlib import Path
 
 from prompts.generator import (
     STRUCTURED_USE_CASE_INDEX_PATH,
+    SYSTEM_DESCRIPTION_PATH,
+    MSA_SPEC_PATH,
     USE_CASES_PATH,
     StructuredUseCase,
     derive_python_test_filename,
@@ -41,6 +43,25 @@ def add_evaluation_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--base-url",
         help="App base URL for browsing and test execution (defaults to BASE_URL env or http://localhost:8080)",
+    )
+    parser.add_argument(
+        "--msa-spec",
+        help=f"MSA specification YAML path (default: {MSA_SPEC_PATH})",
+    )
+
+
+def add_input_spec_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--system-description",
+        help=f"System description path (default: {SYSTEM_DESCRIPTION_PATH})",
+    )
+    parser.add_argument(
+        "--use-cases-file",
+        help=f"Legacy text use-case file path (default: {USE_CASES_PATH})",
+    )
+    parser.add_argument(
+        "--use-case-index",
+        help=f"Structured use-case index path (default: {STRUCTURED_USE_CASE_INDEX_PATH})",
     )
 
 
@@ -79,13 +100,16 @@ async def _generate_single_test(
         fault_service=args.fault_service,
         base_url=args.base_url,
         use_case_context=use_case_context,
+        msa_spec_path=args.msa_spec,
+        system_description_path=args.system_description,
     )
 
 
 async def _generate_all_use_case_tests(args: argparse.Namespace) -> str:
-    use_cases = load_use_cases()
+    use_cases_path = Path(args.use_cases_file) if args.use_cases_file else USE_CASES_PATH
+    use_cases = load_use_cases(use_cases_path)
     if not use_cases:
-        raise ValueError(f"No runnable use cases found in {USE_CASES_PATH}")
+        raise ValueError(f"No runnable use cases found in {use_cases_path}")
 
     outputs: list[str] = []
     total = len(use_cases)
@@ -105,8 +129,9 @@ async def _generate_all_use_case_tests(args: argparse.Namespace) -> str:
 
 
 def _load_selected_structured_use_case(args: argparse.Namespace) -> StructuredUseCase:
+    index_path = Path(args.use_case_index) if args.use_case_index else STRUCTURED_USE_CASE_INDEX_PATH
     if args.use_case_id:
-        return load_structured_use_case_by_id(args.use_case_id)
+        return load_structured_use_case_by_id(args.use_case_id, index_path=index_path)
     if args.use_case_file:
         return load_structured_use_case(Path(args.use_case_file))
     raise ValueError("No structured use case selector provided")
@@ -135,7 +160,7 @@ def parse_args() -> argparse.Namespace:
         "--use-case-id",
         help=(
             "Run one structured use case by ID from "
-            f"{STRUCTURED_USE_CASE_INDEX_PATH}"
+            "the selected structured use-case index"
         ),
     )
     test_parser.add_argument(
@@ -151,6 +176,7 @@ def parse_args() -> argparse.Namespace:
     )
     test_parser.add_argument("--max-retries", type=int, default=5, help="Max fix attempts if test fails (default: 5)")
     add_evaluation_args(test_parser)
+    add_input_spec_args(test_parser)
 
     retest_parser = subparsers.add_parser(
         "retest",
@@ -189,7 +215,10 @@ if __name__ == "__main__":
                     _generate_single_test(args.journey, args.filename, args)
                 )
             elif args.line is not None:
-                journey = _read_use_case_at_line(args.line)
+                use_cases_path = (
+                    Path(args.use_cases_file) if args.use_cases_file else USE_CASES_PATH
+                )
+                journey = _read_use_case_at_line(args.line, path=use_cases_path)
                 filename = args.filename or derive_python_test_filename(journey)
                 output = asyncio.run(
                     _generate_single_test(journey, filename, args)
@@ -220,6 +249,7 @@ if __name__ == "__main__":
                     mutation_id=args.mutation_id,
                     fault_service=args.fault_service,
                     base_url=args.base_url,
+                    msa_spec_path=args.msa_spec,
                 )
             )
         )

@@ -203,6 +203,7 @@ class JourneyGuide:
     capture: JourneyCapture
     coverage: CoverageSnapshot
     browse_network_requests: list[dict[str, str]] = field(default_factory=list)
+    msa_spec_path: str = ""
     markdown_path: Path | None = None
     json_path: Path | None = None
 
@@ -220,6 +221,7 @@ class JourneyGuide:
                 }
                 for item in self.browse_network_requests
             ],
+            "msa_spec_path": self.msa_spec_path,
             "markdown_path": str(self.markdown_path) if self.markdown_path else None,
             "json_path": str(self.json_path) if self.json_path else None,
         }
@@ -245,6 +247,7 @@ class JourneyGuide:
                 for item in list(data.get("browse_network_requests", []))
                 if isinstance(item, dict)
             ],
+            msa_spec_path=str(data.get("msa_spec_path", "")),
             markdown_path=Path(markdown_path) if markdown_path else None,
             json_path=Path(json_path) if json_path else None,
         )

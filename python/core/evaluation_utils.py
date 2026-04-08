@@ -64,6 +64,7 @@ def build_phase1_metrics(
     result: ExecutionResult,
     generated_tests_dir: Path,
     test_results_dir: Path,
+    msa_spec: str = "",
 ) -> Phase1Metrics:
     import hashlib
 
@@ -88,14 +89,14 @@ def build_phase1_metrics(
     if network_capture:
         requests = list(network_capture.get("requests", []))
         frontend_api_call_count = len(requests)
-        msa_spec = load_msa_spec_text()
+        resolved_msa_spec = msa_spec or load_msa_spec_text()
         frontend_api_calls_by_service = count_api_calls_by_service(
             requests=requests,
-            msa_spec=msa_spec,
+            msa_spec=resolved_msa_spec,
         )
         unmapped_api_calls = list_unmapped_api_calls(
             requests=requests,
-            msa_spec=msa_spec,
+            msa_spec=resolved_msa_spec,
         )
 
     return Phase1Metrics(

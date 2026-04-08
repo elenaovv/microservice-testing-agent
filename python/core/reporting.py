@@ -103,6 +103,7 @@ def build_journey_guide(
     capture: JourneyCapture,
     msa_spec: str,
     browse_network_requests: list[dict[str, str]] | None = None,
+    msa_spec_path: str = "",
 ) -> JourneyGuide:
     coverage = build_coverage_snapshot(
         requested_journey=requested_journey,
@@ -115,6 +116,7 @@ def build_journey_guide(
         capture=capture.clone(),
         coverage=coverage,
         browse_network_requests=list(browse_network_requests or []),
+        msa_spec_path=msa_spec_path,
     )
 
 
@@ -124,6 +126,7 @@ def build_execution_report(
     generated_tests_dir: Path = GENERATED_TESTS_DIR,
     test_results_dir: Path = TEST_RESULTS_DIR,
     evaluation: EvaluationContext | None = None,
+    msa_spec_path: str | None = None,
 ) -> ExecutionReport:
     status = "passed" if result.succeeded else "failed"
     summary = (
@@ -156,16 +159,26 @@ def build_execution_report(
         result.filename,
         output_dir=test_results_dir,
     )
+    resolved_msa_spec_path = (
+        msa_spec_path
+        or (journey_guide.msa_spec_path if journey_guide is not None else "")
+    )
+    msa_spec_text = (
+        load_msa_spec_text(Path(resolved_msa_spec_path))
+        if resolved_msa_spec_path
+        else load_msa_spec_text()
+    )
     if coverage is not None and network_capture is not None:
         coverage = apply_operation_coverage(
             coverage=coverage,
             requests=list(network_capture.get("requests", [])),
-            msa_spec=load_msa_spec_text(),
+            msa_spec=msa_spec_text,
         )
     phase1 = build_phase1_metrics(
         result=result,
         generated_tests_dir=generated_tests_dir,
         test_results_dir=test_results_dir,
+        msa_spec=msa_spec_text,
     )
 
     return ExecutionReport(
