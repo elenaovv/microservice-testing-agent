@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from agent.agent import agent
 from core.evaluation_utils import append_evaluation_history
 from core.executor import run_generated_test
-from core.models import Deps, EvaluationContext
+from core.models import Deps, EvaluationContext, UseCaseMetadata
 from core.reporting import (
     build_execution_report,
     build_journey_guide,
@@ -138,6 +138,7 @@ async def generate_test(
     fault_service: str = "",
     base_url: str | None = None,
     use_case_context: str = "",
+    use_case: UseCaseMetadata | None = None,
     msa_spec_path: str | None = None,
     system_description_path: str | None = None,
 ) -> str:
@@ -178,6 +179,7 @@ async def generate_test(
             requested_journey=journey,
             capture=deps.capture,
             msa_spec=msa_spec,
+            use_case=use_case,
             browse_network_requests=browse_network_requests,
             msa_spec_path=str(Path(msa_spec_path).resolve()) if msa_spec_path else "",
         )

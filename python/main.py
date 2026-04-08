@@ -3,6 +3,7 @@ import asyncio
 import sys
 from pathlib import Path
 
+from core.models import UseCaseMetadata
 from prompts.generator import (
     STRUCTURED_USE_CASE_INDEX_PATH,
     SYSTEM_DESCRIPTION_PATH,
@@ -90,6 +91,7 @@ async def _generate_single_test(
     filename: str | None,
     args: argparse.Namespace,
     use_case_context: str = "",
+    use_case: UseCaseMetadata | None = None,
 ) -> str:
     return await generate_test(
         filename,
@@ -100,6 +102,7 @@ async def _generate_single_test(
         fault_service=args.fault_service,
         base_url=args.base_url,
         use_case_context=use_case_context,
+        use_case=use_case,
         msa_spec_path=args.msa_spec,
         system_description_path=args.system_description,
     )
@@ -233,6 +236,13 @@ if __name__ == "__main__":
                         filename,
                         args,
                         use_case_context=use_case.prompt_context(),
+                        use_case=UseCaseMetadata(
+                            id=use_case.id,
+                            name=use_case.name,
+                            actor=use_case.actor,
+                            reference_bucket=use_case.smith_equivalent,
+                            source_path=str(use_case.source_path) if use_case.source_path else "",
+                        ),
                     )
                 )
             else:

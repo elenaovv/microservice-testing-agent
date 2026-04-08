@@ -72,6 +72,14 @@ def render_execution_report(report: ExecutionReport) -> str:
         if report.phase1.failure_kind:
             lines.append(f"- phase1.failure_kind: {report.phase1.failure_kind}")
 
+    if report.use_case is not None:
+        lines.append(f"- use_case.id: {report.use_case.id}")
+        lines.append(f"- use_case.name: {report.use_case.name}")
+        if report.use_case.reference_bucket:
+            lines.append(
+                f"- use_case.reference_bucket: {report.use_case.reference_bucket}"
+            )
+
     if report.details:
         lines.extend(
             [
@@ -96,6 +104,11 @@ def render_journey_guide_summary(guide: JourneyGuide) -> str:
     if guide.json_path is not None:
         lines.append(f"- json: {guide.json_path}")
     lines.append(f"- requested_journey: {guide.requested_journey}")
+    if guide.use_case is not None:
+        lines.append(f"- use_case.id: {guide.use_case.id}")
+        lines.append(f"- use_case.name: {guide.use_case.name}")
+        if guide.use_case.reference_bucket:
+            lines.append(f"- use_case.reference_bucket: {guide.use_case.reference_bucket}")
     lines.append(f"- ui_steps: {guide.coverage.ui_step_count}")
     lines.append(f"- unique_actions: {guide.coverage.unique_action_count}")
     lines.append(f"- timed_steps: {guide.coverage.timed_step_count}")
@@ -111,8 +124,25 @@ def render_journey_guide(guide: JourneyGuide) -> str:
         f"Requested journey: {guide.requested_journey}",
         f"Target test file: {guide.test_filename}",
         "",
-        "## UI Steps",
     ]
+
+    if guide.use_case is not None:
+        lines.extend(
+            [
+                "## Structured Use Case",
+                f"- ID: {guide.use_case.id}",
+                f"- Name: {guide.use_case.name}",
+            ]
+        )
+        if guide.use_case.actor:
+            lines.append(f"- Actor: {guide.use_case.actor}")
+        if guide.use_case.reference_bucket:
+            lines.append(f"- Reference bucket: {guide.use_case.reference_bucket}")
+        if guide.use_case.source_path:
+            lines.append(f"- Source file: {guide.use_case.source_path}")
+        lines.append("")
+
+    lines.append("## UI Steps")
 
     if guide.capture.actions:
         for index, step in enumerate(guide.capture.actions, start=1):

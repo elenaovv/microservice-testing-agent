@@ -196,12 +196,43 @@ class CoverageSnapshot:
         return CoverageSnapshot.from_dict(self.to_dict())
 
 
+@dataclass(slots=True)
+class UseCaseMetadata:
+    id: str
+    name: str
+    actor: str = ""
+    reference_bucket: str = ""
+    source_path: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "actor": self.actor,
+            "reference_bucket": self.reference_bucket,
+            "source_path": self.source_path,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "UseCaseMetadata":
+        return cls(
+            id=str(data.get("id", "")).strip(),
+            name=str(data.get("name", "")).strip(),
+            actor=str(data.get("actor", "")).strip(),
+            reference_bucket=str(
+                data.get("reference_bucket", data.get("smith_equivalent", ""))
+            ).strip(),
+            source_path=str(data.get("source_path", "")).strip(),
+        )
+
+
 @dataclass
 class JourneyGuide:
     test_filename: str
     requested_journey: str
     capture: JourneyCapture
     coverage: CoverageSnapshot
+    use_case: UseCaseMetadata | None = None
     browse_network_requests: list[dict[str, str]] = field(default_factory=list)
     msa_spec_path: str = ""
     markdown_path: Path | None = None
@@ -213,6 +244,7 @@ class JourneyGuide:
             "requested_journey": self.requested_journey,
             "capture": self.capture.to_dict(),
             "coverage": self.coverage.to_dict(),
+            "use_case": self.use_case.to_dict() if self.use_case else None,
             "browse_network_requests": [
                 {
                     "method": str(item.get("method", "")).strip(),
@@ -238,6 +270,7 @@ class JourneyGuide:
             requested_journey=data["requested_journey"],
             capture=JourneyCapture.from_dict(data.get("capture", {})),
             coverage=CoverageSnapshot.from_dict(data.get("coverage", {})),
+            use_case=UseCaseMetadata.from_dict(use_case) if (use_case := data.get("use_case")) else None,
             browse_network_requests=[
                 {
                     "method": str(item.get("method", "")).strip(),
@@ -351,6 +384,7 @@ class ExecutionReport:
     summary: str
     details: str
     requested_journey: str | None = None
+    use_case: UseCaseMetadata | None = None
     evaluation: EvaluationContext | None = None
     artifacts: list[ExecutionArtifact] = field(default_factory=list)
     report_path: Path | None = None
@@ -365,6 +399,7 @@ class ExecutionReport:
             "summary": self.summary,
             "details": self.details,
             "requested_journey": self.requested_journey,
+            "use_case": self.use_case.to_dict() if self.use_case else None,
             "evaluation": self.evaluation.to_dict() if self.evaluation else None,
             "report_path": str(self.report_path) if self.report_path else None,
             "coverage": self.coverage.to_dict() if self.coverage else None,
@@ -384,6 +419,7 @@ class ExecutionReport:
         coverage = data.get("coverage")
         phase1 = data.get("phase1")
         evaluation = data.get("evaluation")
+        use_case = data.get("use_case")
         return cls(
             filename=data["filename"],
             status=data["status"],
@@ -391,6 +427,7 @@ class ExecutionReport:
             summary=data["summary"],
             details=data.get("details", ""),
             requested_journey=data.get("requested_journey"),
+            use_case=UseCaseMetadata.from_dict(use_case) if use_case else None,
             evaluation=EvaluationContext.from_dict(evaluation) if evaluation else None,
             artifacts=[
                 ExecutionArtifact.from_dict(item)
