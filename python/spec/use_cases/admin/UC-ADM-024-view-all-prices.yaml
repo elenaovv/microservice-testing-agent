@@ -1,0 +1,12 @@
+id: UC-ADM-024
+actor: admin
+name: View All Prices
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: >
+  The admin requests the full list of price configurations.
+success_criteria:
+  - the system returns every price configuration
+smith_equivalent: AdminPriceList.java
+notes: ""

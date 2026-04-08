@@ -1,0 +1,13 @@
+id: UC-TRV-010
+actor: traveler
+name: Collect Ticket
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has an order with status "Paid & Not Collected"
+goal: >
+  The traveler collects their ticket before the trip.
+success_criteria:
+  - the order status changes to "Collected"
+smith_equivalent: Booking.java
+notes: ""

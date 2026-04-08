@@ -1,0 +1,14 @@
+id: UC-ADM-002
+actor: admin
+name: Delete User
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one non-admin user account exists
+goal: >
+  The admin removes an existing user account.
+success_criteria:
+  - the user account no longer exists
+  - the account no longer appears in the user list
+smith_equivalent: AdminUserList.java
+notes: ""
