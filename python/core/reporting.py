@@ -26,6 +26,7 @@ from core.models import (
     ExecutionResult,
     JourneyCapture,
     JourneyGuide,
+    UseCaseMetadata,
 )
 from core.evaluation_utils import build_phase1_metrics, load_network_capture
 from core.report_rendering import render_journey_guide
@@ -102,6 +103,7 @@ def build_journey_guide(
     requested_journey: str,
     capture: JourneyCapture,
     msa_spec: str,
+    use_case: UseCaseMetadata | None = None,
     browse_network_requests: list[dict[str, str]] | None = None,
     msa_spec_path: str = "",
 ) -> JourneyGuide:
@@ -115,6 +117,7 @@ def build_journey_guide(
         requested_journey=requested_journey,
         capture=capture.clone(),
         coverage=coverage,
+        use_case=use_case,
         browse_network_requests=list(browse_network_requests or []),
         msa_spec_path=msa_spec_path,
     )
@@ -138,9 +141,11 @@ def build_execution_report(
     artifacts = result.artifacts.copy()
     coverage = None
     requested_journey = None
+    use_case = None
     if journey_guide is not None:
         coverage = journey_guide.coverage
         requested_journey = journey_guide.requested_journey
+        use_case = journey_guide.use_case
         if journey_guide.markdown_path is not None:
             artifacts.append(
                 ExecutionArtifact(
@@ -188,6 +193,7 @@ def build_execution_report(
         summary=summary,
         details=result.output.strip(),
         requested_journey=requested_journey,
+        use_case=use_case,
         evaluation=evaluation,
         artifacts=artifacts,
         coverage=coverage,

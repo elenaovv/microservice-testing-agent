@@ -24,6 +24,12 @@ TEST_RESULTS_DIR = Path("test-results")
 EVALUATION_HISTORY_FILENAME = "evaluation-runs.jsonl"
 LEGACY_HISTORY_FILENAME = "phase1-runs.jsonl"
 EVALUATION_SUMMARY_FILENAME = "evaluation-summary.md"
+SMITH_BUCKETS_PATH = Path(__file__).resolve().parent.parent / "spec" / "use_cases" / "smith_buckets.yaml"
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover - depends on environment packaging
+    yaml = None
 
 # ---------------------------------------------------------------------------
 # Artifact path helpers
@@ -54,6 +60,29 @@ def load_network_capture(
     if not network_path.exists():
         return None
     return json.loads(network_path.read_text(encoding="utf-8"))
+
+
+def load_smith_buckets(path: Path = SMITH_BUCKETS_PATH) -> dict[str, list[str]]:
+    if yaml is None or not path.exists():
+        return {}
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    buckets = data.get("buckets", {})
+    if not isinstance(buckets, dict):
+        return {}
+
+    normalized: dict[str, list[str]] = {}
+    for bucket_name, use_case_ids in buckets.items():
+        bucket = str(bucket_name).strip()
+        if not bucket:
+            continue
+        if not isinstance(use_case_ids, list):
+            continue
+        normalized[bucket] = [
+            str(use_case_id).strip()
+            for use_case_id in use_case_ids
+            if str(use_case_id).strip()
+        ]
+    return normalized
 
 
 # ---------------------------------------------------------------------------
@@ -159,5 +188,8 @@ def load_evaluation_history(output_dir: Path = TEST_RESULTS_DIR) -> list[dict]:
 def write_evaluation_summary(output_dir: Path = TEST_RESULTS_DIR) -> Path:
     records = load_evaluation_history(output_dir)
     summary_path = evaluation_summary_path(output_dir)
-    summary_path.write_text(render_evaluation_summary(records), encoding="utf-8")
+    summary_path.write_text(
+        render_evaluation_summary(records, smith_buckets=load_smith_buckets()),
+        encoding="utf-8",
+    )
     return summary_path

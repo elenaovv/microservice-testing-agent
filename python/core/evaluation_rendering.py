@@ -36,6 +36,23 @@ def format_stability(most_common: int, total: int) -> str:
 def escape_md_cell(value: str) -> str:
     return value.replace("|", "\\|").replace("\n", " ").strip()
 
+def use_case_fields(record: dict) -> tuple[str, str, str]:
+    use_case = record.get("use_case") or {}
+    use_case_id = str(use_case.get("id", "")).strip()
+    use_case_name = str(use_case.get("name", "")).strip()
+    reference_bucket = str(
+        use_case.get("reference_bucket", use_case.get("smith_equivalent", ""))
+    ).strip()
+    return use_case_id, use_case_name, reference_bucket
+
+def scenario_label(record: dict) -> str:
+    use_case_id, use_case_name, _ = use_case_fields(record)
+    if use_case_id and use_case_name:
+        return f"{use_case_id} {use_case_name}"
+    if use_case_id:
+        return use_case_id
+    return str(record.get("requested_journey") or record.get("filename") or "unknown")
+
 def add_column_guide(
     lines: list[str],
     title: str,
@@ -115,11 +132,81 @@ def build_phase2_operation_rows(grouped_records: dict[str, list[dict]]) -> list[
             )
     return rows
 
+def build_smith_bucket_rows(
+    records: list[dict],
+    smith_buckets: dict[str, list[str]],
+) -> list[str]:
+    if not smith_buckets:
+        return []
+
+    bucket_by_use_case_id = {
+        use_case_id: bucket
+        for bucket, use_case_ids in smith_buckets.items()
+        for use_case_id in use_case_ids
+    }
+    grouped_records: dict[tuple[str, str, str, str], list[dict]] = defaultdict(list)
+    for record in records:
+        use_case_id, _, reference_bucket = use_case_fields(record)
+        bucket = bucket_by_use_case_id.get(use_case_id)
+        if not bucket and reference_bucket and reference_bucket.lower() != "none":
+            bucket = reference_bucket
+        if not bucket or bucket.lower() == "none":
+            continue
+        variant_label, mutation_id, fault_service, _ = evaluation_fields(record)
+        grouped_records[(bucket, variant_label, mutation_id, fault_service)].append(record)
+
+    rows: list[str] = []
+    for (bucket, variant_label, mutation_id, fault_service), bucket_records in sorted(
+        grouped_records.items()
+    ):
+        use_case_ids = sorted(
+            {
+                use_case_id
+                for record in bucket_records
+                for use_case_id, _, _ in [use_case_fields(record)]
+                if use_case_id
+            }
+        )
+        totals: dict[str, int] = {}
+        covered_operations: dict[str, set[str]] = defaultdict(set)
+        for record in bucket_records:
+            coverage = record.get("coverage") or {}
+            for service, total in dict(coverage.get("service_operation_totals", {})).items():
+                totals[str(service)] = int(total)
+            for service, operations in dict(
+                coverage.get("covered_operations_by_service", {})
+            ).items():
+                covered_operations[str(service)].update(str(item) for item in operations)
+
+        for service, total in sorted(totals.items()):
+            covered = sorted(covered_operations.get(service, set()))
+            coverage_pct = (len(covered) / total) * 100 if total > 0 else 0.0
+            rows.append(
+                "| {bucket} | {variant} | {mutation_id} | {fault_service} | {runs} | {use_cases} | {service} | {covered_count} | {total} | {coverage_pct:.1f}% | {operations} |".format(
+                    bucket=escape_md_cell(bucket),
+                    variant=escape_md_cell(variant_label),
+                    mutation_id=escape_md_cell(mutation_id or "-"),
+                    fault_service=escape_md_cell(fault_service or "-"),
+                    runs=len(bucket_records),
+                    use_cases=escape_md_cell(", ".join(use_case_ids) if use_case_ids else "-"),
+                    service=escape_md_cell(service),
+                    covered_count=len(covered),
+                    total=total,
+                    coverage_pct=coverage_pct,
+                    operations=escape_md_cell(", ".join(covered) if covered else "-"),
+                )
+            )
+    return rows
+
 # ---------------------------------------------------------------------------
 # Main renderers
 # ---------------------------------------------------------------------------
 
-def render_evaluation_summary(records: list[dict]) -> str:
+def render_evaluation_summary(
+    records: list[dict],
+    *,
+    smith_buckets: dict[str, list[str]] | None = None,
+) -> str:
     lines = [
         "# Evaluation Metrics",
         "",
@@ -134,12 +221,12 @@ def render_evaluation_summary(records: list[dict]) -> str:
 
     grouped: dict[str, list[dict]] = defaultdict(list)
     for record in records:
-        journey = str(record.get("requested_journey") or record.get("filename") or "unknown")
-        grouped[journey].append(record)
+        grouped[scenario_label(record)].append(record)
 
     fault_rows = build_fault_rows(grouped)
     service_rows = build_service_rows(grouped)
     phase2_rows = build_phase2_operation_rows(grouped)
+    smith_bucket_rows = build_smith_bucket_rows(records, smith_buckets or {})
     has_phase3 = any(has_phase3_context(record) for record in records)
     phase3_mutation_rows = build_phase3_mutation_rows(grouped) if has_phase3 else []
     phase3_fault_rows = build_phase3_fault_rows(records) if has_phase3 else []
@@ -155,7 +242,7 @@ def render_evaluation_summary(records: list[dict]) -> str:
         lines,
         "Phase 1 Journey Summary",
         [
-            "`Journey` is the requested journey text or filename fallback; `Runs`, `Generated`, `Pass`, and `Fail` are run counts.",
+            "`Journey` is the structured use-case ID and name when available, otherwise the requested journey text or filename fallback; `Runs`, `Generated`, `Pass`, and `Fail` are run counts.",
             "`Blocked` means the run failed before meaningful execution, `Syntax invalid` means invalid Python, `Suspected FP` means a likely false positive, `Variants` counts distinct generated code hashes, `Stability` is the share of runs using the most common hash, `Same fault` checks whether all failures share one signature, and `Avg GUI`/`Avg API`/`Avg lines` are averages for GUI checks, frontend API calls, and test size.",
         ],
     )
@@ -163,7 +250,7 @@ def render_evaluation_summary(records: list[dict]) -> str:
         lines,
         "Phase 1 Recent Runs",
         [
-            "`Recorded at` is the UTC append time; `Journey`, `File`, `Variant`, `Mutation`, and `Run kind` identify what was executed.",
+            "`Recorded at` is the UTC append time; `Journey`, `Use case`, `Reference bucket`, `File`, `Variant`, `Mutation`, and `Run kind` identify what was executed.",
             "`Status` is the final result, `Blocked` and `Failure kind` explain failed runs, and `GUI`/`API`/`Lines` record the per-run GUI count, frontend API count, and test size.",
         ],
     )
@@ -189,6 +276,15 @@ def render_evaluation_summary(records: list[dict]) -> str:
             "Phase 2 Operation Coverage By Service",
             [
                 "`Journey` is the grouping key, `Service` is the MSA service name, `Covered ops` is the number of distinct observed operations, `Total ops` is the spec total, `Coverage` is covered divided by total, and `Operations` lists the matched labels.",
+            ],
+        )
+    if smith_bucket_rows:
+        add_column_guide(
+            lines,
+            "Reference Bucket Operation Coverage",
+            [
+                "`Bucket` is the optional benchmark or reference bucket, `Variant`/`Mutation`/`Fault service` identify the evaluated system state, `Runs` is the number of recorded runs in that bucket, and `Use cases` lists the contributing structured use-case IDs.",
+                "`Service`, `Covered ops`, `Total ops`, `Coverage`, and `Operations` aggregate operation coverage across all use cases recorded in that bucket.",
             ],
         )
     if phase3_mutation_rows:
@@ -268,8 +364,8 @@ def render_evaluation_summary(records: list[dict]) -> str:
             "",
             "## Phase 1 Recent Runs",
             "",
-            "| Recorded at | Journey | File | Variant | Mutation | Run kind | Status | Blocked | Failure kind | GUI | API | Lines |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: |",
+            "| Recorded at | Journey | Use case | Reference bucket | File | Variant | Mutation | Run kind | Status | Blocked | Failure kind | GUI | API | Lines |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: |",
         ]
     )
 
@@ -280,10 +376,14 @@ def render_evaluation_summary(records: list[dict]) -> str:
     )[:20]:
         phase1 = record.get("phase1") or {}
         variant_label, mutation_id, _, run_kind = evaluation_fields(record)
+        use_case_id, use_case_name, reference_bucket = use_case_fields(record)
+        use_case_label = " ".join(part for part in (use_case_id, use_case_name) if part)
         lines.append(
-            "| {recorded_at} | {journey} | {filename} | {variant} | {mutation_id} | {run_kind} | {status} | {blocked} | {failure_kind} | {gui} | {api} | {lines_count} |".format(
+            "| {recorded_at} | {journey} | {use_case} | {reference_bucket} | {filename} | {variant} | {mutation_id} | {run_kind} | {status} | {blocked} | {failure_kind} | {gui} | {api} | {lines_count} |".format(
                 recorded_at=escape_md_cell(str(record.get("recorded_at", ""))),
-                journey=escape_md_cell(str(record.get("requested_journey") or "")),
+                journey=escape_md_cell(scenario_label(record)),
+                use_case=escape_md_cell(use_case_label or "-"),
+                reference_bucket=escape_md_cell(reference_bucket or "-"),
                 filename=escape_md_cell(str(record.get("filename", ""))),
                 variant=escape_md_cell(variant_label),
                 mutation_id=escape_md_cell(mutation_id or "-"),
@@ -332,6 +432,18 @@ def render_evaluation_summary(records: list[dict]) -> str:
             ]
         )
         lines.extend(phase2_rows)
+
+    if smith_bucket_rows:
+        lines.extend(
+            [
+                "",
+                "## Reference Bucket Operation Coverage",
+                "",
+                "| Bucket | Variant | Mutation | Fault service | Runs | Use cases | Service | Covered ops | Total ops | Coverage | Operations |",
+                "| --- | --- | --- | --- | ---: | --- | --- | ---: | ---: | ---: | --- |",
+            ]
+        )
+        lines.extend(smith_bucket_rows)
 
     if has_phase3:
         if phase3_mutation_rows:
