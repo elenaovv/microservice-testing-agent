@@ -202,6 +202,7 @@ class JourneyGuide:
     requested_journey: str
     capture: JourneyCapture
     coverage: CoverageSnapshot
+    browse_network_requests: list[dict[str, str]] = field(default_factory=list)
     markdown_path: Path | None = None
     json_path: Path | None = None
 
@@ -211,6 +212,14 @@ class JourneyGuide:
             "requested_journey": self.requested_journey,
             "capture": self.capture.to_dict(),
             "coverage": self.coverage.to_dict(),
+            "browse_network_requests": [
+                {
+                    "method": str(item.get("method", "")).strip(),
+                    "url": str(item.get("url", "")).strip(),
+                    "path": str(item.get("path", "")).strip(),
+                }
+                for item in self.browse_network_requests
+            ],
             "markdown_path": str(self.markdown_path) if self.markdown_path else None,
             "json_path": str(self.json_path) if self.json_path else None,
         }
@@ -227,6 +236,15 @@ class JourneyGuide:
             requested_journey=data["requested_journey"],
             capture=JourneyCapture.from_dict(data.get("capture", {})),
             coverage=CoverageSnapshot.from_dict(data.get("coverage", {})),
+            browse_network_requests=[
+                {
+                    "method": str(item.get("method", "")).strip(),
+                    "url": str(item.get("url", "")).strip(),
+                    "path": str(item.get("path", "")).strip(),
+                }
+                for item in list(data.get("browse_network_requests", []))
+                if isinstance(item, dict)
+            ],
             markdown_path=Path(markdown_path) if markdown_path else None,
             json_path=Path(json_path) if json_path else None,
         )

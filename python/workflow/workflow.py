@@ -174,6 +174,7 @@ async def generate_test(
             requested_journey=journey,
             capture=deps.capture,
             msa_spec=msa_spec,
+            browse_network_requests=browse_network_requests,
         )
         write_journey_guide(journey_guide)
 

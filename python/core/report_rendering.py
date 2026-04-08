@@ -101,6 +101,7 @@ def render_journey_guide_summary(guide: JourneyGuide) -> str:
     lines.append(f"- timed_steps: {guide.coverage.timed_step_count}")
     lines.append(f"- endpoint_candidates: {guide.coverage.endpoint_candidate_count}")
     lines.append(f"- services: {guide.coverage.service_candidate_count}")
+    lines.append(f"- browse_api_requests: {len(guide.browse_network_requests)}")
     return "\n".join(lines)
 
 def render_journey_guide(guide: JourneyGuide) -> str:
@@ -161,5 +162,17 @@ def render_journey_guide(guide: JourneyGuide) -> str:
         lines.append("### Coverage Notes")
         for note in guide.coverage.notes:
             lines.append(f"- {note}")
+
+    if guide.browse_network_requests:
+        lines.append("")
+        lines.append("### Browse Network Requests")
+        for item in guide.browse_network_requests:
+            method = str(item.get("method", "")).upper().strip()
+            path = str(item.get("path", "")).strip()
+            url = str(item.get("url", "")).strip()
+            if method and path:
+                lines.append(f"- {method} {path}")
+            elif url:
+                lines.append(f"- {url}")
 
     return "\n".join(lines)
