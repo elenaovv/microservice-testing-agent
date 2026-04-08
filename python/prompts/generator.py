@@ -52,21 +52,21 @@ BRIEF_STOPWORDS = FILENAME_STOPWORDS | {
 }
 
 CONCEPT_ALIASES = {
-    "book": ["booking", "order", "orderservice", "preserve", "travel"],
-    "booking": ["book", "order", "orderservice", "preserve", "travel"],
-    "login": ["auth", "users", "verify"],
-    "logout": ["auth", "users"],
-    "pay": ["payment", "inside", "order", "orderservice"],
-    "payment": ["pay", "inside", "order", "orderservice"],
-    "cancel": ["order", "orderservice", "cancelservice"],
-    "rebook": ["order", "orderservice", "rebookservice"],
-    "order": ["orderservice", "orderotherservice"],
-    "route": ["adminroute", "travel"],
-    "station": ["adminbasic", "station", "stationservice"],
-    "train": ["adminbasic", "trainservice"],
-    "price": ["adminbasic", "priceservice", "price"],
-    "schedule": ["travel", "admintravel"],
-    "user": ["users", "auth"],
+    "book": ["booking", "reserve", "reservation", "purchase"],
+    "booking": ["book", "reserve", "reservation", "purchase"],
+    "login": ["authenticate", "authentication", "signin", "session"],
+    "logout": ["signout", "session"],
+    "pay": ["payment", "checkout", "purchase"],
+    "payment": ["pay", "checkout", "purchase"],
+    "cancel": ["refund", "revoke", "void"],
+    "rebook": ["change", "modify", "exchange"],
+    "order": ["purchase", "reservation", "checkout"],
+    "route": ["path", "trip", "travel"],
+    "station": ["location", "stop", "terminal"],
+    "train": ["trip", "travel", "service"],
+    "price": ["fare", "cost", "amount"],
+    "schedule": ["trip", "timetable", "departure"],
+    "user": ["account", "profile", "identity"],
 }
 
 
