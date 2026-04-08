@@ -1,0 +1,12 @@
+id: UC-ADM-008
+actor: admin
+name: View All Trains
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: >
+  The admin requests the full list of trains.
+success_criteria:
+  - the system returns every train in the catalog
+smith_equivalent: AdminTrainList.java
+notes: ""

@@ -1,0 +1,15 @@
+id: UC-ADM-017
+actor: admin
+name: Add Schedule
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - a train and a route exist
+goal: >
+  The admin assigns a train to a route with a start and terminal station to
+  create a schedule entry (called a travel in TrainTicket).
+success_criteria:
+  - a new schedule exists
+  - the schedule appears in the schedule list
+smith_equivalent: AdminTravelList.java
+notes: ""

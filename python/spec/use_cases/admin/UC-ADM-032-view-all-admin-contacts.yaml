@@ -1,0 +1,13 @@
+id: UC-ADM-032
+actor: admin
+name: View All Contacts (Admin Panel)
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: >
+  The admin requests the full list of contacts across all users from the admin
+  contact panel.
+success_criteria:
+  - the system returns every contact regardless of owner
+smith_equivalent: AdminContactList.java
+notes: ""

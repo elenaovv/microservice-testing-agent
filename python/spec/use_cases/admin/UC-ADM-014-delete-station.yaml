@@ -1,0 +1,13 @@
+id: UC-ADM-014
+actor: admin
+name: Delete Station
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one station exists
+goal: >
+  The admin removes an existing station.
+success_criteria:
+  - the station no longer exists
+smith_equivalent: AdminStationList.java
+notes: ""

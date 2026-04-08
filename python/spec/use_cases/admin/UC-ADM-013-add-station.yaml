@@ -1,0 +1,13 @@
+id: UC-ADM-013
+actor: admin
+name: Add Station
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: >
+  The admin provides a station name and stay time to register a new station.
+success_criteria:
+  - a new station exists
+  - the station appears in the station list
+smith_equivalent: AdminStationList.java
+notes: ""
