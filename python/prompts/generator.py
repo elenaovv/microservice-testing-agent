@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 from typing import Any
 
+from core.coverage_utils import extract_spec_endpoints
 from core.models import JourneyCapture
 
 try:
@@ -36,6 +37,36 @@ FILENAME_STOPWORDS = {
     "train",
     "route",
     "page",
+}
+
+BRIEF_STOPWORDS = FILENAME_STOPWORDS | {
+    "success",
+    "criteria",
+    "preconditions",
+    "authenticated",
+    "state",
+    "actor",
+    "role",
+    "admin",
+    "traveler",
+}
+
+CONCEPT_ALIASES = {
+    "book": ["booking", "order", "orderservice", "preserve", "travel"],
+    "booking": ["book", "order", "orderservice", "preserve", "travel"],
+    "login": ["auth", "users", "verify"],
+    "logout": ["auth", "users"],
+    "pay": ["payment", "inside", "order", "orderservice"],
+    "payment": ["pay", "inside", "order", "orderservice"],
+    "cancel": ["order", "orderservice", "cancelservice"],
+    "rebook": ["order", "orderservice", "rebookservice"],
+    "order": ["orderservice", "orderotherservice"],
+    "route": ["adminroute", "travel"],
+    "station": ["adminbasic", "station", "stationservice"],
+    "train": ["adminbasic", "trainservice"],
+    "price": ["adminbasic", "priceservice", "price"],
+    "schedule": ["travel", "admintravel"],
+    "user": ["users", "auth"],
 }
 
 
@@ -224,6 +255,92 @@ def derive_use_case_test_filename(use_case: StructuredUseCase) -> str:
     return derive_python_test_filename(use_case.name)
 
 
+def _brief_tokens(*parts: str) -> list[str]:
+    text = " ".join(part.lower() for part in parts if part)
+    base_tokens = [
+        token
+        for token in re.findall(r"[a-z0-9_]+", text)
+        if len(token) > 2 and token not in BRIEF_STOPWORDS
+    ]
+    expanded_tokens = list(base_tokens)
+    for token in base_tokens:
+        expanded_tokens.extend(CONCEPT_ALIASES.get(token, []))
+    return expanded_tokens
+
+
+def build_relevant_msa_excerpt(
+    journey: str,
+    msa_spec: str,
+    *,
+    use_case_context: str = "",
+    max_services: int = 6,
+    max_endpoints_per_service: int = 4,
+) -> str:
+    tokens = _brief_tokens(journey, use_case_context)
+    if not tokens:
+        return "No focused service slice could be derived from the selected journey."
+
+    grouped_matches: dict[str, list[tuple[int, dict[str, str]]]] = {}
+    for endpoint in extract_spec_endpoints(msa_spec):
+        haystack = " ".join(endpoint.values()).lower()
+        score = sum(1 for token in tokens if token in haystack)
+        if score <= 0:
+            continue
+        service = endpoint.get("service", "unmapped")
+        grouped_matches.setdefault(service, []).append((score, endpoint))
+
+    if not grouped_matches:
+        return "No focused service slice could be derived from the selected journey."
+
+    ranked_services = sorted(
+        grouped_matches.items(),
+        key=lambda item: (
+            -sum(score for score, _ in item[1]),
+            item[0],
+        ),
+    )
+
+    lines: list[str] = []
+    for service, matches in ranked_services[:max_services]:
+        lines.append(f"{service}:")
+        ranked_endpoints = sorted(
+            matches,
+            key=lambda item: (-item[0], item[1].get("path", "")),
+        )
+        for _, endpoint in ranked_endpoints[:max_endpoints_per_service]:
+            description = endpoint.get("description", "").strip()
+            endpoint_line = (
+                f"- {endpoint.get('method', '').upper()} {endpoint.get('path', '')}"
+            )
+            if description:
+                endpoint_line += f" - {description}"
+            lines.append(endpoint_line)
+    return "\n".join(lines)
+
+
+def build_execution_brief(
+    journey: str,
+    msa_spec: str,
+    *,
+    system_description: str = "",
+    use_case_context: str = "",
+) -> str:
+    sections = [f"Journey:\n{journey}"]
+    if system_description:
+        sections.append(f"System description:\n{system_description}")
+    if use_case_context:
+        sections.append(f"Structured use case:\n{use_case_context}")
+    sections.append(
+        "Relevant MSA slice:\n"
+        + build_relevant_msa_excerpt(
+            journey=journey,
+            msa_spec=msa_spec,
+            use_case_context=use_case_context,
+        )
+    )
+    return "\n\n".join(sections)
+
+
 def build_browse_prompt(
     journey: str,
     msa_spec: str,
@@ -232,22 +349,21 @@ def build_browse_prompt(
     system_description: str = "",
     use_case_context: str = "",
 ) -> str:
+    execution_brief = build_execution_brief(
+        journey=journey,
+        msa_spec=msa_spec,
+        system_description=system_description,
+        use_case_context=use_case_context,
+    )
     sections = [
         "Follow this user journey step by step in the browser. "
         "Call log_action after every interaction and use start_timer/stop_timer around slow steps. "
-        "Use the MSA specification below as domain context, but verify the actual UI live before deciding the flow. "
+        "Use the execution brief below as domain context, but verify the actual UI live before deciding the flow. "
         f"The UI under test is served from {base_url}; navigate there before you start browsing.",
-        f"Journey:\n{journey}",
-    ]
-    if system_description:
-        sections.append(f"System description:\n{system_description}")
-    if use_case_context:
-        sections.append(f"Structured use case:\n{use_case_context}")
-    sections.append(f"MSA specification:\n{msa_spec}")
-    sections.append(
+        f"Execution brief:\n{execution_brief}",
         "If the browser tooling exposes `browser_network_requests`, call it after exploration and include the JSON result in your final response. "
-        "If that tool is not available, finish the exploration normally."
-    )
+        "If that tool is not available, finish the exploration normally.",
+    ]
     return "\n\n".join(sections)
 
 
@@ -274,31 +390,28 @@ def build_test_generation_prompt(
         else "No backend API requests were captured during exploration."
     )
 
+    execution_brief = build_execution_brief(
+        journey=journey,
+        msa_spec=msa_spec,
+        system_description=system_description,
+        use_case_context=use_case_context,
+    )
     sections = [
-        "Using the MSA specification, your logged actions, and your recorded timings below, "
+        "Using the execution brief, your logged actions, and your recorded timings below, "
         "write a pytest-playwright test that reproduces every step exactly. "
         "Use `import os` and define `BASE_URL = os.environ.get(\"BASE_URL\", "
         f"\"{base_url}\")` once near the top of the file. "
         "Always navigate with `page.goto(BASE_URL, ...)` instead of hardcoding the URL.",
         "Use the observed backend requests to add focused network-aware checks where appropriate. "
         "Prefer `page.expect_request()` or `page.wait_for_response()` for critical booking and order operations.",
-        f"Journey:\n{journey}",
+        f"Execution brief:\n{execution_brief}",
+        f"Logged actions:\n{capture.action_summary()}",
+        f"Recorded timings:\n{capture.timing_summary()}",
+        "Backend requests observed during exploration:\n"
+        f"{observed_requests_block}",
+        f"Save it as '{filename}' using create_python_test_file, then run it with run_test_file. "
+        f"If it fails, fix and retry at most {max_retries} times.",
     ]
-    if system_description:
-        sections.append(f"System description:\n{system_description}")
-    if use_case_context:
-        sections.append(f"Structured use case:\n{use_case_context}")
-    sections.extend(
-        [
-            f"MSA specification:\n{msa_spec}",
-            f"Logged actions:\n{capture.action_summary()}",
-            f"Recorded timings:\n{capture.timing_summary()}",
-            "Backend requests observed during exploration:\n"
-            f"{observed_requests_block}",
-            f"Save it as '{filename}' using create_python_test_file, then run it with run_test_file. "
-            f"If it fails, fix and retry at most {max_retries} times.",
-        ]
-    )
     return "\n\n".join(sections)
 
 
