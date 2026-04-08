@@ -4,8 +4,13 @@ import sys
 from pathlib import Path
 
 from prompts.generator import (
+    STRUCTURED_USE_CASE_INDEX_PATH,
     USE_CASES_PATH,
+    StructuredUseCase,
     derive_python_test_filename,
+    derive_use_case_test_filename,
+    load_structured_use_case,
+    load_structured_use_case_by_id,
     load_use_cases,
 )
 from workflow import generate_test, retest_generated_test, run_browser_task
@@ -63,6 +68,7 @@ async def _generate_single_test(
     journey: str,
     filename: str | None,
     args: argparse.Namespace,
+    use_case_context: str = "",
 ) -> str:
     return await generate_test(
         filename,
@@ -72,6 +78,7 @@ async def _generate_single_test(
         mutation_id=args.mutation_id,
         fault_service=args.fault_service,
         base_url=args.base_url,
+        use_case_context=use_case_context,
     )
 
 
@@ -97,6 +104,14 @@ async def _generate_all_use_case_tests(args: argparse.Namespace) -> str:
     return "\n\n".join(outputs)
 
 
+def _load_selected_structured_use_case(args: argparse.Namespace) -> StructuredUseCase:
+    if args.use_case_id:
+        return load_structured_use_case_by_id(args.use_case_id)
+    if args.use_case_file:
+        return load_structured_use_case(Path(args.use_case_file))
+    raise ValueError("No structured use case selector provided")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="AI browsing agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -117,8 +132,22 @@ def parse_args() -> argparse.Namespace:
         help="Run only one line number from spec/use-cases.txt (1-indexed)",
     )
     test_parser.add_argument(
+        "--use-case-id",
+        help=(
+            "Run one structured use case by ID from "
+            f"{STRUCTURED_USE_CASE_INDEX_PATH}"
+        ),
+    )
+    test_parser.add_argument(
+        "--use-case-file",
+        help="Run one structured use case YAML file by path",
+    )
+    test_parser.add_argument(
         "--filename",
-        help="Output filename for ad-hoc/--line mode (ignored when running all use cases)",
+        help=(
+            "Output filename for journey, --line, or structured use case mode "
+            "(ignored when running all text use cases)"
+        ),
     )
     test_parser.add_argument("--max-retries", type=int, default=5, help="Max fix attempts if test fails (default: 5)")
     add_evaluation_args(test_parser)
@@ -133,8 +162,16 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
 
     if args.command == "test":
-        if args.journey and args.line is not None:
-            parser.error("test: provide either JOURNEY text or --line, not both")
+        selectors = [
+            args.journey is not None,
+            args.line is not None,
+            bool(args.use_case_id),
+            bool(args.use_case_file),
+        ]
+        if sum(selectors) > 1:
+            parser.error(
+                "test: provide only one of JOURNEY, --line, --use-case-id, or --use-case-file"
+            )
         if args.line is not None and args.line < 1:
             parser.error("test: --line must be >= 1")
 
@@ -156,6 +193,18 @@ if __name__ == "__main__":
                 filename = args.filename or derive_python_test_filename(journey)
                 output = asyncio.run(
                     _generate_single_test(journey, filename, args)
+                )
+            elif args.use_case_id or args.use_case_file:
+                use_case = _load_selected_structured_use_case(args)
+                journey = use_case.journey_text()
+                filename = args.filename or derive_use_case_test_filename(use_case)
+                output = asyncio.run(
+                    _generate_single_test(
+                        journey,
+                        filename,
+                        args,
+                        use_case_context=use_case.prompt_context(),
+                    )
                 )
             else:
                 output = asyncio.run(_generate_all_use_case_tests(args))
