@@ -138,6 +138,8 @@ async def generate_test(
     fault_service: str = "",
     base_url: str | None = None,
     use_case_context: str = "",
+    msa_spec_path: str | None = None,
+    system_description_path: str | None = None,
 ) -> str:
     filename = filename or derive_python_test_filename(journey)
     validate_python_test_filename(filename)
@@ -150,8 +152,10 @@ async def generate_test(
         run_kind="generated",
     )
     deps = Deps(evaluation=evaluation)
-    msa_spec = load_msa_spec()
-    system_description = load_system_description()
+    msa_spec = load_msa_spec(Path(msa_spec_path) if msa_spec_path else None)
+    system_description = load_system_description(
+        Path(system_description_path) if system_description_path else None
+    )
     run_started_at = datetime.now(timezone.utc).timestamp()
 
     async with agent:
@@ -175,6 +179,7 @@ async def generate_test(
             capture=deps.capture,
             msa_spec=msa_spec,
             browse_network_requests=browse_network_requests,
+            msa_spec_path=str(Path(msa_spec_path).resolve()) if msa_spec_path else "",
         )
         write_journey_guide(journey_guide)
 
@@ -219,6 +224,7 @@ async def retest_generated_test(
     mutation_id: str = "",
     fault_service: str = "",
     base_url: str | None = None,
+    msa_spec_path: str | None = None,
 ) -> str:
     validate_python_test_filename(filename)
     evaluation = _build_evaluation_context(
@@ -239,6 +245,7 @@ async def retest_generated_test(
         journey_guide=journey_guide,
         generated_tests_dir=GENERATED_TESTS_DIR,
         evaluation=evaluation,
+        msa_spec_path=msa_spec_path,
     )
     write_execution_report(report)
     append_evaluation_history(report)

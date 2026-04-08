@@ -135,13 +135,15 @@ def _load_yaml_file(path: Path) -> dict[str, Any]:
     return data
 
 
-def load_msa_spec(path: Path = MSA_SPEC_PATH) -> str:
+def load_msa_spec(path: Path | None = None) -> str:
+    path = path or MSA_SPEC_PATH
     if not path.exists():
         raise FileNotFoundError(f"MSA specification file not found: {path}")
     return path.read_text(encoding="utf-8").strip()
 
 
-def load_system_description(path: Path = SYSTEM_DESCRIPTION_PATH) -> str:
+def load_system_description(path: Path | None = None) -> str:
+    path = path or SYSTEM_DESCRIPTION_PATH
     if not path.exists():
         raise FileNotFoundError(f"System description file not found: {path}")
     return path.read_text(encoding="utf-8").strip()
