@@ -1,0 +1,12 @@
+id: UC-ADM-028
+actor: admin
+name: View All System Configurations
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: >
+  The admin requests the full list of system configurations.
+success_criteria:
+  - the system returns every configuration entry
+smith_equivalent: AdminConfigList.java
+notes: ""

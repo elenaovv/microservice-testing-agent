@@ -1,0 +1,14 @@
+id: UC-TRV-014
+actor: traveler
+name: Delete Contact
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has at least one saved contact
+goal: >
+  The traveler removes one of their saved contacts.
+success_criteria:
+  - the contact is no longer associated with the traveler
+  - subsequent contact list queries do not return the deleted contact
+smith_equivalent: none
+notes: ""

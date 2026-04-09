@@ -1,0 +1,69 @@
+# Smith equivalence buckets - group your atomic use cases by the Smith
+# test class they map to, then aggregate endpoint coverage per bucket
+# to compare against Smith on equal granularity.
+buckets:
+  AdminConfigList.java:
+    - UC-ADM-025
+    - UC-ADM-026
+    - UC-ADM-027
+    - UC-ADM-028
+  AdminContactList.java:
+    - UC-ADM-029
+    - UC-ADM-030
+    - UC-ADM-031
+    - UC-ADM-032
+  AdminOrderList.java:
+    - UC-ADM-033
+    - UC-ADM-034
+    - UC-ADM-035
+    - UC-ADM-036
+  AdminPriceList.java:
+    - UC-ADM-021
+    - UC-ADM-022
+    - UC-ADM-023
+    - UC-ADM-024
+  AdminRouteList.java:
+    - UC-ADM-009
+    - UC-ADM-010
+    - UC-ADM-011
+    - UC-ADM-012
+  AdminStationList.java:
+    - UC-ADM-013
+    - UC-ADM-014
+    - UC-ADM-015
+    - UC-ADM-016
+  AdminTrainList.java:
+    - UC-ADM-005
+    - UC-ADM-006
+    - UC-ADM-007
+    - UC-ADM-008
+  AdminTravelList.java:
+    - UC-ADM-017
+    - UC-ADM-018
+    - UC-ADM-019
+    - UC-ADM-020
+  AdminUserList.java:
+    - UC-ADM-001
+    - UC-ADM-002
+    - UC-ADM-003
+    - UC-ADM-004
+  Booking.java:
+    - UC-TRV-003
+    - UC-TRV-004
+    - UC-TRV-005
+    - UC-TRV-007
+    - UC-TRV-008
+    - UC-TRV-009
+    - UC-TRV-010
+    - UC-TRV-011
+    - UC-TRV-012
+    - UC-TRV-015
+    - UC-TRV-016
+    - UC-TRV-017
+  Login.java:
+    - UC-TRV-002
+  none:
+    - UC-TRV-001
+    - UC-TRV-006
+    - UC-TRV-013
+    - UC-TRV-014

@@ -1,0 +1,13 @@
+id: UC-ADM-036
+actor: admin
+name: View All Orders
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: >
+  The admin requests every order in the system across all users from the admin
+  order panel.
+success_criteria:
+  - the system returns every order regardless of owner
+smith_equivalent: AdminOrderList.java
+notes: ""

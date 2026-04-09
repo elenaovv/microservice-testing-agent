@@ -7,22 +7,25 @@ from urllib.parse import urlparse
 from agent.agent import agent
 from core.evaluation_utils import append_evaluation_history
 from core.executor import run_generated_test
-from core.models import Deps, EvaluationContext
+from core.models import Deps, EvaluationContext, UseCaseMetadata
 from core.reporting import (
     build_execution_report,
     build_journey_guide,
     load_journey_guide,
     load_execution_report,
-    render_execution_report,
-    render_journey_guide_summary,
     write_execution_report,
     write_journey_guide,
+)
+from core.report_rendering import (
+    render_execution_report,
+    render_journey_guide_summary,
 )
 from prompts.generator import (
     build_browse_prompt,
     build_test_generation_prompt,
     derive_python_test_filename,
     load_msa_spec,
+    load_system_description,
     validate_python_test_filename,
 )
 from pydantic_ai.usage import UsageLimits
@@ -134,6 +137,10 @@ async def generate_test(
     mutation_id: str = "",
     fault_service: str = "",
     base_url: str | None = None,
+    use_case_context: str = "",
+    use_case: UseCaseMetadata | None = None,
+    msa_spec_path: str | None = None,
+    system_description_path: str | None = None,
 ) -> str:
     filename = filename or derive_python_test_filename(journey)
     validate_python_test_filename(filename)
@@ -146,7 +153,10 @@ async def generate_test(
         run_kind="generated",
     )
     deps = Deps(evaluation=evaluation)
-    msa_spec = load_msa_spec()
+    msa_spec = load_msa_spec(Path(msa_spec_path) if msa_spec_path else None)
+    system_description = load_system_description(
+        Path(system_description_path) if system_description_path else None
+    )
     run_started_at = datetime.now(timezone.utc).timestamp()
 
     async with agent:
@@ -155,6 +165,8 @@ async def generate_test(
                 journey=journey,
                 msa_spec=msa_spec,
                 base_url=evaluation.base_url,
+                system_description=system_description,
+                use_case_context=use_case_context,
             ),
             deps=deps,
             usage_limits=AGENT_USAGE_LIMITS,
@@ -167,6 +179,9 @@ async def generate_test(
             requested_journey=journey,
             capture=deps.capture,
             msa_spec=msa_spec,
+            use_case=use_case,
+            browse_network_requests=browse_network_requests,
+            msa_spec_path=str(Path(msa_spec_path).resolve()) if msa_spec_path else "",
         )
         write_journey_guide(journey_guide)
 
@@ -179,6 +194,8 @@ async def generate_test(
                 capture=deps.capture,
                 browse_network_requests=browse_network_requests,
                 base_url=evaluation.base_url,
+                system_description=system_description,
+                use_case_context=use_case_context,
             ),
             message_history=nav.all_messages(),
             deps=deps,
@@ -209,6 +226,7 @@ async def retest_generated_test(
     mutation_id: str = "",
     fault_service: str = "",
     base_url: str | None = None,
+    msa_spec_path: str | None = None,
 ) -> str:
     validate_python_test_filename(filename)
     evaluation = _build_evaluation_context(
@@ -229,6 +247,7 @@ async def retest_generated_test(
         journey_guide=journey_guide,
         generated_tests_dir=GENERATED_TESTS_DIR,
         evaluation=evaluation,
+        msa_spec_path=msa_spec_path,
     )
     write_execution_report(report)
     append_evaluation_history(report)

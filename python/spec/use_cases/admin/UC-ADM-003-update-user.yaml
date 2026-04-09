@@ -1,0 +1,14 @@
+id: UC-ADM-003
+actor: admin
+name: Update User
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one user account exists
+goal: >
+  The admin modifies the details of an existing user account.
+success_criteria:
+  - the user account reflects the modified details
+  - the change is visible in subsequent user queries
+smith_equivalent: AdminUserList.java
+notes: ""

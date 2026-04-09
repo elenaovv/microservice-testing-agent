@@ -2,7 +2,9 @@
 
 Heavy analysis helpers live in:
   - core.coverage_utils  – MSA spec parsing and endpoint/service inference
-  - core.evaluation_utils – run metrics, failure analysis, and summary rendering
+  - core.inference       – code and failure analysis
+  - core.evaluation_rendering – evaluation summary markdown rendering
+  - core.report_rendering     – execution-report and journey-guide rendering
 """
 
 import json
@@ -24,8 +26,10 @@ from core.models import (
     ExecutionResult,
     JourneyCapture,
     JourneyGuide,
+    UseCaseMetadata,
 )
 from core.evaluation_utils import build_phase1_metrics, load_network_capture
+from core.report_rendering import render_journey_guide
 
 TEST_RESULTS_DIR = Path("test-results")
 GENERATED_TESTS_DIR = Path("generated-tests")
@@ -99,6 +103,9 @@ def build_journey_guide(
     requested_journey: str,
     capture: JourneyCapture,
     msa_spec: str,
+    use_case: UseCaseMetadata | None = None,
+    browse_network_requests: list[dict[str, str]] | None = None,
+    msa_spec_path: str = "",
 ) -> JourneyGuide:
     coverage = build_coverage_snapshot(
         requested_journey=requested_journey,
@@ -110,6 +117,9 @@ def build_journey_guide(
         requested_journey=requested_journey,
         capture=capture.clone(),
         coverage=coverage,
+        use_case=use_case,
+        browse_network_requests=list(browse_network_requests or []),
+        msa_spec_path=msa_spec_path,
     )
 
 
@@ -119,6 +129,7 @@ def build_execution_report(
     generated_tests_dir: Path = GENERATED_TESTS_DIR,
     test_results_dir: Path = TEST_RESULTS_DIR,
     evaluation: EvaluationContext | None = None,
+    msa_spec_path: str | None = None,
 ) -> ExecutionReport:
     status = "passed" if result.succeeded else "failed"
     summary = (
@@ -130,9 +141,11 @@ def build_execution_report(
     artifacts = result.artifacts.copy()
     coverage = None
     requested_journey = None
+    use_case = None
     if journey_guide is not None:
         coverage = journey_guide.coverage
         requested_journey = journey_guide.requested_journey
+        use_case = journey_guide.use_case
         if journey_guide.markdown_path is not None:
             artifacts.append(
                 ExecutionArtifact(
@@ -151,16 +164,26 @@ def build_execution_report(
         result.filename,
         output_dir=test_results_dir,
     )
+    resolved_msa_spec_path = (
+        msa_spec_path
+        or (journey_guide.msa_spec_path if journey_guide is not None else "")
+    )
+    msa_spec_text = (
+        load_msa_spec_text(Path(resolved_msa_spec_path))
+        if resolved_msa_spec_path
+        else load_msa_spec_text()
+    )
     if coverage is not None and network_capture is not None:
         coverage = apply_operation_coverage(
             coverage=coverage,
             requests=list(network_capture.get("requests", [])),
-            msa_spec=load_msa_spec_text(),
+            msa_spec=msa_spec_text,
         )
     phase1 = build_phase1_metrics(
         result=result,
         generated_tests_dir=generated_tests_dir,
         test_results_dir=test_results_dir,
+        msa_spec=msa_spec_text,
     )
 
     return ExecutionReport(
@@ -170,6 +193,7 @@ def build_execution_report(
         summary=summary,
         details=result.output.strip(),
         requested_journey=requested_journey,
+        use_case=use_case,
         evaluation=evaluation,
         artifacts=artifacts,
         coverage=coverage,
@@ -227,162 +251,3 @@ def load_journey_guide(
         return None
     data = json.loads(json_path.read_text(encoding="utf-8"))
     return JourneyGuide.from_dict(data)
-
-
-# ---------------------------------------------------------------------------
-# Renderers
-# ---------------------------------------------------------------------------
-
-
-def render_execution_report(report: ExecutionReport) -> str:
-    lines = [
-        "Execution report:",
-        f"- file: {report.filename}",
-        f"- status: {report.status}",
-        f"- exit_code: {report.exit_code}",
-        f"- summary: {report.summary}",
-    ]
-
-    if report.artifacts:
-        artifact_summary = ", ".join(
-            f"{artifact.kind}={artifact.path}" for artifact in report.artifacts
-        )
-        lines.append(f"- artifacts: {artifact_summary}")
-    else:
-        lines.append("- artifacts: none")
-
-    if report.report_path is not None:
-        lines.append(f"- report: {report.report_path}")
-
-    if report.coverage is not None:
-        lines.append(f"- coverage.ui_steps: {report.coverage.ui_step_count}")
-        lines.append(f"- coverage.unique_actions: {report.coverage.unique_action_count}")
-        lines.append(f"- coverage.timed_steps: {report.coverage.timed_step_count}")
-        lines.append(
-            f"- coverage.endpoint_candidates: {report.coverage.endpoint_candidate_count}"
-        )
-        lines.append(
-            f"- coverage.services: {report.coverage.service_candidate_count}"
-        )
-        if report.coverage.service_operation_totals:
-            operation_summary = ", ".join(
-                f"{service}={report.coverage.service_operation_covered.get(service, 0)}/{total}"
-                for service, total in sorted(
-                    report.coverage.service_operation_totals.items()
-                )
-            )
-            lines.append(f"- coverage.operations: {operation_summary}")
-
-    if report.evaluation is not None:
-        lines.append(f"- evaluation.variant: {report.evaluation.variant_label}")
-        lines.append(f"- evaluation.run_kind: {report.evaluation.run_kind}")
-        lines.append(f"- evaluation.base_url: {report.evaluation.base_url}")
-        if report.evaluation.mutation_id:
-            lines.append(f"- evaluation.mutation_id: {report.evaluation.mutation_id}")
-        if report.evaluation.fault_service:
-            lines.append(
-                f"- evaluation.fault_service: {report.evaluation.fault_service}"
-            )
-
-    if report.phase1 is not None:
-        lines.append(f"- phase1.blocked: {report.phase1.blocked}")
-        lines.append(f"- phase1.syntax_valid: {report.phase1.syntax_valid}")
-        lines.append(
-            f"- phase1.suspected_false_positive: {report.phase1.suspected_false_positive}"
-        )
-        lines.append(f"- phase1.gui_elements: {report.phase1.gui_element_count}")
-        lines.append(
-            f"- phase1.frontend_api_calls: {report.phase1.frontend_api_call_count}"
-        )
-        if report.phase1.failure_kind:
-            lines.append(f"- phase1.failure_kind: {report.phase1.failure_kind}")
-
-    if report.details:
-        lines.extend(
-            [
-                "",
-                "Raw output:",
-                report.details,
-            ]
-        )
-
-    return "\n".join(lines)
-
-
-def render_journey_guide_summary(guide: JourneyGuide) -> str:
-    lines = [
-        "Journey guide saved:",
-    ]
-    if guide.markdown_path is not None:
-        lines.append(f"- markdown: {guide.markdown_path}")
-    if guide.json_path is not None:
-        lines.append(f"- json: {guide.json_path}")
-    lines.append(f"- requested_journey: {guide.requested_journey}")
-    lines.append(f"- ui_steps: {guide.coverage.ui_step_count}")
-    lines.append(f"- unique_actions: {guide.coverage.unique_action_count}")
-    lines.append(f"- timed_steps: {guide.coverage.timed_step_count}")
-    lines.append(f"- endpoint_candidates: {guide.coverage.endpoint_candidate_count}")
-    lines.append(f"- services: {guide.coverage.service_candidate_count}")
-    return "\n".join(lines)
-
-
-def render_journey_guide(guide: JourneyGuide) -> str:
-    lines = [
-        "# Journey Guide",
-        "",
-        f"Requested journey: {guide.requested_journey}",
-        f"Target test file: {guide.test_filename}",
-        "",
-        "## UI Steps",
-    ]
-
-    if guide.capture.actions:
-        for index, step in enumerate(guide.capture.actions, start=1):
-            lines.append(f"{index}. {step.action}")
-            lines.append(f"   Note: {step.note}")
-    else:
-        lines.append("No UI steps were recorded.")
-
-    lines.extend(
-        [
-            "",
-            "## Timings",
-        ]
-    )
-    if guide.capture.timings:
-        for sample in guide.capture.timings:
-            lines.append(f"- {sample.name}: {sample.elapsed_seconds:.1f}s")
-    else:
-        lines.append("No timings were recorded.")
-
-    lines.extend(
-        [
-            "",
-            "## Coverage Snapshot",
-            f"- UI steps: {guide.coverage.ui_step_count}",
-            f"- Unique actions: {guide.coverage.unique_action_count}",
-            f"- Timed steps: {guide.coverage.timed_step_count}",
-            f"- Endpoint candidates: {guide.coverage.endpoint_candidate_count}",
-            f"- Services: {guide.coverage.service_candidate_count}",
-        ]
-    )
-
-    if guide.coverage.endpoint_candidates:
-        lines.append("")
-        lines.append("### Endpoint Candidates")
-        for candidate in guide.coverage.endpoint_candidates:
-            lines.append(f"- {candidate}")
-
-    if guide.coverage.service_candidates:
-        lines.append("")
-        lines.append("### Service Candidates")
-        for candidate in guide.coverage.service_candidates:
-            lines.append(f"- {candidate}")
-
-    if guide.coverage.notes:
-        lines.append("")
-        lines.append("### Coverage Notes")
-        for note in guide.coverage.notes:
-            lines.append(f"- {note}")
-
-    return "\n".join(lines)
