@@ -1,19 +1,98 @@
 # Python Runtime
 
-This `python/` directory contains the research prototype runtime for the browsing-based test generator.
+This is the operator guide for running the Python browsing agent.
 
-Current entry point:
-- `main.py` exposes the CLI commands `run`, `test`, and `retest`.
+## What It Does
 
-Current package split:
-- `agent/` builds the `pydantic-ai` agent and registers its tools.
-- `workflow/` orchestrates browse, generate, execute, retest, and evaluation persistence.
-- `prompts/` loads input specs and builds the browse and test-generation prompts.
-- `core/` holds typed models, test execution, coverage inference, reporting, and evaluation summaries.
-- `spec/` stores the local MSA spec, system description, and structured use-case files.
-- `docs/` stores architecture notes and audits.
+The runtime takes a user journey or a structured use case, explores the live application in a browser, generates a Python end-to-end test, runs that test, and saves the results.
 
-The code is aimed at showing the research flow clearly:
-1. Explore the UI and log actions.
-2. Generate a Python end-to-end test from the captured journey.
-3. Execute it, repair it if needed, and persist evaluation artifacts.
+Outputs:
+- generated tests go to `generated-tests/`
+- journey guides, reports, and evaluation summaries go to `test-results/`
+
+## Requirements
+
+Install these first:
+- Python 3.12
+- `uv`
+- Node.js with `npx`
+
+The runtime also expects:
+- a reachable application URL, usually passed with `--base-url`
+- an API key for the model provider in `.env`
+
+Minimum `.env` example:
+
+```env
+OPENAI_API_KEY=your_key_here
+OPENAI_MODEL=openai:gpt-5.4
+BASE_URL=http://localhost:8080
+```
+
+`BASE_URL` can also be overridden on the command line.
+
+## Setup
+
+From the `python/` directory:
+
+```bash
+uv sync
+```
+
+If Playwright browsers are not installed yet:
+
+```bash
+npx playwright install chromium
+```
+
+## Main Commands
+
+Ad-hoc journey:
+
+```bash
+uv run python main.py test "book a ticket from point a to point b" --base-url http://localhost:8080
+```
+
+Ad-hoc journey with explicit filename:
+
+```bash
+uv run python main.py test "book a ticket from point a to point b" --filename booking_test.py --base-url http://localhost:8080
+```
+
+Structured use case by ID:
+
+```bash
+uv run python main.py test --use-case-id UC-TRV-005 --base-url http://localhost:8080
+```
+
+Structured use case by YAML file:
+
+```bash
+uv run python main.py test --use-case-file spec/use_cases/traveler/UC-TRV-005-book-ticket.yaml --base-url http://localhost:8080
+```
+
+Run against another MSA or another local spec set:
+
+```bash
+uv run python main.py test --use-case-file path/to/use_case.yaml --msa-spec path/to/msa.yaml --system-description path/to/system_description.md --base-url http://localhost:8080
+```
+
+Rerun an existing generated test:
+
+```bash
+uv run python main.py retest booking_test.py --variant-label original --base-url http://localhost:8080
+```
+
+## How To Read The Result
+
+After a run:
+- the generated Python test file is in `generated-tests/`
+- the saved journey guide is in `test-results/<name>.journey.md`
+- the execution report is in `test-results/<name>.report.json`
+- the aggregated evaluation summary is in `test-results/evaluation-summary.md`
+
+## Notes
+
+- If `--filename` is omitted, the runtime derives a test filename from the selected journey or use case.
+- If `journey` is omitted entirely, the runtime falls back to the legacy `spec/use-cases.txt` list.
+- The current browse phase uses Playwright MCP. Evaluation coverage is persisted, but true Python-side Phase 1 network listening is not implemented yet.
