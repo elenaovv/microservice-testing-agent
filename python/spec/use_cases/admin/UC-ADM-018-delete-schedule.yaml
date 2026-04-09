@@ -1,0 +1,13 @@
+id: UC-ADM-018
+actor: admin
+name: Delete Schedule
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one schedule exists
+goal: >
+  The admin removes an existing schedule.
+success_criteria:
+  - the schedule no longer exists
+smith_equivalent: AdminTravelList.java
+notes: ""

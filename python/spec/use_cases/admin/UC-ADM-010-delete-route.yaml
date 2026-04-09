@@ -1,0 +1,14 @@
+id: UC-ADM-010
+actor: admin
+name: Delete Route
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one route exists
+goal: >
+  The admin removes an existing route.
+success_criteria:
+  - the route no longer exists
+  - the route no longer appears in the route list
+smith_equivalent: AdminRouteList.java
+notes: ""

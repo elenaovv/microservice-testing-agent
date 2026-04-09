@@ -15,9 +15,9 @@ from core.models import Deps
 from core.reporting import (
     build_execution_report,
     load_journey_guide,
-    render_execution_report,
     write_execution_report,
 )
+from core.report_rendering import render_execution_report
 
 GENERATED_TESTS_DIR = Path("generated-tests")
 

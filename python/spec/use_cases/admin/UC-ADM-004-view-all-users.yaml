@@ -1,0 +1,12 @@
+id: UC-ADM-004
+actor: admin
+name: View All Users
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: >
+  The admin requests the full list of user accounts.
+success_criteria:
+  - the system returns every user account in the system
+smith_equivalent: AdminUserList.java
+notes: ""

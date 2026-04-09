@@ -1,0 +1,13 @@
+id: UC-ADM-026
+actor: admin
+name: Delete System Configuration
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one configuration entry exists
+goal: >
+  The admin removes an existing system configuration.
+success_criteria:
+  - the configuration entry no longer exists
+smith_equivalent: AdminConfigList.java
+notes: ""

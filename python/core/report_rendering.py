@@ -66,8 +66,19 @@ def render_execution_report(report: ExecutionReport) -> str:
         lines.append(
             f"- phase1.frontend_api_calls: {report.phase1.frontend_api_call_count}"
         )
+        lines.append(
+            f"- phase1.unmapped_api_calls: {len(report.phase1.unmapped_api_calls)}"
+        )
         if report.phase1.failure_kind:
             lines.append(f"- phase1.failure_kind: {report.phase1.failure_kind}")
+
+    if report.use_case is not None:
+        lines.append(f"- use_case.id: {report.use_case.id}")
+        lines.append(f"- use_case.name: {report.use_case.name}")
+        if report.use_case.reference_bucket:
+            lines.append(
+                f"- use_case.reference_bucket: {report.use_case.reference_bucket}"
+            )
 
     if report.details:
         lines.extend(
@@ -93,11 +104,17 @@ def render_journey_guide_summary(guide: JourneyGuide) -> str:
     if guide.json_path is not None:
         lines.append(f"- json: {guide.json_path}")
     lines.append(f"- requested_journey: {guide.requested_journey}")
+    if guide.use_case is not None:
+        lines.append(f"- use_case.id: {guide.use_case.id}")
+        lines.append(f"- use_case.name: {guide.use_case.name}")
+        if guide.use_case.reference_bucket:
+            lines.append(f"- use_case.reference_bucket: {guide.use_case.reference_bucket}")
     lines.append(f"- ui_steps: {guide.coverage.ui_step_count}")
     lines.append(f"- unique_actions: {guide.coverage.unique_action_count}")
     lines.append(f"- timed_steps: {guide.coverage.timed_step_count}")
     lines.append(f"- endpoint_candidates: {guide.coverage.endpoint_candidate_count}")
     lines.append(f"- services: {guide.coverage.service_candidate_count}")
+    lines.append(f"- browse_api_requests: {len(guide.browse_network_requests)}")
     return "\n".join(lines)
 
 def render_journey_guide(guide: JourneyGuide) -> str:
@@ -107,8 +124,25 @@ def render_journey_guide(guide: JourneyGuide) -> str:
         f"Requested journey: {guide.requested_journey}",
         f"Target test file: {guide.test_filename}",
         "",
-        "## UI Steps",
     ]
+
+    if guide.use_case is not None:
+        lines.extend(
+            [
+                "## Structured Use Case",
+                f"- ID: {guide.use_case.id}",
+                f"- Name: {guide.use_case.name}",
+            ]
+        )
+        if guide.use_case.actor:
+            lines.append(f"- Actor: {guide.use_case.actor}")
+        if guide.use_case.reference_bucket:
+            lines.append(f"- Reference bucket: {guide.use_case.reference_bucket}")
+        if guide.use_case.source_path:
+            lines.append(f"- Source file: {guide.use_case.source_path}")
+        lines.append("")
+
+    lines.append("## UI Steps")
 
     if guide.capture.actions:
         for index, step in enumerate(guide.capture.actions, start=1):
@@ -158,5 +192,17 @@ def render_journey_guide(guide: JourneyGuide) -> str:
         lines.append("### Coverage Notes")
         for note in guide.coverage.notes:
             lines.append(f"- {note}")
+
+    if guide.browse_network_requests:
+        lines.append("")
+        lines.append("### Browse Network Requests")
+        for item in guide.browse_network_requests:
+            method = str(item.get("method", "")).upper().strip()
+            path = str(item.get("path", "")).strip()
+            url = str(item.get("url", "")).strip()
+            if method and path:
+                lines.append(f"- {method} {path}")
+            elif url:
+                lines.append(f"- {url}")
 
     return "\n".join(lines)

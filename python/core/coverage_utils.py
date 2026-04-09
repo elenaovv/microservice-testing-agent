@@ -3,8 +3,14 @@
 import re
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 from core.models import CoverageSnapshot, JourneyCapture
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover - depends on environment packaging
+    yaml = None
 
 MSA_SPEC_PATH = Path(__file__).resolve().parent.parent / "spec" / "msa.yaml"
 
@@ -47,7 +53,73 @@ def load_msa_spec_text(path: Path = MSA_SPEC_PATH) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def extract_spec_endpoints(msa_spec: str) -> list[dict[str, str]]:
+def _normalize_endpoint(
+    service: str,
+    item: dict[str, Any],
+) -> dict[str, str] | None:
+    path = str(
+        item.get("path")
+        or item.get("route")
+        or item.get("uri")
+        or item.get("url")
+        or ""
+    ).strip()
+    method = str(item.get("method") or item.get("http_method") or "").strip().upper()
+    description = str(
+        item.get("description")
+        or item.get("summary")
+        or item.get("notes")
+        or ""
+    ).strip()
+    if not path:
+        return None
+    return {
+        "service": service,
+        "path": path,
+        "method": method,
+        "description": description,
+    }
+
+
+def _extract_spec_endpoints_yaml(msa_spec: str) -> list[dict[str, str]]:
+    if yaml is None:
+        return []
+
+    try:
+        data = yaml.safe_load(msa_spec) or {}
+    except yaml.YAMLError:
+        return []
+    if not isinstance(data, dict):
+        return []
+
+    endpoints: list[dict[str, str]] = []
+
+    def walk(node: Any) -> None:
+        if not isinstance(node, dict):
+            return
+
+        services = node.get("services")
+        if isinstance(services, dict):
+            for service_name, service_spec in services.items():
+                if not isinstance(service_spec, dict):
+                    continue
+                for item in list(service_spec.get("endpoints", [])):
+                    if not isinstance(item, dict):
+                        continue
+                    normalized = _normalize_endpoint(str(service_name), item)
+                    if normalized is not None:
+                        endpoints.append(normalized)
+                walk(service_spec)
+
+        for value in node.values():
+            if isinstance(value, dict):
+                walk(value)
+
+    walk(data)
+    return endpoints
+
+
+def _extract_spec_endpoints_lines(msa_spec: str) -> list[dict[str, str]]:
     endpoints: list[dict[str, str]] = []
     current_service = ""
     current_endpoint: dict[str, str] | None = None
@@ -87,6 +159,13 @@ def extract_spec_endpoints(msa_spec: str) -> list[dict[str, str]]:
         endpoints.append(current_endpoint)
 
     return endpoints
+
+
+def extract_spec_endpoints(msa_spec: str) -> list[dict[str, str]]:
+    endpoints = _extract_spec_endpoints_yaml(msa_spec)
+    if endpoints:
+        return endpoints
+    return _extract_spec_endpoints_lines(msa_spec)
 
 
 def extract_service_name(endpoint_label: str) -> str:

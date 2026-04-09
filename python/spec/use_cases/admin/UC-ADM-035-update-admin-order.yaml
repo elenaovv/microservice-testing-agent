@@ -1,0 +1,14 @@
+id: UC-ADM-035
+actor: admin
+name: Update Order (Admin Panel)
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one order exists
+goal: >
+  The admin modifies the details of an existing order from the admin order
+  panel.
+success_criteria:
+  - the order reflects the modified details
+smith_equivalent: AdminOrderList.java
+notes: ""

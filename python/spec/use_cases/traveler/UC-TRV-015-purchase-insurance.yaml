@@ -1,0 +1,14 @@
+id: UC-TRV-015
+actor: traveler
+name: Purchase Insurance
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has an existing order
+goal: >
+  The traveler adds travel insurance to one of their orders.
+success_criteria:
+  - the order is associated with an insurance record
+  - the insurance fee is reflected in the order total
+smith_equivalent: Booking.java
+notes: ""
