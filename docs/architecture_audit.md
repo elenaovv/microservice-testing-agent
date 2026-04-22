@@ -1,4 +1,4 @@
-# Architecture Compliance Audit — `python/` Directory
+# Architecture Compliance Audit — Python Runtime
 
 > Compared against the Testing Framework architecture diagram (March 2026)
 

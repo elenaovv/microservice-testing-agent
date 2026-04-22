@@ -1,6 +1,6 @@
 # Current Code Flow (as implemented)
 
-> How the `python/` codebase actually works today.
+> How the root-level Python runtime actually works today.
 
 ```mermaid
 flowchart LR
