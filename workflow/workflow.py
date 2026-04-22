@@ -24,6 +24,7 @@ from core.report_rendering import (
     render_journey_guide_summary,
 )
 from prompts.generator import (
+    MSA_SPEC_PATH,
     build_browse_prompt,
     build_test_generation_prompt,
     derive_python_test_filename,
@@ -166,19 +167,20 @@ async def generate_test(
     deps.max_retries = max(max_retries, 0)
     deps.output_dir = _output_dir
     deps.history_dir = _history_dir
-    msa_spec = load_msa_spec(Path(msa_spec_path) if msa_spec_path else None)
+    selected_msa_spec_path = Path(msa_spec_path) if msa_spec_path else MSA_SPEC_PATH
+    resolved_msa_spec_path = str(selected_msa_spec_path.resolve())
+    msa_spec = load_msa_spec(selected_msa_spec_path)
     system_description = load_system_description(
         Path(system_description_path) if system_description_path else None
     )
     run_started_at = datetime.now(timezone.utc).timestamp()
-    resolved_msa_spec_path = str(Path(msa_spec_path).resolve()) if msa_spec_path else ""
     browse_prompt = build_browse_prompt(
         journey=journey,
         msa_spec=msa_spec,
         base_url=evaluation.base_url,
         system_description=system_description,
         use_case_context=use_case_context,
-        msa_spec_path=msa_spec_path or "",
+        msa_spec_path=resolved_msa_spec_path,
     )
 
     journey_guide = None
@@ -218,7 +220,7 @@ async def generate_test(
                 msa_spec=msa_spec,
                 use_case=use_case,
                 browse_network_requests=browse_network_requests,
-                msa_spec_path=str(Path(msa_spec_path).resolve()) if msa_spec_path else "",
+                msa_spec_path=resolved_msa_spec_path,
             )
             write_journey_guide(journey_guide, output_dir=_output_dir)
 
@@ -264,7 +266,7 @@ async def generate_test(
                 base_url=evaluation.base_url,
                 system_description=system_description,
                 use_case_context=use_case_context,
-                msa_spec_path=msa_spec_path or "",
+                msa_spec_path=resolved_msa_spec_path,
             )
             message_history = nav.all_messages()
             capture_messages = message_history

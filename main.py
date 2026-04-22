@@ -239,7 +239,7 @@ if __name__ == "__main__":
                         use_case=UseCaseMetadata(
                             id=use_case.id,
                             name=use_case.name,
-                            actor=use_case.actor,
+                            role=use_case.role,
                             reference_bucket=use_case.smith_equivalent,
                             source_path=str(use_case.source_path) if use_case.source_path else "",
                         ),
