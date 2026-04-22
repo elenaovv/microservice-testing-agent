@@ -62,13 +62,13 @@ uv run python main.py test "book a ticket from point a to point b" --filename bo
 Structured use case by ID:
 
 ```bash
-uv run python main.py test --use-case-id UC-TRV-005 --base-url http://localhost:8080
+uv run python main.py test --use-case-id UC-VIS-004 --base-url http://localhost:8080
 ```
 
 Structured use case by YAML file:
 
 ```bash
-uv run python main.py test --use-case-file spec/use_cases/traveler/UC-TRV-005-book-ticket.yaml --base-url http://localhost:8080
+uv run python main.py test --use-case-file spec/use_cases/user/research_cases/UC-VIS-004-book-ticket.yaml --base-url http://localhost:8080
 ```
 
 Run against another MSA or another local spec set:

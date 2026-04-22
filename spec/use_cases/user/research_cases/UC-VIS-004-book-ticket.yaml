@@ -1,0 +1,12 @@
+﻿id: UC-VIS-004
+role: user
+name: Book a Ticket
+preconditions:
+  authenticated_as: ROLE_USER
+  state: []
+goal: In Ticket Reserve the user selects a trip and seat class to book a ticket
+  on 2026-05-10.
+success_criteria:
+  - a new order with the specified from and to locations and corresponding
+    bought date appears in Order List
+  - the order status in Order List is "Not Paid"
