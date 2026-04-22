@@ -130,6 +130,9 @@ def build_execution_report(
     test_results_dir: Path = TEST_RESULTS_DIR,
     evaluation: EvaluationContext | None = None,
     msa_spec_path: str | None = None,
+    max_retries: int = -1,
+    test_attempts: int = 0,
+    failed_test_attempts: int = 0,
 ) -> ExecutionReport:
     status = "passed" if result.succeeded else "failed"
     summary = (
@@ -184,6 +187,10 @@ def build_execution_report(
         generated_tests_dir=generated_tests_dir,
         test_results_dir=test_results_dir,
         msa_spec=msa_spec_text,
+        max_retries=max_retries,
+        test_attempts=test_attempts,
+        failed_test_attempts=failed_test_attempts,
+        browse_api_calls=list(journey_guide.browse_network_requests) if journey_guide is not None else None,
     )
 
     return ExecutionReport(

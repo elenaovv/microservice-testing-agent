@@ -1,13 +1,10 @@
-id: UC-ADM-019
-actor: admin
+﻿id: UC-ADM-019
+role: admin
 name: Update Schedule
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one schedule exists
-goal: >
-  The admin modifies the details of an existing schedule.
+goal: The admin modifies the details of an existing schedule.
 success_criteria:
   - the schedule reflects the modified details
-smith_equivalent: AdminTravelList.java
-notes: ""

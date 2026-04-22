@@ -1,0 +1,10 @@
+﻿id: UC-VIS-003
+role: user
+name: Search for Tickets (Advanced)
+preconditions:
+  authenticated_as: none
+  state: []
+goal: A visitor uses the advanced search to find trips by origin, destination, date, and additional filters such as cheapest, fastest, or by train type.
+success_criteria:
+  - the system returns a filtered list of trips matching the advanced query
+  - the results reflect the chosen filter criteria

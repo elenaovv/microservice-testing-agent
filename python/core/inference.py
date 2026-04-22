@@ -72,6 +72,43 @@ def normalize_failure_line(line: str) -> str:
     normalized = re.sub(r"\b\d+\b", "<n>", normalized)
     return normalized[:180]
 
+REPAIR_HINTS: dict[str, str] = {
+    "locator-failure": (
+        "The element could not be found. Do not reuse the same locator. "
+        "Try: id-based (#id), nth() positional, get_by_placeholder(), or scope to a "
+        "parent container first. If a modal is open, scope all locators to the modal "
+        "container before searching for buttons inside it."
+    ),
+    "timeout": (
+        "The test timed out waiting for an element or action. "
+        "Increase per-step timeouts to 2-3x the observed browse timings. "
+        "Check whether a modal or overlay is blocking the page and must be dismissed first."
+    ),
+    "assertion-failure": (
+        "An assertion failed — the expected state was not reached. "
+        "Re-examine the success criteria and verify the exact text or element state "
+        "visible on the page at that point. Use re.compile with IGNORECASE for text assertions."
+    ),
+    "syntax-error": (
+        "The test has a Python syntax error. Fix it before running again. "
+        "Check indentation, unclosed brackets, and string quoting."
+    ),
+    "import-error": (
+        "An import failed. Ensure all modules used are from the standard library or "
+        "already installed in the test environment (pytest, playwright, re, os)."
+    ),
+    "runtime-failure": (
+        "The test crashed at runtime. Read the full traceback to identify the exact line "
+        "and exception type. Common causes: calling a method on None, wrong Playwright API usage, "
+        "or an element interaction before the page has loaded."
+    ),
+}
+
+
+def repair_hint(failure_kind: str) -> str:
+    return REPAIR_HINTS.get(failure_kind, "")
+
+
 def infer_suspected_false_positive(result: ExecutionResult, code: str) -> bool:
     if result.failed or not code.strip():
         return False

@@ -1,0 +1,10 @@
+﻿id: UC-VIS-001
+role: user
+name: Login
+preconditions:
+  authenticated_as: none
+  state:
+    - the user has a registered account
+goal: A registered traveler provides their credentials to gain authenticated access.
+success_criteria:
+  - the traveler sees a text confirming successful login

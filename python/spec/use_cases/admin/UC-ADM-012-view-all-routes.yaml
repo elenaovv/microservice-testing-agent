@@ -1,12 +1,9 @@
-id: UC-ADM-012
-actor: admin
+﻿id: UC-ADM-012
+role: admin
 name: View All Routes
 preconditions:
   authenticated_as: ROLE_ADMIN
   state: []
-goal: >
-  The admin requests the full list of routes.
+goal: The admin requests the full list of routes.
 success_criteria:
   - the system returns every route
-smith_equivalent: AdminRouteList.java
-notes: ""

@@ -45,7 +45,7 @@ BRIEF_STOPWORDS = FILENAME_STOPWORDS | {
     "preconditions",
     "authenticated",
     "state",
-    "actor",
+    "user",
     "role",
     "admin",
     "traveler",
@@ -73,7 +73,7 @@ CONCEPT_ALIASES = {
 @dataclass(slots=True)
 class StructuredUseCase:
     id: str
-    actor: str
+    role: str
     name: str
     goal: str
     preconditions: list[str]
@@ -84,7 +84,7 @@ class StructuredUseCase:
 
     def journey_text(self) -> str:
         parts = [
-            f"{self.actor.title()} use case {self.id}: {self.name}.",
+            f"{self.role.title()} use case {self.id}: {self.name}.",
             self.goal.strip(),
         ]
         if self.preconditions:
@@ -98,7 +98,7 @@ class StructuredUseCase:
     def prompt_context(self) -> str:
         lines = [
             f"ID: {self.id}",
-            f"Actor: {self.actor}",
+            f"Role: {self.role}",
             f"Name: {self.name}",
             f"Goal: {self.goal.strip()}",
         ]
@@ -108,8 +108,6 @@ class StructuredUseCase:
         if self.success_criteria:
             lines.append("Success criteria:")
             lines.extend(f"- {item}" for item in self.success_criteria)
-        if self.smith_equivalent and self.smith_equivalent.lower() != "none":
-            lines.append(f"Smith equivalent: {self.smith_equivalent}")
         if self.notes:
             lines.append(f"Notes: {self.notes}")
         if self.source_path is not None:
@@ -175,7 +173,7 @@ def load_use_case_index(
         normalized.append(
             {
                 "id": str(item.get("id", "")).strip(),
-                "actor": str(item.get("actor", "")).strip(),
+                "role": str(item.get("role", "")).strip(),
                 "name": str(item.get("name", "")).strip(),
                 "path": str(item.get("path", "")).strip(),
                 "smith_equivalent": str(item.get("smith_equivalent", "")).strip(),
@@ -211,7 +209,7 @@ def load_structured_use_case(path: Path) -> StructuredUseCase:
     ]
     return StructuredUseCase(
         id=str(data.get("id", "")).strip(),
-        actor=str(data.get("actor", "")).strip(),
+        role=str(data.get("role", "")).strip(),
         name=str(data.get("name", "")).strip(),
         goal=str(data.get("goal", "")).strip(),
         preconditions=_normalize_preconditions(data),
@@ -275,7 +273,7 @@ def build_relevant_msa_excerpt(
     msa_spec: str,
     *,
     use_case_context: str = "",
-    max_services: int = 6,
+    max_services: int = 12,
     max_endpoints_per_service: int = 4,
 ) -> str:
     tokens = _brief_tokens(journey, use_case_context)
@@ -350,6 +348,7 @@ def build_browse_prompt(
     *,
     system_description: str = "",
     use_case_context: str = "",
+    msa_spec_path: str = "",
 ) -> str:
     execution_brief = build_execution_brief(
         journey=journey,
@@ -361,11 +360,67 @@ def build_browse_prompt(
         "Follow this user journey step by step in the browser. "
         "Call log_action after every interaction and use start_timer/stop_timer around slow steps. "
         "Use the execution brief below as domain context, but verify the actual UI live before deciding the flow. "
+        "If the spec you read provides a specific entry point URL for the journey, navigate there directly — "
+        "do not explore intermediate pages to rediscover information you already have. "
         f"The UI under test is served from {base_url}; navigate there before you start browsing.",
         f"Execution brief:\n{execution_brief}",
-        "If the browser tooling exposes `browser_network_requests`, call it after exploration and include the JSON result in your final response. "
-        "If that tool is not available, finish the exploration normally.",
+        "The success criteria describe the end state you must reach by actively performing "
+        "every step of the journey. Observing text on the current page is not completion — "
+        "you must take actions to drive the UI to the goal state. "
+        "After any delete or update action, do not rely on the current table view to confirm success — "
+        "the page may have reloaded or scrolled. Explicitly verify by reloading or re-querying "
+        "and confirming the entity is truly absent or updated in the refreshed view.",
+        "You must strictly use native Playwright interactions (e.g., locator.click(), locator.press_sequentially()) "
+        "for all form submissions and button presses to ensure frontend reactive frameworks properly bind data. "
+        "Never use browser_evaluate to bypass the UI.",
+        "For date inputs or date-picker controls, use the format shown in the UI control, then commit the value "
+        "with a blur action (for example Tab or clicking outside) before pressing Search/Submit. "
+        "Do not assume the backend payload date format from the input text; the frontend may normalize it "
+        "(for example to YYYY-MM-DD 00:00:00).",
+        "After every state-changing browser action (clicking a confirm button, submitting a form, triggering a deletion), "
+        "call browser_network_requests and then call log_api_call once for each significant backend request you observe "
+        "(method, path, and status code). Do not summarise network activity in text — use log_api_call so it is recorded structurally. "
+        "This is especially important after confirmation modals: log the DELETE/POST/PUT that the confirmation triggered "
+        "and its response status, so you can verify the operation reached the backend.",
+        "For search/filter journeys specifically, inspect the outbound search request after clicking Search. "
+        "If the payload semantics do not match the UI values you entered (for example wrong route keys or date value), "
+        "adjust the UI interaction sequence (picker selection, sequential typing, blur/Tab) and retry once before concluding failure. "
+        "Do not validate by value similarity alone: verify exact payload key names and values from the outbound JSON body, "
+        "and log those exact keys in log_action (for example startPlace vs startingPlace, endPlace vs terminalPlace).",
+        "At the end of browsing, you MUST call report_journey_outcome(success, reason) "
+        "to record the outcome. "
+        "Call with success=True only if all success criteria were met and verified, "
+        "AND for state-changing journeys you have called log_api_call confirming a 2xx response. "
+        "Call with success=False if the journey could not be completed for any reason — "
+        "whether the UI could not be interacted with, or the system responded with an error. "
+        "In both cases include the reason clearly. "
+        "Stop immediately after calling report_journey_outcome(success=False).",
+        "If a modal, dialog, or overlay is open, it has interaction priority over the background page. "
+        "Take a fresh snapshot and interact only with refs inside the top-most open container until it closes. "
+        "If labels are duplicated (for example Confirm/Delete/Submit), choose the element inside the open modal, "
+        "not the background page. "
+        "If this requires disambiguation, add a log_action note labelled 'modal scope resolution' "
+        "that records the modal text anchor and the control you chose.",
+        "When you observe a confirmation or status message, record its exact text "
+        "(preserving capitalisation) in your log_action note. "
+        "After clicking any button that triggers an action (login, booking, payment, cancellation), "
+        "check the browser console for messages prefixed with [dialog:alert] — "
+        "these are JavaScript alerts captured without blocking the page. "
+        "Important: console messages are cumulative. A [dialog:alert] message visible after a click "
+        "may have been logged at page load, not as a response to your click. "
+        "Only treat a [dialog:alert] as a response to your action if it appears AFTER the action completes. "
+        "Always also check the DOM state (visible text, status fields) to confirm the actual outcome.",
     ]
+    if msa_spec_path:
+        sections.append(
+            f"Before filling any form that requires account credentials or test data, "
+            f"you must call read_spec_file('{msa_spec_path}') first to retrieve the correct "
+            f"inputs from the MSA specification. Do not attempt to guess or infer credentials "
+            f"from the live UI. This applies to login forms, registration forms, payment fields, "
+            f"or any other form requiring specific test data. "
+            f"After calling read_spec_file, call log_action to record the credentials and entry "
+            f"point URLs you found, so they are available during test generation."
+        )
     return "\n\n".join(sections)
 
 
@@ -377,6 +432,7 @@ def build_test_generation_prompt(
     capture: JourneyCapture,
     browse_network_requests: list[dict[str, str]],
     base_url: str,
+    msa_spec_path: str = "",
     *,
     system_description: str = "",
     use_case_context: str = "",
@@ -400,12 +456,29 @@ def build_test_generation_prompt(
     )
     sections = [
         "Using the execution brief, your logged actions, and your recorded timings below, "
-        "write a pytest-playwright test that reproduces every step exactly. "
+        "write a pytest-playwright test that reproduces the intended successful journey steps exactly "
+        "(exclude exploratory detours and failed intermediate attempts). "
+        "Derive every assertion from the use case success criteria. "
+        "Never assert states observed incidentally during browsing that are not part of the success criteria. "
+        "For tests involving delete, update, or similar operations on existing data, "
+        "do not hardcode a specific entity name or ID observed during browsing. "
+        "Select the first available entity matching the preconditions dynamically at runtime, "
+        "capture that target identifier from the chosen row, and use that same identifier for "
+        "all post-action checks (network assertion and refreshed-list verification). "
+        "Do not switch target rows mid-test. "
+        "If a stable destructive target cannot be identified safely, prefer creating a disposable "
+        "entity first and deleting that exact entity, or fail fast with a clear precondition assertion. "
         "Use `import os` and define `BASE_URL = os.environ.get(\"BASE_URL\", "
         f"\"{base_url}\")` once near the top of the file. "
         "Always navigate with `page.goto(BASE_URL, ...)` instead of hardcoding the URL.",
         "Use the observed backend requests to add focused network-aware checks where appropriate. "
-        "Prefer `page.expect_request()` or `page.wait_for_response()` for critical booking and order operations.",
+        "Prefer `page.expect_request()` or `page.expect_response()` for critical booking and order operations, "
+        "and wrap them around the exact action that triggers the request. "
+        "You are strictly forbidden from writing custom JavaScript (fetch, XMLHttpRequest, etc.) "
+        "to synthesize API requests or bypass the UI. Let the frontend application handle all network communication.",
+        "For date fields in booking/search forms, interact through the UI control format (often locale-formatted) and "
+        "commit the value with blur/Tab before clicking Search. Do not force backend timestamp text into the input field. "
+        "When possible, assert the outbound search request payload contains the expected route/date semantics from the use case.",
         f"Execution brief:\n{execution_brief}",
         f"Logged actions:\n{capture.action_summary()}",
         f"Recorded timings:\n{capture.timing_summary()}",
@@ -413,7 +486,30 @@ def build_test_generation_prompt(
         f"{observed_requests_block}",
         f"Save it as '{filename}' using create_python_test_file, then run it with run_test_file. "
         f"If it fails, fix and retry at most {max_retries} times.",
+        "Locator strategy reminder: use get_by_role over get_by_text for interactive elements. "
+        "Strict mode will fail if a locator matches more than one element. "
+        "For every locator you write, ask: 'is this word unique on the page?' "
+        "For form inputs, never use the field's current value as its locator — "
+        "JS-filled values are invisible to CSS attribute selectors. "
+        "Prefer id-based locators (#id), positional locators (locator('input').nth(N)), "
+        "or get_by_placeholder() only when the placeholder attribute is set in the HTML source. "
+        "If you see a pre-filled form during browsing, locate its fields by structure, not by content.",
+        "Never use coordinate-based interactions in generated tests (for example page.mouse.click(x, y)); "
+        "click explicit locators scoped to the correct container instead.",
+        "For any form field that showed autocomplete behaviour during browsing (a dropdown appeared after typing), "
+        "use `locator.press_sequentially(value)` instead of `locator.fill(value)` in the generated test. "
+        "`fill()` sets the value silently without triggering JavaScript input events, so autocomplete never fires "
+        "and the UI submits an unrecognised value — causing empty search results or silent form failures. "
+        "After `press_sequentially()`, wait for the dropdown option to appear and click it before continuing: "
+        "`page.get_by_role('option', name=value).first.click()` or the equivalent visible suggestion locator.",
+        "For all text content assertions use re.compile('...', re.IGNORECASE) "
+        "rather than a plain string — never rely on remembered capitalisation.",
     ]
+    if msa_spec_path:
+        sections.append(
+            f"If you need credentials or any other specification details not already "
+            f"present above, call read_spec_file('{msa_spec_path}')."
+        )
     return "\n\n".join(sections)
 
 

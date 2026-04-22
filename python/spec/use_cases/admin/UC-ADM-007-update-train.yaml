@@ -1,13 +1,10 @@
-id: UC-ADM-007
-actor: admin
+﻿id: UC-ADM-007
+role: admin
 name: Update Train
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one train exists in the catalog
-goal: >
-  The admin modifies the configuration of an existing train.
+goal: The admin modifies the configuration of an existing train.
 success_criteria:
   - the train reflects the modified details
-smith_equivalent: AdminTrainList.java
-notes: ""

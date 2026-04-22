@@ -1,12 +1,9 @@
-id: UC-ADM-020
-actor: admin
+﻿id: UC-ADM-020
+role: admin
 name: View All Schedules
 preconditions:
   authenticated_as: ROLE_ADMIN
   state: []
-goal: >
-  The admin requests the full list of schedules.
+goal: The admin requests the full list of schedules.
 success_criteria:
   - the system returns every schedule
-smith_equivalent: AdminTravelList.java
-notes: ""

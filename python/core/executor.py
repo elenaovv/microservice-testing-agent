@@ -20,6 +20,7 @@ def run_generated_test(
     generated_tests_dir: Path,
     test_results_dir: Path = TEST_RESULTS_DIR,
     base_url: str | None = None,
+    network_results_dir: Path | None = None,
 ) -> ExecutionResult:
     test_path = generated_tests_dir / filename
     if not test_path.exists():
@@ -29,16 +30,19 @@ def run_generated_test(
             stderr=f"File not found: {test_path}",
         )
 
-    env = None
+    env = os.environ.copy()
     if base_url:
-        env = os.environ.copy()
         env["BASE_URL"] = base_url
+    if network_results_dir is not None:
+        network_results_dir.mkdir(parents=True, exist_ok=True)
+        env["NETWORK_RESULTS_DIR"] = str(network_results_dir)
 
     result = subprocess.run(
         ["uv", "run", "pytest", str(test_path), *PYTEST_ARGS],
         capture_output=True,
         env=env,
         text=True,
+        check=False,
     )
 
     artifacts: list[ExecutionArtifact] = []

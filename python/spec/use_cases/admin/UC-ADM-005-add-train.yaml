@@ -1,13 +1,9 @@
-id: UC-ADM-005
-actor: admin
+﻿id: UC-ADM-005
+role: admin
 name: Add Train
 preconditions:
   authenticated_as: ROLE_ADMIN
   state: []
-goal: >
-  The admin provides train details to add a new train to the catalog.
+goal: The admin provides train details to add a new train to the catalog.
 success_criteria:
-  - a new train exists in the catalog
-  - the train appears in the train list
-smith_equivalent: AdminTrainList.java
-notes: ""
+  - the new train appears in the train list

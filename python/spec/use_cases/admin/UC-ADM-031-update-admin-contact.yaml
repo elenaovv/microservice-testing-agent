@@ -1,14 +1,10 @@
-id: UC-ADM-031
-actor: admin
+﻿id: UC-ADM-031
+role: admin
 name: Update Contact (Admin Panel)
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one contact exists
-goal: >
-  The admin modifies the details of an existing contact from the admin contact
-  panel.
+goal: The admin modifies the details of an existing contact from the admin contact panel.
 success_criteria:
   - the contact reflects the modified details
-smith_equivalent: AdminContactList.java
-notes: ""

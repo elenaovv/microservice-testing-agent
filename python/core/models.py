@@ -18,9 +18,17 @@ class TimingSample:
 
 
 @dataclass
+class ApiCall:
+    method: str
+    path: str
+    status_code: int = 0
+
+
+@dataclass
 class JourneyCapture:
     actions: list[ActionStep] = field(default_factory=list)
     timings: list[TimingSample] = field(default_factory=list)
+    api_calls: list[ApiCall] = field(default_factory=list)
 
     def log_action(self, action: str, note: str) -> ActionStep:
         step = ActionStep(action=action, note=note)
@@ -63,6 +71,14 @@ class JourneyCapture:
                 }
                 for sample in self.timings
             ],
+            "api_calls": [
+                {
+                    "method": call.method,
+                    "path": call.path,
+                    "status_code": call.status_code,
+                }
+                for call in self.api_calls
+            ],
         }
 
     @classmethod
@@ -78,6 +94,15 @@ class JourneyCapture:
                 elapsed_seconds=float(item["elapsed_seconds"]),
             )
             for item in data.get("timings", [])
+        ]
+        capture.api_calls = [
+            ApiCall(
+                method=str(item.get("method", "")).upper(),
+                path=str(item.get("path", "")),
+                status_code=int(item.get("status_code", 0)),
+            )
+            for item in data.get("api_calls", [])
+            if isinstance(item, dict)
         ]
         return capture
 
@@ -200,7 +225,7 @@ class CoverageSnapshot:
 class UseCaseMetadata:
     id: str
     name: str
-    actor: str = ""
+    role: str = ""
     reference_bucket: str = ""
     source_path: str = ""
 
@@ -208,7 +233,7 @@ class UseCaseMetadata:
         return {
             "id": self.id,
             "name": self.name,
-            "actor": self.actor,
+            "role": self.role,
             "reference_bucket": self.reference_bucket,
             "source_path": self.source_path,
         }
@@ -218,7 +243,7 @@ class UseCaseMetadata:
         return cls(
             id=str(data.get("id", "")).strip(),
             name=str(data.get("name", "")).strip(),
-            actor=str(data.get("actor", "")).strip(),
+            role=str(data.get("role", "")).strip(),
             reference_bucket=str(
                 data.get("reference_bucket", data.get("smith_equivalent", ""))
             ).strip(),
@@ -297,10 +322,18 @@ class Phase1Metrics:
     suspected_false_positive: bool
     gui_element_count: int
     frontend_api_call_count: int
+    network_capture_available: bool = False
     frontend_api_calls_by_service: dict[str, int] = field(default_factory=dict)
     unmapped_api_calls: list[dict[str, str | int]] = field(default_factory=list)
+    browse_api_calls: list[dict] = field(default_factory=list)
+    action_sequence: list[str] = field(default_factory=list)
+    action_sequence_hash: str = ""
     failure_kind: str = ""
     failure_signature: str = ""
+    max_retries: int = -1
+    test_attempts: int = 0
+    failed_attempts: int = 0
+    retries_used: int = 0
 
     def to_dict(self) -> dict:
         return {
@@ -313,10 +346,18 @@ class Phase1Metrics:
             "suspected_false_positive": self.suspected_false_positive,
             "gui_element_count": self.gui_element_count,
             "frontend_api_call_count": self.frontend_api_call_count,
+            "network_capture_available": self.network_capture_available,
             "frontend_api_calls_by_service": dict(self.frontend_api_calls_by_service),
             "unmapped_api_calls": [item.copy() for item in self.unmapped_api_calls],
+            "browse_api_calls": [item.copy() for item in self.browse_api_calls],
+            "action_sequence": list(self.action_sequence),
+            "action_sequence_hash": self.action_sequence_hash,
             "failure_kind": self.failure_kind,
             "failure_signature": self.failure_signature,
+            "max_retries": self.max_retries,
+            "test_attempts": self.test_attempts,
+            "failed_attempts": self.failed_attempts,
+            "retries_used": self.retries_used,
         }
 
     @classmethod
@@ -331,6 +372,7 @@ class Phase1Metrics:
             suspected_false_positive=bool(data.get("suspected_false_positive", False)),
             gui_element_count=int(data.get("gui_element_count", 0)),
             frontend_api_call_count=int(data.get("frontend_api_call_count", 0)),
+            network_capture_available=bool(data.get("network_capture_available", False)),
             frontend_api_calls_by_service=dict(
                 data.get("frontend_api_calls_by_service", {})
             ),
@@ -343,8 +385,23 @@ class Phase1Metrics:
                 for item in list(data.get("unmapped_api_calls", []))
                 if isinstance(item, dict)
             ],
+            browse_api_calls=[
+                {
+                    "method": str(item.get("method", "")),
+                    "path": str(item.get("path", "")),
+                    "status_code": int(item.get("status_code", 0)),
+                }
+                for item in list(data.get("browse_api_calls", []))
+                if isinstance(item, dict)
+            ],
+            action_sequence=[str(s) for s in list(data.get("action_sequence", []))],
+            action_sequence_hash=str(data.get("action_sequence_hash", "")),
             failure_kind=str(data.get("failure_kind", "")),
             failure_signature=str(data.get("failure_signature", "")),
+            max_retries=int(data.get("max_retries", -1)),
+            test_attempts=int(data.get("test_attempts", 0)),
+            failed_attempts=int(data.get("failed_attempts", 0)),
+            retries_used=int(data.get("retries_used", 0)),
         )
 
 
@@ -444,3 +501,11 @@ class Deps:
     capture: JourneyCapture = field(default_factory=JourneyCapture)
     active_timers: dict[str, float] = field(default_factory=dict)
     evaluation: EvaluationContext | None = None
+    max_retries: int = 0
+    test_attempts: int = 0
+    failed_test_attempts: int = 0
+    journey_succeeded: bool | None = None  # None = not yet reported
+    journey_outcome_reason: str = ""
+    last_test_hash: str = ""
+    output_dir: Path | None = None
+    history_dir: Path | None = None

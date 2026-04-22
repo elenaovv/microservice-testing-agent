@@ -1,0 +1,10 @@
+﻿id: UC-VIS-011
+role: user
+name: Add a Contact
+preconditions:
+  authenticated_as: ROLE_USER
+  state: []
+goal: The traveler provides a person's details to save as a contact for future bookings.
+success_criteria:
+  - a new contact is associated with the traveler's account
+  - the contact is retrievable in subsequent contact list queries

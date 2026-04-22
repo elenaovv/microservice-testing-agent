@@ -1,0 +1,10 @@
+﻿id: UC-ADM-037
+role: admin
+name: Login
+preconditions:
+  authenticated_as: none
+  state:
+    - the admin has a registered account
+goal: A registered admin provides their credentials to gain authenticated access.
+success_criteria:
+  - the admin sees managemnet panel 

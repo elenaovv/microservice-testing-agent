@@ -1,12 +1,9 @@
-id: UC-ADM-016
-actor: admin
+﻿id: UC-ADM-016
+role: admin
 name: View All Stations
 preconditions:
   authenticated_as: ROLE_ADMIN
   state: []
-goal: >
-  The admin requests the full list of stations.
+goal: The admin requests the full list of stations.
 success_criteria:
   - the system returns every station
-smith_equivalent: AdminStationList.java
-notes: ""

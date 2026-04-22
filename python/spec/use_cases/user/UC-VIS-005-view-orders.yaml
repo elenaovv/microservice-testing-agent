@@ -1,0 +1,10 @@
+﻿id: UC-VIS-005
+role: user
+name: View Orders
+preconditions:
+  authenticated_as: ROLE_USER
+  state: []
+goal: The traveler requests the history of their orders.
+success_criteria:
+  - the system returns all orders belonging to the traveler
+  - no orders belonging to other users are returned
