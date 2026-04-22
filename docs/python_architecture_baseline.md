@@ -6,9 +6,9 @@ that is produced before test generation and the first-pass coverage snapshot
 that is persisted for later evaluation.
 
 Scope:
-- In scope: everything under `python/`
-- In scope: `python/spec/msa.yaml` as the local MSA context
-- Removed from this branch: the legacy `java/` prototype
+- In scope: the root-level Python runtime packages and `spec/`
+- In scope: `spec/msa.yaml` as the local MSA context
+- Removed from this branch: the legacy `java/` prototype and the wrapper `python/` directory
 
 ## Current Runtime
 
