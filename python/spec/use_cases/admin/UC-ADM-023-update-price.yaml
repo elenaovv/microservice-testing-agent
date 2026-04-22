@@ -1,13 +1,10 @@
-id: UC-ADM-023
-actor: admin
+﻿id: UC-ADM-023
+role: admin
 name: Update Price
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one price configuration exists
-goal: >
-  The admin modifies an existing price configuration.
+goal: The admin modifies an existing price configuration.
 success_criteria:
   - the price reflects the modified value
-smith_equivalent: AdminPriceList.java
-notes: ""

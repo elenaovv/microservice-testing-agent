@@ -1,0 +1,11 @@
+﻿id: UC-VIS-007
+role: user
+name: Cancel an Order
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has an existing paid order
+goal: The traveler cancels one of their orders.
+success_criteria:
+  - the order is marked as canceled
+  - the seat is released back to availability

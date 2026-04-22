@@ -1,10 +1,11 @@
 import json
+import os
 from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
 
-TEST_RESULTS_DIR = Path("test-results")
+TEST_RESULTS_DIR = Path(os.environ.get("NETWORK_RESULTS_DIR", "test-results"))
 
 
 @pytest.fixture(autouse=True)

@@ -1,0 +1,12 @@
+﻿id: UC-VIS-008
+role: user
+name: Rebook a Ticket
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has an existing paid order
+goal: The traveler changes an existing order to a different trip, potentially with a different start station, end station, date, or train type.
+success_criteria:
+  - the original order reflects the rebooking
+  - the new trip details are associated with the order
+  - the order belongs to the same traveler

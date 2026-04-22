@@ -1,14 +1,10 @@
-id: UC-ADM-034
-actor: admin
+﻿id: UC-ADM-034
+role: admin
 name: Delete Order (Admin Panel)
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one order exists
-goal: >
-  The admin removes an existing order from the admin order panel.
+goal: The admin removes an existing order from the admin order panel.
 success_criteria:
-  - the order no longer exists
-  - the order no longer appears in the admin order list
-smith_equivalent: AdminOrderList.java
-notes: ""
+  - the deleted order no longer appears in the admin order list

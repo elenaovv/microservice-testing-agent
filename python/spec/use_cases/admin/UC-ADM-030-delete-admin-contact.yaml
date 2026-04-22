@@ -1,14 +1,10 @@
-id: UC-ADM-030
-actor: admin
-name: Delete Contact (Admin Panel)
+﻿id: UC-ADM-030
+role: admin
+name: Delete Contact
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one contact exists
-goal: >
-  The admin removes an existing contact from the admin contact panel.
+goal: The admin removes an existing contact from the admin contact panel.
 success_criteria:
-  - the contact no longer exists
-  - the contact no longer appears in the admin contact list
-smith_equivalent: AdminContactList.java
-notes: ""
+  - the deleted contact no longer appears in the admin contact list

@@ -1,0 +1,10 @@
+﻿id: UC-VIS-009
+role: user
+name: Collect a Ticket
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the user has an order with status "Paid & Not Collected" in Order List
+goal: The user collects their ticket before the trip in Ticket Collect.
+success_criteria:
+  - the order is gone from Ticket Collect, as the ticket has been collected

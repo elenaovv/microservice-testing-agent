@@ -1,14 +1,10 @@
-id: UC-ADM-021
-actor: admin
+﻿id: UC-ADM-021
+role: admin
 name: Add Price
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - a route and a train type exist
-goal: >
-  The admin sets a basic and first-class price rate for a train type on a route.
+goal: The admin sets a basic and first-class price rate for a train type on a route.
 success_criteria:
-  - a new price configuration exists
-  - the price appears in the price list
-smith_equivalent: AdminPriceList.java
-notes: ""
+  - the new price appears in the price list

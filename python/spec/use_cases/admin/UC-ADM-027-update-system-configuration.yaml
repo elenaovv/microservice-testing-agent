@@ -1,13 +1,10 @@
-id: UC-ADM-027
-actor: admin
+﻿id: UC-ADM-027
+role: admin
 name: Update System Configuration
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one configuration entry exists
-goal: >
-  The admin modifies an existing system configuration.
+goal: The admin modifies an existing system configuration.
 success_criteria:
   - the configuration reflects the modified value
-smith_equivalent: AdminConfigList.java
-notes: ""

@@ -1,14 +1,9 @@
-id: UC-ADM-025
-actor: admin
+﻿id: UC-ADM-025
+role: admin
 name: Add System Configuration
 preconditions:
   authenticated_as: ROLE_ADMIN
   state: []
-goal: >
-  The admin defines a new system-level setting with a name, value, and
-  description.
+goal: The admin defines a new system-level setting with a name, value, and description.
 success_criteria:
-  - a new configuration entry exists
-  - the entry appears in the configuration list
-smith_equivalent: AdminConfigList.java
-notes: ""
+  - the new entry appears in the configuration list

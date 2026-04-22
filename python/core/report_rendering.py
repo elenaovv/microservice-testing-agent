@@ -62,6 +62,19 @@ def render_execution_report(report: ExecutionReport) -> str:
         lines.append(
             f"- phase1.suspected_false_positive: {report.phase1.suspected_false_positive}"
         )
+        lines.append(
+            f"- phase1.generated_test_hash: {report.phase1.generated_test_hash or '-'}"
+        )
+        if report.phase1.max_retries > 0:
+            lines.append(
+                f"- phase1.retries_used: {report.phase1.retries_used}/{report.phase1.max_retries}"
+            )
+            lines.append(
+                f"- phase1.test_attempts: {report.phase1.test_attempts}"
+            )
+            lines.append(
+                f"- phase1.failed_attempts: {report.phase1.failed_attempts}"
+            )
         lines.append(f"- phase1.gui_elements: {report.phase1.gui_element_count}")
         lines.append(
             f"- phase1.frontend_api_calls: {report.phase1.frontend_api_call_count}"
@@ -134,8 +147,8 @@ def render_journey_guide(guide: JourneyGuide) -> str:
                 f"- Name: {guide.use_case.name}",
             ]
         )
-        if guide.use_case.actor:
-            lines.append(f"- Actor: {guide.use_case.actor}")
+        if guide.use_case.role:
+            lines.append(f"- Role: {guide.use_case.role}")
         if guide.use_case.reference_bucket:
             lines.append(f"- Reference bucket: {guide.use_case.reference_bucket}")
         if guide.use_case.source_path:

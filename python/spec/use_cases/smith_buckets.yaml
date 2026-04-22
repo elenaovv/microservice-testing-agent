@@ -48,22 +48,21 @@ buckets:
     - UC-ADM-003
     - UC-ADM-004
   Booking.java:
-    - UC-TRV-003
-    - UC-TRV-004
-    - UC-TRV-005
-    - UC-TRV-007
-    - UC-TRV-008
-    - UC-TRV-009
-    - UC-TRV-010
-    - UC-TRV-011
-    - UC-TRV-012
-    - UC-TRV-015
-    - UC-TRV-016
-    - UC-TRV-017
+    - UC-VIS-002
+    - UC-VIS-003
+    - UC-VIS-004
+    - UC-VIS-006
+    - UC-VIS-007
+    - UC-VIS-008
+    - UC-VIS-009
+    - UC-VIS-010
+    - UC-VIS-011
+    - UC-VIS-014
+    - UC-VIS-015
+    - UC-VIS-016
   Login.java:
-    - UC-TRV-002
+    - UC-VIS-001
   none:
-    - UC-TRV-001
-    - UC-TRV-006
-    - UC-TRV-013
-    - UC-TRV-014
+    - UC-VIS-005
+    - UC-VIS-012
+    - UC-VIS-013

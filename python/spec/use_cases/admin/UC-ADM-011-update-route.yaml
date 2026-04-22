@@ -1,13 +1,10 @@
-id: UC-ADM-011
-actor: admin
+﻿id: UC-ADM-011
+role: admin
 name: Update Route
 preconditions:
   authenticated_as: ROLE_ADMIN
   state:
     - at least one route exists
-goal: >
-  The admin modifies the station sequence or distances of an existing route.
+goal: The admin modifies the station sequence or distances of an existing route.
 success_criteria:
-  - the route reflects the modified details
-smith_equivalent: AdminRouteList.java
-notes: ""
+  - the updated route reflects the modified details
