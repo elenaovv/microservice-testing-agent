@@ -8,7 +8,7 @@ that is persisted for later evaluation.
 Scope:
 - In scope: everything under `python/`
 - In scope: `python/spec/msa.yaml` as the local MSA context
-- Out of scope: everything under `java/`
+- Removed from this branch: the legacy `java/` prototype
 
 ## Current Runtime
 
