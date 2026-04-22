@@ -1,15 +1,13 @@
 # Generated test output (both agents write here)
 generated-tests/
 test-results/
+runtime-results/
 
 # Python
 __pycache__/
 *.py[oc]
 .venv/
-
-# Java
-target/
-*.class
+.uv-cache/
 
 # Sessions (saved browser state)
 .sessions/

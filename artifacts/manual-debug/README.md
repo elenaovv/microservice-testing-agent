@@ -4,4 +4,4 @@ This directory holds manually captured debugging artifacts that are not part of 
 
 - `screenshots/`: browser screenshots captured during manual investigation or troubleshooting
 
-Keep future ad hoc screenshots and similar debug outputs here instead of the `python/` root.
+Keep future ad hoc screenshots and similar debug outputs here instead of the repository root.
