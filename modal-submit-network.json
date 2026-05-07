@@ -1,0 +1,9 @@
+[POST] http://localhost:8080/api/v1/travelservice/trips/left => [200] 
+  Request body: {"startPlace":"Shanghai Hongqiao","endPlace":"Jiaxingnan","departureTime":"2026-06-10 00:00:00"}
+[POST] http://localhost:8080/api/v1/travel2service/trips/left => [200] 
+  Request body: {"startPlace":"Shanghai Hongqiao","endPlace":"Jiaxingnan","departureTime":"2026-06-10 00:00:00"}
+[GET] http://localhost:8080/api/v1/assuranceservice/assurances/types => [200] 
+[GET] http://localhost:8080/api/v1/foodservice/foods/2026-06-10/shanghaihongqiao/jiaxingnan/K1345 => [200] 
+[GET] http://localhost:8080/api/v1/contactservice/contacts/account/4d2a46c7-71cb-4cf1-b5bb-b68406d9da6f => [200] 
+[POST] http://localhost:8080/api/v1/preserveotherservice/preserveOther => [200] 
+  Request body: {"accountId":"4d2a46c7-71cb-4cf1-b5bb-b68406d9da6f","contactsId":"53e13334-4f57-4090-ac20-943eed3c11e5","tripId":"K1345","seatType":"2","date":"2026-06-10","from":"shanghaihongqiao","to":"jiaxingnan","assurance":"0","foodType":1,"foodName":"Bone Soup","foodPrice":2.5,"stationName":"","storeName":""}

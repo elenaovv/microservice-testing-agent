@@ -47,7 +47,7 @@ use_cases:
     role: user
     name: Collect a Ticket
     smith_equivalent: Booking.java
-    path: user/UC-VIS-009-collect-ticket.yaml
+    path: user/research_cases/UC-VIS-009-collect-ticket.yaml
   - id: UC-VIS-010
     role: user
     name: Enter Station
@@ -92,7 +92,7 @@ use_cases:
     role: admin
     name: Add User
     smith_equivalent: AdminUserList.java
-    path: admin/UC-ADM-001-add-user.yaml
+    path: admin/research_cases/UC-ADM-001-add-user.yaml
   - id: UC-ADM-002
     role: admin
     name: Delete User
@@ -122,7 +122,7 @@ use_cases:
     role: admin
     name: Update Train
     smith_equivalent: AdminTrainList.java
-    path: admin/UC-ADM-007-update-train.yaml
+    path: admin/research_cases/UC-ADM-007-update-train.yaml
   - id: UC-ADM-008
     role: admin
     name: View All Trains
@@ -152,12 +152,12 @@ use_cases:
     role: admin
     name: Add Station
     smith_equivalent: AdminStationList.java
-    path: admin/UC-ADM-013-add-station.yaml
+    path: admin/research_cases/UC-ADM-013-add-station.yaml
   - id: UC-ADM-014
     role: admin
     name: Delete Station
     smith_equivalent: AdminStationList.java
-    path: admin/UC-ADM-014-delete-station.yaml
+    path: admin/research_cases/UC-ADM-014-delete-station.yaml
   - id: UC-ADM-015
     role: admin
     name: Update Station
@@ -222,7 +222,7 @@ use_cases:
     role: admin
     name: Update System Configuration
     smith_equivalent: AdminConfigList.java
-    path: admin/UC-ADM-027-update-system-configuration.yaml
+    path: admin/research_cases/UC-ADM-027-update-system-configuration.yaml
   - id: UC-ADM-028
     role: admin
     name: View All System Configurations

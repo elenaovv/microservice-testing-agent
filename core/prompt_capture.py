@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
@@ -90,6 +91,12 @@ def _extract_prompt_entries(messages: Sequence[object]) -> list[dict[str, str]]:
     return entries
 
 
+def _sanitize_filename(value: str) -> str:
+    cleaned = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip())
+    cleaned = cleaned.strip("-._")
+    return cleaned or "prompt"
+
+
 def write_prompt_capture(
     output_path: Path,
     *,
@@ -115,10 +122,6 @@ def write_prompt_capture(
         "-" * 120,
         system_prompt,
         "",
-        "BROWSE PHASE PROMPT",
-        "-" * 120,
-        browse_prompt,
-        "",
         "TEST GENERATION PHASE PROMPT",
         "-" * 120,
         test_generation_prompt,
@@ -126,6 +129,13 @@ def write_prompt_capture(
         "REQUEST PROMPT TEXT OBSERVED BY MODEL",
         "-" * 120,
     ]
+    if browse_prompt.strip():
+        lines[11:11] = [
+            "BROWSE PHASE PROMPT",
+            "-" * 120,
+            browse_prompt,
+            "",
+        ]
 
     if entries:
         for entry in entries:
@@ -150,3 +160,79 @@ def write_prompt_capture(
         handle.write("\n")
 
     return output_path
+
+
+def write_prompt_capture_entries(
+    output_dir: Path,
+    *,
+    filename: str,
+    requested_journey: str,
+    system_prompt: str,
+    browse_prompt: str,
+    test_generation_prompt: str,
+    all_messages: Sequence[object],
+    run_id: str = "",
+) -> list[Path]:
+    entries = _extract_prompt_entries(all_messages)
+    captured_at = datetime.now(timezone.utc).isoformat()
+    base_dir = output_dir / Path(filename).stem
+    if run_id:
+        base_dir = base_dir / _sanitize_filename(run_id)
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    reference_lines: list[str] = [
+        "=" * 120,
+        f"PROMPT REFERENCES: {filename}",
+        "=" * 120,
+        f"captured_at_utc: {captured_at}",
+        f"requested_journey: {requested_journey}",
+        "",
+        "SYSTEM PROMPT",
+        "-" * 120,
+        system_prompt,
+        "",
+    ]
+    if browse_prompt.strip():
+        reference_lines.extend(
+            [
+                "BROWSE PHASE PROMPT",
+                "-" * 120,
+                browse_prompt,
+                "",
+            ]
+        )
+    reference_lines.extend(
+        [
+            "TEST GENERATION PHASE PROMPT",
+            "-" * 120,
+            test_generation_prompt,
+            "",
+        ]
+    )
+    reference_path = base_dir / "000-reference-prompts.txt"
+    reference_path.write_text("\n".join(reference_lines), encoding="utf-8")
+
+    written_paths: list[Path] = []
+    for index, entry in enumerate(entries, start=1):
+        part_label = _sanitize_filename(entry.get("part", "prompt"))
+        file_name = f"{index:03d}-{part_label}.txt"
+        output_path = base_dir / file_name
+        lines: list[str] = [
+            "=" * 120,
+            f"PROMPT ENTRY: {filename}",
+            "=" * 120,
+            f"captured_at_utc: {captured_at}",
+            f"requested_journey: {requested_journey}",
+            f"message_index: {entry.get('message_index', '')}",
+            f"part: {entry.get('part', '')}",
+            f"timestamp: {entry.get('timestamp', '')}",
+            "",
+            "REQUEST PROMPT PART OBSERVED BY MODEL",
+            "-" * 120,
+            entry.get("text", ""),
+            "",
+        ]
+        output_path.write_text("\n".join(lines), encoding="utf-8")
+        written_paths.append(output_path)
+
+    return written_paths

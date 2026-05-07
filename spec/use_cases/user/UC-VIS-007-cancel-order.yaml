@@ -1,0 +1,14 @@
+﻿id: UC-VIS-007
+role: user
+name: Cancel an Order
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has an existing paid order
+goal: The traveler cancels one of their orders.
+input_constraints:
+  target_order: select an existing visible paid order belonging to the authenticated traveler
+success_criteria:
+  - the cancellation action is submitted successfully for the selected paid order
+  - after refresh or reload, the same target order is marked as canceled or no longer appears among active orders
+  - the target order remains distinguishable from other orders during verification

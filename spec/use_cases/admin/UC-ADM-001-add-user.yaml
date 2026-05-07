@@ -1,9 +1,0 @@
-﻿id: UC-ADM-001
-role: admin
-name: Add User
-preconditions:
-  authenticated_as: ROLE_ADMIN
-  state: []
-goal: The admin provides user details to create a new user account.
-success_criteria:
-  - the new account appears in the user list

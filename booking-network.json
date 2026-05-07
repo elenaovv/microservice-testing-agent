@@ -1,0 +1,7 @@
+[POST] http://localhost:8080/api/v1/travelservice/trips/left => [200] 
+  Request body: {"startPlace":"Shanghai Hongqiao","endPlace":"Jiaxingnan","departureTime":"2026-06-10 00:00:00"}
+[POST] http://localhost:8080/api/v1/travel2service/trips/left => [200] 
+  Request body: {"startPlace":"Shanghai Hongqiao","endPlace":"Jiaxingnan","departureTime":"2026-06-10 00:00:00"}
+[GET] http://localhost:8080/api/v1/assuranceservice/assurances/types => [200] 
+[GET] http://localhost:8080/api/v1/foodservice/foods/2026-06-10/shanghaihongqiao/jiaxingnan/K1345 => [200] 
+[GET] http://localhost:8080/api/v1/contactservice/contacts/account/4d2a46c7-71cb-4cf1-b5bb-b68406d9da6f => [200] 

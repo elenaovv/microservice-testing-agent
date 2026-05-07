@@ -1,10 +1,19 @@
-﻿id: UC-VIS-002
+id: UC-VIS-002
 role: user
 name: Search for Tickets
 preconditions:
   authenticated_as: none
-  state: []
-goal: A visitor specifies an origin station, destination station, and date to find available train trips using the basic search.
+  state:
+    - the test environment contains at least one available trip from Shang Hai to Su Zhou on 2026-06-01 for train type All
+goal: A visitor searches for available train trips by providing an origin station, destination station, travel date, and train type using the basic search flow.
+input_constraints:
+  origin_station: Shang Hai
+  destination_station: Su Zhou
+  travel_date: "2026-06-01"
+  train_type: All
 success_criteria:
-  - the system returns a list of trips matching the query
-  - each returned trip exposes train, departure time, and seat availability
+  - the visitor is not authenticated
+  - the basic ticket search flow is used
+  - the visitor submits the specified origin station, destination station, travel date, and train type
+  - the system returns at least one trip matching the submitted query
+  - each returned trip shows identifying trip information and seat availability

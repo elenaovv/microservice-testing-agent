@@ -1,0 +1,4 @@
+[POST] http://localhost:8080/api/v1/travelservice/trips/left => [200] 
+  Request body: {"startPlace":"Shang Hai","endPlace":"Su Zhou","departureTime":"2026-06-01 00:00:00"}
+[POST] http://localhost:8080/api/v1/travel2service/trips/left => [200] 
+  Request body: {"startPlace":"Shang Hai","endPlace":"Su Zhou","departureTime":"2026-06-01 00:00:00"}

@@ -1,0 +1,13 @@
+﻿id: UC-VIS-005
+role: user
+name: View Orders
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler account may have zero or more existing orders
+goal: The traveler requests the history of their orders.
+success_criteria:
+  - the user-facing order history flow is used
+  - the order list request is submitted or loaded successfully
+  - the system displays the authenticated traveler's orders when any exist
+  - if the traveler has no orders, the application displays an empty order state or an empty order table without showing another user's orders

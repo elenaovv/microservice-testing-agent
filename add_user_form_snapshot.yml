@@ -1,0 +1,123 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link [ref=e4] [cursor=pointer]:
+      - /url: javascript:;
+    - generic [ref=e5]: 
+    - text: 
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - link " FullScreen" [ref=e9] [cursor=pointer]:
+          - /url: javascript:;
+          - generic [ref=e10]: 
+          - text: FullScreen
+      - listitem [ref=e11]:
+        - link "admin" [ref=e12] [cursor=pointer]:
+          - /url: javascript:;
+          - text: admin
+          - img [ref=e14]
+      - listitem [ref=e15]:
+        - link "" [ref=e16] [cursor=pointer]:
+          - /url: javascript:logout()
+          - generic [ref=e17]: 
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]: Management
+      - list [ref=e22]:
+        - listitem [ref=e23]:
+          - link " Order" [ref=e24] [cursor=pointer]:
+            - /url: admin.html
+            - generic [ref=e25]: 
+            - text: Order
+        - listitem [ref=e26]:
+          - link " Route" [ref=e27] [cursor=pointer]:
+            - /url: admin_route.html
+            - generic [ref=e28]: 
+            - text: Route
+        - listitem [ref=e29]:
+          - link " Travel" [ref=e30] [cursor=pointer]:
+            - /url: admin_travel.html
+            - generic [ref=e31]: 
+            - text: Travel
+        - listitem [ref=e32]:
+          - link " User " [ref=e33] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e34]: 
+            - text: User
+            - generic [ref=e35]: 
+        - listitem [ref=e36]:
+          - link " Basic " [ref=e37] [cursor=pointer]:
+            - /url: javascript:;
+            - generic [ref=e38]: 
+            - text: Basic
+            - generic [ref=e39]: 
+          - text:     
+    - generic [ref=e41]:
+      - generic [ref=e43]: User List
+      - generic [ref=e44]:
+        - button " Add" [ref=e49] [cursor=pointer]:
+          - generic [ref=e50]: 
+          - text: Add
+        - generic [ref=e53]:
+          - generic [ref=e113]:
+            - generic [ref=e114]: Add User
+            - generic [ref=e117]:
+              - generic [ref=e118]:
+                - generic [ref=e119]: "Name:"
+                - textbox "Name:" [active] [ref=e121]
+              - generic [ref=e122]:
+                - generic [ref=e123]: "Password:"
+                - textbox "Password:" [ref=e125]
+              - generic [ref=e126]:
+                - generic [ref=e127]: "Gender:"
+                - combobox "Gender:" [ref=e129]
+              - generic [ref=e130]:
+                - generic [ref=e131]: "Email:"
+                - textbox "Email:" [ref=e133]
+              - generic [ref=e134]:
+                - generic [ref=e135]: "Document Type:"
+                - combobox "Document Type:" [ref=e137]
+              - generic [ref=e138]:
+                - generic [ref=e139]: "Document Number:"
+                - textbox "Document Number:" [ref=e141]
+            - generic [ref=e142]:
+              - generic [ref=e143] [cursor=pointer]: Cancel
+              - generic [ref=e144] [cursor=pointer]: Add
+          - table [ref=e54]:
+            - rowgroup [ref=e55]:
+              - row "Operation Id Name Password Gender Email DocumentType DocumentNumber" [ref=e56]:
+                - columnheader "Operation" [ref=e57]
+                - columnheader "Id" [ref=e58]
+                - columnheader "Name" [ref=e59]
+                - columnheader "Password" [ref=e60]
+                - columnheader "Gender" [ref=e61]
+                - columnheader "Email" [ref=e62]
+                - columnheader "DocumentType" [ref=e63]
+                - columnheader "DocumentNumber" [ref=e64]
+            - rowgroup [ref=e65]:
+              - row " Update  Delete 2d233a58-777e-4201-9c1d-e60a7fe0732e qa_admin_user_0427 QaPass!234 0 qa_admin_user_0427@example.com 1 A4270427001" [ref=e66]:
+                - cell " Update  Delete" [ref=e67]
+                - cell "2d233a58-777e-4201-9c1d-e60a7fe0732e" [ref=e74]
+                - cell "qa_admin_user_0427" [ref=e75]
+                - cell "QaPass!234" [ref=e76]
+                - cell "0" [ref=e77]
+                - cell "qa_admin_user_0427@example.com" [ref=e78]
+                - cell "1" [ref=e79]
+                - cell "A4270427001" [ref=e80]
+              - row " Update  Delete 4d2a46c7-71cb-4cf1-b5bb-b68406d9da6f fdse_microservice 111111 1 trainticket_notify@163.com 1 2135488099312X" [ref=e81]:
+                - cell " Update  Delete" [ref=e82]
+                - cell "4d2a46c7-71cb-4cf1-b5bb-b68406d9da6f" [ref=e89]
+                - cell "fdse_microservice" [ref=e90]
+                - cell "111111" [ref=e91]
+                - cell "1" [ref=e92]
+                - cell "trainticket_notify@163.com" [ref=e93]
+                - cell "1" [ref=e94]
+                - cell "2135488099312X" [ref=e95]
+              - row " Update  Delete 64f80ab7-6b12-484a-acbb-0f43312c28f2 gftdt 67454 0 ddxgrd 1 5645" [ref=e96]:
+                - cell " Update  Delete" [ref=e97]
+                - cell "64f80ab7-6b12-484a-acbb-0f43312c28f2" [ref=e104]
+                - cell "gftdt" [ref=e105]
+                - cell "67454" [ref=e106]
+                - cell "0" [ref=e107]
+                - cell "ddxgrd" [ref=e108]
+                - cell "1" [ref=e109]
+                - cell "5645" [ref=e110]

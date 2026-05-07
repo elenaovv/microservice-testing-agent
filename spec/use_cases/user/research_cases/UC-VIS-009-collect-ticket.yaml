@@ -1,0 +1,12 @@
+﻿id: UC-VIS-009
+role: user
+name: Collect a Ticket
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the user has an order in the Ticket Collect list from the Execute Flow sidebar menu.
+goal: The user collects their ticket in Ticket Collect list.
+input_constraints: []
+success_criteria:
+  - the collect ticket action is submitted successfully for an eligible order
+  - after refresh or reload, the collected order no longer appears in the Ticket Collect list
