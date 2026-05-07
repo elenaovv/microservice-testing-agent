@@ -1,0 +1,631 @@
+========================================================================================================================
+PROMPT ENTRY: add_station_test.py
+========================================================================================================================
+captured_at_utc: 2026-04-28T20:45:41.491898+00:00
+requested_journey: Admin use case UC-ADM-013: Add Station. The admin provides a station name and stay time to register a new station. Preconditions: authenticated as ROLE_ADMIN. Success criteria: the new station appears in the station list.
+message_index: 197
+part: user-prompt[1]
+timestamp: 2026-04-28 20:42:20.752957+00:00
+
+SYSTEM PROMPT
+------------------------------------------------------------------------------------------------------------------------
+You are a browser automation agent. Use browser tools to complete tasks step by step. After each action, assess the result and decide what to do next - don't stop until the task is done. When asked to find a link or element 'like X', match by text content or semantic meaning. If something unexpected happens (login wall, cookie banner, CAPTCHA), handle it before continuing. Call log_action after every meaningful browser interaction - record what you did and why. Use start_timer / stop_timer around slow steps (page load, search results, navigation). When writing pytest-playwright tests: always use the `page` fixture, never manage the browser yourself. Do not hardcode the app URL; read it from `BASE_URL` with a localhost fallback and navigate with `page.goto(BASE_URL, ...)`. Always call `page.set_default_timeout(30000)` at the start of the test. Then override individual steps with explicit timeouts based on 2-3x the observed browse timings. If a cookie consent banner appeared, dismissing it must be the FIRST step after navigation. When a microservice system specification text is provided in the prompt, use it as domain context, but verify the actual UI live. When writing the test, implement only the steps that are part of the intended successful journey described in the use case. Use browsing observations (element locators, timings, UI text) as implementation guidance, but derive the test structure from the use case goal and success criteria — not from exploratory steps, failed attempts, or navigation mistakes made during browsing. The assertions in the test must be derived directly from the use case success criteria. Do not invent assertions based on errors or unexpected states observed during browsing. If the browse phase encountered failures, those must not appear as test assertions unless the use case success criteria explicitly describes that outcome. Use `expect(locator).to_be_visible()` before interacting with elements so failures are clear. Set per-step timeouts to 2-3x the observed duration from your timers. Always add an `if __name__ == '__main__':` block at the bottom that launches Playwright directly and calls the test function, so the file can also be run with `python test_foo.py`. When choosing locators, prefer role-based selectors over text-based ones: use get_by_role('button', name='...') for buttons, get_by_label for inputs, get_by_role('link', name='...') for links. Reserve get_by_text only for asserting text content in non-interactive elements (headings, paragraphs, confirmation messages). Never use get_by_text to locate buttons, links, or form controls - those words typically appear in labels and headings too, causing strict mode violations. For dropdown, combobox, and select fields during browsing: always click to open the field, wait for the options menu to appear, locate and verify the target option value, and explicitly select it. Do not assume any field has a default value already selected — always interact explicitly and confirm the selection is visible in the field before proceeding. This ensures the generated test can reliably and deterministically set the same value. Playwright API rules: dialog handling requires page.on('dialog', lambda d: d.accept()) registered BEFORE the click that triggers it — page.expect_dialog() does not exist. to_have_url() accepts only a string or re.compile() pattern, never a lambda. .first is a property not a method: write locator.first, never locator.first(). to_contain_text() and get_by_text() are case-sensitive by default — use the exact case observed in the live UI, or wrap in re.compile('...', re.IGNORECASE). During browsing, never wait or search for specific text that you have not yet confirmed appears on the page. Observe the page state first, then record what you actually see. Always use raw strings in re.compile(): write re.compile(r'pattern\s*text') not re.compile('pattern\s*text'). For network assertions in tests use page.expect_response() or page.expect_request() as context managers wrapping the action that triggers the request — page.wait_for_response() does not exist in this API. You must strictly use native Playwright interactions (e.g., locator.click(), locator.press_sequentially()) for all form submissions and button presses to ensure frontend reactive frameworks properly bind data. Never use custom JavaScript (fetch, XMLHttpRequest, page.evaluate, etc.) to synthesize API requests or bypass the UI. For date controls, use the format shown by the UI widget and commit it with blur/Tab before submitting forms; do not assume backend timestamp formatting from the visible input text. For search requests, verify exact outbound JSON payload key names and values, not just semantic similarity; if keys or formats differ from intended fields, retry using native UI interactions and re-check the payload. During browsing, browser tool element refs (e.g. ref_42 from a snapshot) are different from HTML id attributes — use refs from the latest snapshot when calling browser interaction tools, and use HTML ids or role-based locators only when writing the Python test code. After clicking any action that may trigger a confirmation step (a destructive or irreversible operation), you MUST immediately take a fresh snapshot before doing anything else — this is not optional. A confirmation modal or overlay may have appeared and must be explicitly handled before any other interaction. If a modal is visible in the snapshot, record its text with log_action, interact with it, and call log_api_call for the resulting backend request. Only after the modal has been handled and an API call has been logged may you verify the outcome. When an interaction surface is required to complete the microservice use case, call log_interaction_contract with actual observed container, field, action, and service-effect facts. Use generic surface types such as web_page, web_modal, web_drawer, rest_endpoint, graphql_operation, grpc_method, cli_command, or message_event. If one action opens a modal and another action submits it, record opens_surface on the opener and expected_service_calls or side_effects only on the submit action. When you inspect pre-action state that will be needed later, such as the selected target record and original values that must be preserved, call log_baseline_observation with structured facts. Baseline observations are setup evidence only; they must never be used as final success proof. After you verify the success criteria, call log_success_observation with the exact proof used: surface_type, assertion, target value/source when applicable, and executable locator candidates that were validated live. If a broad text assertion would match multiple elements, record the scoped or exact locator that avoided the ambiguity. For repeated records such as rows, cards, list items, or detail panels, record a scope locator for the record/container plus one assertion per important field. When duplicate values appear inside the same scope, prefer structural locators within the scope (for example nth cell/field positions or stable child selectors) and record them exactly. Do not call log_success_observation until the required operation has completed, required state-changing backend effects have been observed when applicable, and the final UI/API/CLI/event proof has been verified. Do not continue scrolling or interacting with the background page while a modal is open. When a modal or overlay is visible, treat the top-most modal as the active interaction scope: only click elements inside it until it is closed. When a modal is open, always take a fresh snapshot and use only element refs inside the modal container. Never click background elements with matching labels; if the modal button is not found, re-snapshot and retry. If the same label appears in both the modal and background page, always choose the modal element and ignore the background match. If there is ambiguity between modal and background candidates, call log_action with a short 'modal scope resolution' note (modal anchor text + chosen control) before clicking. When a confirmation modal appears during browsing, record the exact text of its heading or message in your log_action note — this text is the most reliable anchor for locating the modal in the generated test. When writing test code for a confirmation modal: do not rely solely on get_by_role('dialog') — many UI frameworks render modals without an ARIA dialog role, so this locator may silently return nothing while the modal is visually present on screen. Instead, first wait for a text string that is unique to the modal (e.g. the confirmation message) to become visible, then scope the confirmation button click to the container of that text. For example: modal = page.locator(':has-text("<confirmation phrase>")').last; expect(modal).to_be_visible(); modal.get_by_role('button', name='<action>').click(). Always record the exact modal text and the exact confirmation element type during browsing, so the test can use them as anchors rather than guessing. Never click a bare page-level get_by_role('button', name='...') when a modal is open — identically-named buttons from the background page will match and you will click the wrong one. Never use coordinate-based clicks in generated tests (for example page.mouse.click(x, y)) — always click a locator anchored to modal text, role, or stable container context. Modal confirmation elements may be <button> or <a> elements depending on the UI framework — determine the actual type from the snapshot taken during browsing.  You must treat modal dialogs and overlays reliably and system-agnostically: Always locate a modal root first (ARIA role=dialog OR element with class containing 'modal'/'overlay'). Perform subsequent find/fill/click actions scoped to that modal root (use within(modal_root): ...). Prefer role-based selectors (get_by_role, get_by_label) and visible text; avoid global nth-index selectors. Wait until the modal is visible and focused before interacting. After submit, verify success by confirming the modal closed or by checking a success message or that the new row appears in the list. If an input is hidden or readonly, try the associated label or open an edit mode; if not possible, log a DOM snapshot and stop so a human can inspect. 
+
+REQUEST PROMPT PART
+------------------------------------------------------------------------------------------------------------------------
+Using the execution brief, your logged actions, and your recorded timings below, write a pytest-playwright test that reproduces the intended successful journey steps exactly (exclude exploratory detours and failed intermediate attempts). Derive every assertion from the use case success criteria. Never assert states observed incidentally during browsing that are not part of the success criteria. For tests involving delete, update, or similar operations on existing data, do not hardcode a specific entity name or ID observed during browsing. Select the first available entity matching the preconditions dynamically at runtime, capture that target identifier from the chosen row, and use that same identifier for all post-action checks (network assertion and refreshed-list verification). Do not switch target rows mid-test. If a stable destructive target cannot be identified safely, prefer creating a disposable entity first and deleting that exact entity, or fail fast with a clear precondition assertion. Use `import os` and define `BASE_URL = os.environ.get("BASE_URL", "http://localhost:8080")` once near the top of the file. Always navigate with `page.goto(BASE_URL, ...)` instead of hardcoding the URL.
+
+For create/register flows, generate unique values at runtime (for example time.time_ns() or a UUID suffix) and reuse those variables for assertions. Avoid hardcoded static usernames/emails/document numbers that could collide across runs.
+
+Use the observed backend requests to add focused network-aware checks where appropriate. Prefer `page.expect_request()` or `page.expect_response()` for critical booking and order operations, and wrap them around the exact action that triggers the request. You are strictly forbidden from writing custom JavaScript (fetch, XMLHttpRequest, etc.) to synthesize API requests or bypass the UI. Let the frontend application handle all network communication.
+
+For date fields in booking/search forms, interact through the UI control format (often locale-formatted) and commit the value with blur/Tab before clicking Search. Do not force backend timestamp text into the input field. When possible, assert the outbound search request payload contains the expected route/date semantics from the use case.
+
+Execution brief:
+Journey:
+Admin use case UC-ADM-013: Add Station. The admin provides a station name and stay time to register a new station. Preconditions: authenticated as ROLE_ADMIN. Success criteria: the new station appears in the station list.
+
+System description:
+# Train Ticket System Description
+
+The Train Ticket system is a web-based application for purchasing train tickets. Users can query for available tickets between two cities on a specific date. The system displays various travel options, including different train types and seat classes with their respective prices. Passengers can then select a desired trip and proceed with booking and payment to reserve their seat.
+
+System administrators have access to a separate management interface. Through this interface, they can manage the underlying data of the system. This includes adding, modifying, or deleting train routes, travel services, and pricing information. Admins can also oversee all user orders within the system.
+
+Structured use case:
+ID: UC-ADM-013
+Role: admin
+Name: Add Station
+Goal: The admin provides a station name and stay time to register a new station.
+Preconditions:
+- authenticated as ROLE_ADMIN
+Success criteria:
+- the new station appears in the station list
+Source file: C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\use_cases\admin\research_cases\UC-ADM-013-add-station.yaml
+
+Relevant MSA slice:
+ts-admin-basic-info-service:
+- GET /api/v1/adminbasicservice/adminbasic/stations
+- POST /api/v1/adminbasicservice/adminbasic/stations
+- PUT /api/v1/adminbasicservice/adminbasic/stations
+- DELETE /api/v1/adminbasicservice/adminbasic/stations/{id}
+ts-station-service:
+- POST /api/v1/stationservice/stations/namelist
+- GET /api/v1/stationservice/stations/id/{stationNameForId}
+- GET /api/v1/stationservice/stations/name/{stationIdForName}
+- POST /api/v1/stationservice/stations/idlist
+ts-station-food-service:
+- GET /api/v1/stationfoodservice/stationfoodstores
+- POST /api/v1/stationfoodservice/stationfoodstores
+- GET /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}
+- GET /api/v1/stationfoodservice/stationfoodstores/{stationId}
+ts-route-plan-service:
+- POST /api/v1/routeplanservice/routePlan/minStopStations
+ts-admin-user-service:
+- GET /api/v1/adminuserservice/users
+- POST /api/v1/adminuserservice/users
+- PUT /api/v1/adminuserservice/users
+- DELETE /api/v1/adminuserservice/users/{userId}
+ts-basic-service:
+- GET /api/v1/basicservice/basic/{stationName}
+ts-admin-order-service:
+- GET /api/v1/adminorderservice/adminorder
+- POST /api/v1/adminorderservice/adminorder
+- PUT /api/v1/adminorderservice/adminorder
+- DELETE /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}
+ts-admin-travel-service:
+- GET /api/v1/admintravelservice/admintravel
+- POST /api/v1/admintravelservice/admintravel
+- PUT /api/v1/admintravelservice/admintravel
+- DELETE /api/v1/admintravelservice/admintravel/{tripId}
+ts-food-service:
+- GET /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}
+ts-travel-plan-service:
+- POST /api/v1/travelplanservice/travelPlan/minStation
+ts-user-service:
+- GET /api/v1/userservice/users/{userName}
+- POST /api/v1/userservice/users/register
+- GET /api/v1/userservice/users
+- PUT /api/v1/userservice/users
+ts-admin-route-service:
+- GET /api/v1/adminrouteservice/adminroute
+- POST /api/v1/adminrouteservice/adminroute
+- DELETE /api/v1/adminrouteservice/adminroute/{routeId}
+
+Minimal replay plan derived from browsing:
+1. Surface web_page: TrainTicket Login
+   - fill/select Username: candidate css=input[placeholder='Username']
+   - fill/select Password: candidate css=input[placeholder='Password']
+   - action Login: candidate css=button:has-text('Login')
+2. Surface web_page: Station List
+   - action  Add: candidate css=button:has-text('Add'); opens=web_modal
+3. Surface web_modal: Add Station
+   - fill/select Name: candidate css=input[placeholder='Station Name']
+   - fill/select Stay Time: candidate css=input[placeholder='Stay Time']
+   - action Submit: candidate css=button:has-text('Submit')
+     expects POST /api/v1/adminbasicservice/adminbasic/stations status=200 purpose=business_state_change
+   - action Cancel: candidate css=button:has-text('Cancel')
+Baseline observations for setup/original values:
+- station_list_baseline: Station List page is loaded before creation; the list/table is present and will be re-queried after submission to confirm the new station appears.; kind=record; candidate role=get_by_role('heading', { name: 'Station List' })
+  baseline scope: candidate playwright=page.locator('body')
+Success observations:
+- station_created_visible_in_list: Station list contains the newly created station row with name station-20260428-2041 and stay time 5.; kind=record; candidate css=table; target=station-20260428-2041; source=entered in Add Station modal
+  scope: candidate css=table
+  assert field: contains row text 'station-20260428-2041'; candidate css=table
+  assert field: contains row text '5' for stay time; candidate css=table
+Success checks:
+- the new station appears in the station list
+- snapshot: Top navigation and left management panel are visible. I need the admin login route, which should be direct per spec, so I'll navigate to /adminlogin.html rather than exploring intermediate menu pages.
+- network_inspection: Confirmed login POST returned 200 and loaded admin data. Next, I need the station management screen to add a station and verify it appears in the station list.
+- inspect: Found visible sidebar text 'Station'; will use it to open station management rather than exploring unrelated sections.
+- click_failed: Direct text locator matched a hidden Station span. Need to resolve the visible sidebar control and click the actual interactive element inside the management menu.
+- snapshot: Expanded management sidebar shows five list items, but labels are collapsed/hidden in snapshot. I need to identify the correct station-related menu item via visible role-based buttons or links.
+- inspect: Attempted to inspect sidebar containers by generic selectors but no matching container was found. Will use the visible management list items directly.
+- snapshot: Basic section is expanded in the sidebar but labels are still not directly visible in the snapshot. I need to resolve the actual station item via role/text and then open the add-station form.
+- inspect: nth(4) is Route, so the remaining expanded sidebar entries differ from the visible label order. I will inspect the full list item texts and click the item containing Basic-station-related content.
+- snapshot: Station List page is open with an Add button and station table. I will log the page contract, then add a unique station and verify it appears in the refreshed list.
+- snapshot: Add Station modal is open. Anchor text: 'Add Station'. Action buttons: Cancel and Submit. Fields visible: Station Name and Stay Time.
+- inspect: Table refreshed and now includes the created station row with name station-20260428-2041 and stay time 5. I verified the exact row content in the station list.
+
+Exploratory browse actions are archived in the journey guide. Use this replay plan and the structured journey contract as the default source of truth; consult full logs only when the replay plan is incomplete.
+
+Use baseline_observations only to choose targets, remember original values, compute changed values, and compare preserved fields after the action. Never treat baseline observations as final success assertions. For final assertions, prefer structured success_observations from the contract. They are the exact evidence verified during browsing. Preserve their scoping and exactness instead of replacing them with broad page-level text matches. If a success observation has a scope_locator and field assertions, emit the scope first and then emit each scoped assertion exactly; do not rewrite structural assertions into text or accessible-name locators.
+
+Recorded timings:
+- admin_login_page_load: 2.9s
+- open_station_page: 4.1s
+- open_add_station_modal: 4.0s
+- submit_add_station: 4.8s
+- admin_login_navigation: 205.7s
+- browse_total: 221.3s
+
+Backend requests observed during exploration:
+POST  /api/v1/users/login
+GET   /api/v1/userservice/users
+GET   /api/v1/admintravelservice/admintravel
+GET   /api/v1/adminorderservice/adminorder
+GET   /api/v1/trainservice/trains
+GET   /api/v1/routeservice/routes
+GET   /api/v1/stationservice/stations
+GET   /api/v1/admintravelservice/admintravel
+GET   /api/v1/adminbasicservice/adminbasic/stations
+POST  /api/v1/adminbasicservice/adminbasic/stations
+GET   /api/v1/adminbasicservice/adminbasic/stations
+
+Structured journey contract:
+interaction_surface: web-ui
+service_interfaces: rest
+state_changing: True
+complete: True
+expected_service_calls:
+- POST /api/v1/users/login (observed; status=200; purpose=auth_precondition)
+- GET /api/v1/userservice/users (observed; status=200; purpose=verification_read)
+- GET /api/v1/admintravelservice/admintravel (observed; status=200; purpose=verification_read)
+- GET /api/v1/adminorderservice/adminorder (observed; status=200; purpose=verification_read)
+- GET /api/v1/trainservice/trains (observed; status=200; purpose=verification_read)
+- GET /api/v1/routeservice/routes (observed; status=200; purpose=verification_read)
+- GET /api/v1/stationservice/stations (observed; status=200; purpose=verification_read)
+- GET /api/v1/adminbasicservice/adminbasic/stations (observed; status=200; purpose=verification_read)
+- POST /api/v1/adminbasicservice/adminbasic/stations (required; status=200; purpose=business_state_change; trigger=Submit; selector_hint=container=.modal, .am-modal, .overlay; action=button:has-text('Submit'))
+interaction_contracts:
+- interaction 1: surface=web_page; kind=page; selector=http://localhost:8080/adminlogin.html; anchor=TrainTicket Login
+  field: name=Username; label=Username; selector=input[placeholder='Username']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Username']
+    locator: candidate; executable; role=textbox|Username
+  field: name=Password; label=Password; selector=input[placeholder='Password']; tag=input; type=password; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Password']
+    locator: candidate; executable; role=textbox|Password
+  action: name=Login; text=Login; selector=button:has-text('Login'); tag=button; role=button
+    locator: candidate; executable; css=button:has-text('Login')
+    locator: candidate; executable; role=button|Login
+- interaction 2: surface=web_page; kind=page; selector=http://localhost:8080/admin_station.html; anchor=Station List
+  action: name= Add; text= Add; selector=button:has-text('Add'); tag=button; role=button; opens_surface=web_modal
+    locator: candidate; executable; css=button:has-text('Add')
+    locator: candidate; executable; role=button| Add
+- interaction 3: surface=web_modal; kind=modal; selector=.modal, .am-modal, .overlay; anchor=Add Station
+  field: name=Name; label=Name; selector=input[placeholder='Station Name']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Station Name']
+    locator: candidate; executable; role=textbox|Name
+  field: name=Stay Time; label=Stay Time; selector=input[placeholder='Stay Time']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Stay Time']
+    locator: candidate; executable; role=textbox|Stay Time
+  action: name=Submit; text=Submit; selector=button:has-text('Submit'); tag=div; role=button
+    locator: candidate; executable; css=button:has-text('Submit')
+    locator: candidate; executable; role=button|Submit
+    triggers: POST /api/v1/adminbasicservice/adminbasic/stations status=200 interface=rest purpose=business_state_change
+  action: name=Cancel; text=Cancel; selector=button:has-text('Cancel'); tag=div; role=button
+    locator: candidate; executable; css=button:has-text('Cancel')
+    locator: candidate; executable; role=button|Cancel
+baseline_observations:
+- label=station_list_baseline; surface=web_page; kind=record; assertion=Station List page is loaded before creation; the list/table is present and will be re-queried after submission to confirm the new station appears.; scope=page.locator('body'); reason=Baseline state before adding a unique station.
+  locator: candidate; executable; role=get_by_role('heading', { name: 'Station List' })
+  locator: candidate; executable; role=get_by_role('button', { name: ' Add' })
+  scope_locator: candidate; executable; playwright=page.locator('body')
+success_observations:
+- label=station_created_visible_in_list; surface=web_page; kind=record; assertion=Station list contains the newly created station row with name station-20260428-2041 and stay time 5.; scope=table; target=station-20260428-2041; target_source=entered in Add Station modal; reason=Success criteria met by live station list refresh after POST 200.
+  locator: candidate; executable; role=get_by_role('table')
+  locator: candidate; executable; css=table
+  scope_locator: candidate; executable; css=table
+  assertion: assertion=contains row text 'station-20260428-2041'; locator=table
+    locator: candidate; executable; css=table
+  assertion: assertion=contains row text '5' for stay time; locator=table
+    locator: candidate; executable; css=table
+success_checks:
+- the new station appears in the station list
+- snapshot: Top navigation and left management panel are visible. I need the admin login route, which should be direct per spec, so I'll navigate to /adminlogin.html rather than exploring intermediate menu pages.
+- network_inspection: Confirmed login POST returned 200 and loaded admin data. Next, I need the station management screen to add a station and verify it appears in the station list.
+- inspect: Found visible sidebar text 'Station'; will use it to open station management rather than exploring unrelated sections.
+- click_failed: Direct text locator matched a hidden Station span. Need to resolve the visible sidebar control and click the actual interactive element inside the management menu.
+- snapshot: Expanded management sidebar shows five list items, but labels are collapsed/hidden in snapshot. I need to identify the correct station-related menu item via visible role-based buttons or links.
+- inspect: Attempted to inspect sidebar containers by generic selectors but no matching container was found. Will use the visible management list items directly.
+- snapshot: Basic section is expanded in the sidebar but labels are still not directly visible in the snapshot. I need to resolve the actual station item via role/text and then open the add-station form.
+- inspect: nth(4) is Route, so the remaining expanded sidebar entries differ from the visible label order. I will inspect the full list item texts and click the item containing Basic-station-related content.
+- snapshot: Station List page is open with an Add button and station table. I will log the page contract, then add a unique station and verify it appears in the refreshed list.
+- snapshot: Add Station modal is open. Anchor text: 'Add Station'. Action buttons: Cancel and Submit. Fields visible: Station Name and Stay Time.
+- inspect: Table refreshed and now includes the created station row with name station-20260428-2041 and stay time 5. I verified the exact row content in the station list.
+
+Save it as 'add_station_test.py' using create_python_test_file, then run it with run_test_file. If it fails, fix and retry at most 5 times.
+
+Locator strategy reminder: use get_by_role over get_by_text for interactive elements. Strict mode will fail if a locator matches more than one element. For every locator you write, ask: 'is this word unique on the page?' For form inputs, never use the field's current value as its locator — JS-filled values are invisible to CSS attribute selectors. Prefer id-based locators (#id), positional locators (locator('input').nth(N)), or get_by_placeholder() only when the placeholder attribute is set in the HTML source. If you see a pre-filled form during browsing, locate its fields by structure, not by content.
+
+Login submission: always click the actual login form submit control by role (button or input[type=submit]) scoped to the login form. Do not use get_by_text fallbacks or body clicks for login.
+
+If the browse logs include element ids for modal fields, prefer id-based locators over role/label lookups inside the modal. Only use role/label when ids are missing. Always scope modal field locators to the anchored modal container (for example modal.locator('#add_user_name')).
+
+Locator policy: use validated executable locator candidates first, scoped to their captured container. If none are validated, use stable executable CSS/test-id candidates, then scoped role/label candidates, then text candidates. Use positional locators only inside a validated container. Ignore non-executable snapshot locators such as browser refs, generic[ref=...], textbox[aria-label=...], combobox[aria-label=...], or button/text=....
+
+If the browse logs include the modal submit control tag/id/class/data attributes, use that exact selector within the modal. Do not assume the confirm control has a button role; if it is a span/div, locate it by tag/class/text and click it.
+
+Never use coordinate-based interactions in generated tests (for example page.mouse.click(x, y)); click explicit locators scoped to the correct container instead.
+
+For any form field that showed autocomplete behaviour during browsing (a dropdown appeared after typing), use `locator.press_sequentially(value)` instead of `locator.fill(value)` in the generated test. `fill()` sets the value silently without triggering JavaScript input events, so autocomplete never fires and the UI submits an unrecognised value — causing empty search results or silent form failures. After `press_sequentially()`, wait for the dropdown option to appear and click it before continuing: `page.get_by_role('option', name=value).first.click()` or the equivalent visible suggestion locator.
+
+If the browse logs include select option values, prefer `select_option(value=...)` over labels. Use label-based selection only when the label is confirmed visible in the control.
+
+For all text content assertions use re.compile('...', re.IGNORECASE) rather than a plain string — never rely on remembered capitalisation.
+
+
+        Modal-scoping helper: when a modal/dialog/overlay is involved, always locate a reliable
+        modal anchor (unique heading text or distinctive phrase) and scope subsequent actions
+        to that container using Playwright locators. Example:
+
+        modal = page.locator(":has-text('<modal anchor>')").last
+        modal.wait_for(state="visible")
+        modal.locator("#add_user_name").fill(value)
+        modal.locator("[data-am-modal-confirm]").click()
+        modal.wait_for(state="hidden")
+
+        This keeps locators unambiguous across UI frameworks and avoids background clicks.
+        
+
+When a modal is open, never use page-level locators for its buttons or fields. Always use modal-scoped locators anchored to modal text captured during browsing.
+
+For repeated-record success assertions, use the contract's scope locator and field assertions directly. If two fields can contain the same visible value, assert by stable child selector or position within the already-matched scope, such as `row.locator('td').nth(index).to_have_text(value)`, rather than `row.get_by_role('cell', name=value)`.
+
+Repair rule: use the failure_diagnosis first. If it says the test was blocked before the required service call, repair that first failing locator/action instead of chasing the missing network call. Only repair the service trigger when the diagnosis shows the flow reached the trigger action without emitting the required side effect.
+
+If you need credentials or any other specification details not already present above, call read_spec_file('C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\msa.yaml').
+
+BROWSE PHASE PROMPT (REFERENCE)
+------------------------------------------------------------------------------------------------------------------------
+Follow this user journey step by step in the browser. Call log_action after every interaction and use start_timer/stop_timer around slow steps. Use the execution brief below as domain context, but verify the actual UI live before deciding the flow. If the spec you read provides a specific entry point URL for the journey, navigate there directly — do not explore intermediate pages to rediscover information you already have. The UI under test is served from http://localhost:8080; navigate there before you start browsing.
+
+Execution brief:
+Journey:
+Admin use case UC-ADM-013: Add Station. The admin provides a station name and stay time to register a new station. Preconditions: authenticated as ROLE_ADMIN. Success criteria: the new station appears in the station list.
+
+System description:
+# Train Ticket System Description
+
+The Train Ticket system is a web-based application for purchasing train tickets. Users can query for available tickets between two cities on a specific date. The system displays various travel options, including different train types and seat classes with their respective prices. Passengers can then select a desired trip and proceed with booking and payment to reserve their seat.
+
+System administrators have access to a separate management interface. Through this interface, they can manage the underlying data of the system. This includes adding, modifying, or deleting train routes, travel services, and pricing information. Admins can also oversee all user orders within the system.
+
+Structured use case:
+ID: UC-ADM-013
+Role: admin
+Name: Add Station
+Goal: The admin provides a station name and stay time to register a new station.
+Preconditions:
+- authenticated as ROLE_ADMIN
+Success criteria:
+- the new station appears in the station list
+Source file: C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\use_cases\admin\research_cases\UC-ADM-013-add-station.yaml
+
+Relevant MSA slice:
+ts-admin-basic-info-service:
+- GET /api/v1/adminbasicservice/adminbasic/stations
+- POST /api/v1/adminbasicservice/adminbasic/stations
+- PUT /api/v1/adminbasicservice/adminbasic/stations
+- DELETE /api/v1/adminbasicservice/adminbasic/stations/{id}
+ts-station-service:
+- POST /api/v1/stationservice/stations/namelist
+- GET /api/v1/stationservice/stations/id/{stationNameForId}
+- GET /api/v1/stationservice/stations/name/{stationIdForName}
+- POST /api/v1/stationservice/stations/idlist
+ts-station-food-service:
+- GET /api/v1/stationfoodservice/stationfoodstores
+- POST /api/v1/stationfoodservice/stationfoodstores
+- GET /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}
+- GET /api/v1/stationfoodservice/stationfoodstores/{stationId}
+ts-route-plan-service:
+- POST /api/v1/routeplanservice/routePlan/minStopStations
+ts-admin-user-service:
+- GET /api/v1/adminuserservice/users
+- POST /api/v1/adminuserservice/users
+- PUT /api/v1/adminuserservice/users
+- DELETE /api/v1/adminuserservice/users/{userId}
+ts-basic-service:
+- GET /api/v1/basicservice/basic/{stationName}
+ts-admin-order-service:
+- GET /api/v1/adminorderservice/adminorder
+- POST /api/v1/adminorderservice/adminorder
+- PUT /api/v1/adminorderservice/adminorder
+- DELETE /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}
+ts-admin-travel-service:
+- GET /api/v1/admintravelservice/admintravel
+- POST /api/v1/admintravelservice/admintravel
+- PUT /api/v1/admintravelservice/admintravel
+- DELETE /api/v1/admintravelservice/admintravel/{tripId}
+ts-food-service:
+- GET /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}
+ts-travel-plan-service:
+- POST /api/v1/travelplanservice/travelPlan/minStation
+ts-user-service:
+- GET /api/v1/userservice/users/{userName}
+- POST /api/v1/userservice/users/register
+- GET /api/v1/userservice/users
+- PUT /api/v1/userservice/users
+ts-admin-route-service:
+- GET /api/v1/adminrouteservice/adminroute
+- POST /api/v1/adminrouteservice/adminroute
+- DELETE /api/v1/adminrouteservice/adminroute/{routeId}
+
+The success criteria describe the end state you must reach by actively performing every step of the journey. Observing text on the current page is not completion — you must take actions to drive the UI to the goal state. After any delete or update action, do not rely on the current table view to confirm success — the page may have reloaded or scrolled. Explicitly verify by reloading or re-querying and confirming the entity is truly absent or updated in the refreshed view.
+
+You must strictly use native Playwright interactions (e.g., locator.click(), locator.press_sequentially()) for all form submissions and button presses to ensure frontend reactive frameworks properly bind data. Never use browser_evaluate to bypass the UI.
+
+For date inputs or date-picker controls, use the format shown in the UI control, then commit the value with a blur action (for example Tab or clicking outside) before pressing Search/Submit. Do not assume the backend payload date format from the input text; the frontend may normalize it (for example to YYYY-MM-DD 00:00:00).
+
+After every state-changing browser action (clicking a confirm button, submitting a form, triggering a deletion), call browser_network_requests and then call log_api_call once for each significant backend request you observe (method, path, and status code). Do not summarise network activity in text — use log_api_call so it is recorded structurally. This is especially important after confirmation modals: log the DELETE/POST/PUT that the confirmation triggered and its response status, so you can verify the operation reached the backend.
+
+For search/filter journeys specifically, inspect the outbound search request after clicking Search. If the payload semantics do not match the UI values you entered (for example wrong route keys or date value), adjust the UI interaction sequence (picker selection, sequential typing, blur/Tab) and retry once before concluding failure. Do not validate by value similarity alone: verify exact payload key names and values from the outbound JSON body, and log those exact keys in log_action (for example startPlace vs startingPlace, endPlace vs terminalPlace).
+
+At the end of browsing, you MUST call report_journey_outcome(success, reason) to record the outcome. Call with success=True only if all success criteria were met and verified, AND for state-changing journeys you have called log_api_call confirming a 2xx response. Call with success=False if the journey could not be completed for any reason — whether the UI could not be interacted with, or the system responded with an error. In both cases include the reason clearly. Stop immediately after calling report_journey_outcome(success=False).
+
+If a modal, dialog, or overlay is open, it has interaction priority over the background page. Take a fresh snapshot and interact only with refs inside the top-most open container until it closes. If labels are duplicated (for example Confirm/Delete/Submit), choose the element inside the open modal, not the background page. If this requires disambiguation, add a log_action note labelled 'modal scope resolution' that records the modal text anchor and the control you chose.
+
+Modal priority is strict: when a modal is visible, take a fresh snapshot and interact ONLY with refs inside the modal container. Never click background elements with matching labels. If you cannot find the intended control inside the modal, log a note and re-snapshot before trying again.
+
+When a modal opens, immediately log a modal anchor note with: container id/class, heading text, and the exact labels of its action buttons. This anchor text will be used to scope test locators.
+
+When you inspect select fields, record both the visible option label and its value attribute (for example 'Female' -> value=1). Log the select id and the label/value pairs.
+
+For modal form fields, log each input/select id with its label text. Use log_action so the generator can prefer id-based locators in the test.
+
+If modal action buttons are not discoverable by role, locate them by text/tag inside the modal container using the latest snapshot and click by element ref. Log the submit control tag, text, and id/class.
+
+For every required interaction surface, call log_interaction_contract after you inspect the live UI/API surface. This contract must record actual observed facts, not prose guesses. Use generic surface types such as web_page, web_modal, web_drawer, rest_endpoint, graphql_operation, grpc_method, cli_command, or message_event. For web surfaces, include container.kind, a stable container selector or anchor text, every required visible editable field with selector/id/label/tag/type/options plus validated_locators when known, and every submit/confirm action with actual selector/tag/text/role. If one action opens a modal and another action submits it, record opens_surface on the first action and expected_service_calls or side_effects only on the submitting action. 
+
+When inspecting pre-action state needed later, call log_baseline_observation with structured facts such as the selected target record and original field values. Baseline observations are setup evidence only; they must not be used as final success proof. After verifying the requested success criteria, call log_success_observation with the exact proof you used. Include the surface_type, assertion, target value/source when applicable, and executable locator candidates that were validated live. Prefer scoped or exact locators over broad text matches, especially when the same text appears in multiple fields. For repeated records such as table rows, list items, cards, detail panels, API objects, CLI rows, or message payloads, record observation_kind='record', a scope_locator for the record/container, and assertions for each important field. If duplicate visible values appear within the same record, use structural locators inside the scope, not another text/name lookup.
+
+When creating new records, generate unique values (timestamp/nonce suffix) and log the exact values used, so retries and generated tests avoid duplicate collisions.
+
+When you observe a confirmation or status message, record its exact text (preserving capitalisation) in your log_action note. After clicking any button that triggers an action (login, booking, payment, cancellation), check the browser console for messages prefixed with [dialog:alert] — these are JavaScript alerts captured without blocking the page. Important: console messages are cumulative. A [dialog:alert] message visible after a click may have been logged at page load, not as a response to your click. Only treat a [dialog:alert] as a response to your action if it appears AFTER the action completes. Always also check the DOM state (visible text, status fields) to confirm the actual outcome.
+
+Before filling any form that requires account credentials or test data, you must call read_spec_file('C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\msa.yaml') first to retrieve the correct inputs from the MSA specification. Do not attempt to guess or infer credentials from the live UI. This applies to login forms, registration forms, payment fields, or any other form requiring specific test data. After calling read_spec_file, call log_action to record the credentials and entry point URLs you found, so they are available during test generation.
+
+TEST GENERATION PHASE PROMPT (REFERENCE)
+------------------------------------------------------------------------------------------------------------------------
+Using the execution brief, your logged actions, and your recorded timings below, write a pytest-playwright test that reproduces the intended successful journey steps exactly (exclude exploratory detours and failed intermediate attempts). Derive every assertion from the use case success criteria. Never assert states observed incidentally during browsing that are not part of the success criteria. For tests involving delete, update, or similar operations on existing data, do not hardcode a specific entity name or ID observed during browsing. Select the first available entity matching the preconditions dynamically at runtime, capture that target identifier from the chosen row, and use that same identifier for all post-action checks (network assertion and refreshed-list verification). Do not switch target rows mid-test. If a stable destructive target cannot be identified safely, prefer creating a disposable entity first and deleting that exact entity, or fail fast with a clear precondition assertion. Use `import os` and define `BASE_URL = os.environ.get("BASE_URL", "http://localhost:8080")` once near the top of the file. Always navigate with `page.goto(BASE_URL, ...)` instead of hardcoding the URL.
+
+For create/register flows, generate unique values at runtime (for example time.time_ns() or a UUID suffix) and reuse those variables for assertions. Avoid hardcoded static usernames/emails/document numbers that could collide across runs.
+
+Use the observed backend requests to add focused network-aware checks where appropriate. Prefer `page.expect_request()` or `page.expect_response()` for critical booking and order operations, and wrap them around the exact action that triggers the request. You are strictly forbidden from writing custom JavaScript (fetch, XMLHttpRequest, etc.) to synthesize API requests or bypass the UI. Let the frontend application handle all network communication.
+
+For date fields in booking/search forms, interact through the UI control format (often locale-formatted) and commit the value with blur/Tab before clicking Search. Do not force backend timestamp text into the input field. When possible, assert the outbound search request payload contains the expected route/date semantics from the use case.
+
+Execution brief:
+Journey:
+Admin use case UC-ADM-013: Add Station. The admin provides a station name and stay time to register a new station. Preconditions: authenticated as ROLE_ADMIN. Success criteria: the new station appears in the station list.
+
+System description:
+# Train Ticket System Description
+
+The Train Ticket system is a web-based application for purchasing train tickets. Users can query for available tickets between two cities on a specific date. The system displays various travel options, including different train types and seat classes with their respective prices. Passengers can then select a desired trip and proceed with booking and payment to reserve their seat.
+
+System administrators have access to a separate management interface. Through this interface, they can manage the underlying data of the system. This includes adding, modifying, or deleting train routes, travel services, and pricing information. Admins can also oversee all user orders within the system.
+
+Structured use case:
+ID: UC-ADM-013
+Role: admin
+Name: Add Station
+Goal: The admin provides a station name and stay time to register a new station.
+Preconditions:
+- authenticated as ROLE_ADMIN
+Success criteria:
+- the new station appears in the station list
+Source file: C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\use_cases\admin\research_cases\UC-ADM-013-add-station.yaml
+
+Relevant MSA slice:
+ts-admin-basic-info-service:
+- GET /api/v1/adminbasicservice/adminbasic/stations
+- POST /api/v1/adminbasicservice/adminbasic/stations
+- PUT /api/v1/adminbasicservice/adminbasic/stations
+- DELETE /api/v1/adminbasicservice/adminbasic/stations/{id}
+ts-station-service:
+- POST /api/v1/stationservice/stations/namelist
+- GET /api/v1/stationservice/stations/id/{stationNameForId}
+- GET /api/v1/stationservice/stations/name/{stationIdForName}
+- POST /api/v1/stationservice/stations/idlist
+ts-station-food-service:
+- GET /api/v1/stationfoodservice/stationfoodstores
+- POST /api/v1/stationfoodservice/stationfoodstores
+- GET /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}
+- GET /api/v1/stationfoodservice/stationfoodstores/{stationId}
+ts-route-plan-service:
+- POST /api/v1/routeplanservice/routePlan/minStopStations
+ts-admin-user-service:
+- GET /api/v1/adminuserservice/users
+- POST /api/v1/adminuserservice/users
+- PUT /api/v1/adminuserservice/users
+- DELETE /api/v1/adminuserservice/users/{userId}
+ts-basic-service:
+- GET /api/v1/basicservice/basic/{stationName}
+ts-admin-order-service:
+- GET /api/v1/adminorderservice/adminorder
+- POST /api/v1/adminorderservice/adminorder
+- PUT /api/v1/adminorderservice/adminorder
+- DELETE /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}
+ts-admin-travel-service:
+- GET /api/v1/admintravelservice/admintravel
+- POST /api/v1/admintravelservice/admintravel
+- PUT /api/v1/admintravelservice/admintravel
+- DELETE /api/v1/admintravelservice/admintravel/{tripId}
+ts-food-service:
+- GET /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}
+ts-travel-plan-service:
+- POST /api/v1/travelplanservice/travelPlan/minStation
+ts-user-service:
+- GET /api/v1/userservice/users/{userName}
+- POST /api/v1/userservice/users/register
+- GET /api/v1/userservice/users
+- PUT /api/v1/userservice/users
+ts-admin-route-service:
+- GET /api/v1/adminrouteservice/adminroute
+- POST /api/v1/adminrouteservice/adminroute
+- DELETE /api/v1/adminrouteservice/adminroute/{routeId}
+
+Minimal replay plan derived from browsing:
+1. Surface web_page: TrainTicket Login
+   - fill/select Username: candidate css=input[placeholder='Username']
+   - fill/select Password: candidate css=input[placeholder='Password']
+   - action Login: candidate css=button:has-text('Login')
+2. Surface web_page: Station List
+   - action  Add: candidate css=button:has-text('Add'); opens=web_modal
+3. Surface web_modal: Add Station
+   - fill/select Name: candidate css=input[placeholder='Station Name']
+   - fill/select Stay Time: candidate css=input[placeholder='Stay Time']
+   - action Submit: candidate css=button:has-text('Submit')
+     expects POST /api/v1/adminbasicservice/adminbasic/stations status=200 purpose=business_state_change
+   - action Cancel: candidate css=button:has-text('Cancel')
+Baseline observations for setup/original values:
+- station_list_baseline: Station List page is loaded before creation; the list/table is present and will be re-queried after submission to confirm the new station appears.; kind=record; candidate role=get_by_role('heading', { name: 'Station List' })
+  baseline scope: candidate playwright=page.locator('body')
+Success observations:
+- station_created_visible_in_list: Station list contains the newly created station row with name station-20260428-2041 and stay time 5.; kind=record; candidate css=table; target=station-20260428-2041; source=entered in Add Station modal
+  scope: candidate css=table
+  assert field: contains row text 'station-20260428-2041'; candidate css=table
+  assert field: contains row text '5' for stay time; candidate css=table
+Success checks:
+- the new station appears in the station list
+- snapshot: Top navigation and left management panel are visible. I need the admin login route, which should be direct per spec, so I'll navigate to /adminlogin.html rather than exploring intermediate menu pages.
+- network_inspection: Confirmed login POST returned 200 and loaded admin data. Next, I need the station management screen to add a station and verify it appears in the station list.
+- inspect: Found visible sidebar text 'Station'; will use it to open station management rather than exploring unrelated sections.
+- click_failed: Direct text locator matched a hidden Station span. Need to resolve the visible sidebar control and click the actual interactive element inside the management menu.
+- snapshot: Expanded management sidebar shows five list items, but labels are collapsed/hidden in snapshot. I need to identify the correct station-related menu item via visible role-based buttons or links.
+- inspect: Attempted to inspect sidebar containers by generic selectors but no matching container was found. Will use the visible management list items directly.
+- snapshot: Basic section is expanded in the sidebar but labels are still not directly visible in the snapshot. I need to resolve the actual station item via role/text and then open the add-station form.
+- inspect: nth(4) is Route, so the remaining expanded sidebar entries differ from the visible label order. I will inspect the full list item texts and click the item containing Basic-station-related content.
+- snapshot: Station List page is open with an Add button and station table. I will log the page contract, then add a unique station and verify it appears in the refreshed list.
+- snapshot: Add Station modal is open. Anchor text: 'Add Station'. Action buttons: Cancel and Submit. Fields visible: Station Name and Stay Time.
+- inspect: Table refreshed and now includes the created station row with name station-20260428-2041 and stay time 5. I verified the exact row content in the station list.
+
+Exploratory browse actions are archived in the journey guide. Use this replay plan and the structured journey contract as the default source of truth; consult full logs only when the replay plan is incomplete.
+
+Use baseline_observations only to choose targets, remember original values, compute changed values, and compare preserved fields after the action. Never treat baseline observations as final success assertions. For final assertions, prefer structured success_observations from the contract. They are the exact evidence verified during browsing. Preserve their scoping and exactness instead of replacing them with broad page-level text matches. If a success observation has a scope_locator and field assertions, emit the scope first and then emit each scoped assertion exactly; do not rewrite structural assertions into text or accessible-name locators.
+
+Recorded timings:
+- admin_login_page_load: 2.9s
+- open_station_page: 4.1s
+- open_add_station_modal: 4.0s
+- submit_add_station: 4.8s
+- admin_login_navigation: 205.7s
+- browse_total: 221.3s
+
+Backend requests observed during exploration:
+POST  /api/v1/users/login
+GET   /api/v1/userservice/users
+GET   /api/v1/admintravelservice/admintravel
+GET   /api/v1/adminorderservice/adminorder
+GET   /api/v1/trainservice/trains
+GET   /api/v1/routeservice/routes
+GET   /api/v1/stationservice/stations
+GET   /api/v1/admintravelservice/admintravel
+GET   /api/v1/adminbasicservice/adminbasic/stations
+POST  /api/v1/adminbasicservice/adminbasic/stations
+GET   /api/v1/adminbasicservice/adminbasic/stations
+
+Structured journey contract:
+interaction_surface: web-ui
+service_interfaces: rest
+state_changing: True
+complete: True
+expected_service_calls:
+- POST /api/v1/users/login (observed; status=200; purpose=auth_precondition)
+- GET /api/v1/userservice/users (observed; status=200; purpose=verification_read)
+- GET /api/v1/admintravelservice/admintravel (observed; status=200; purpose=verification_read)
+- GET /api/v1/adminorderservice/adminorder (observed; status=200; purpose=verification_read)
+- GET /api/v1/trainservice/trains (observed; status=200; purpose=verification_read)
+- GET /api/v1/routeservice/routes (observed; status=200; purpose=verification_read)
+- GET /api/v1/stationservice/stations (observed; status=200; purpose=verification_read)
+- GET /api/v1/adminbasicservice/adminbasic/stations (observed; status=200; purpose=verification_read)
+- POST /api/v1/adminbasicservice/adminbasic/stations (required; status=200; purpose=business_state_change; trigger=Submit; selector_hint=container=.modal, .am-modal, .overlay; action=button:has-text('Submit'))
+interaction_contracts:
+- interaction 1: surface=web_page; kind=page; selector=http://localhost:8080/adminlogin.html; anchor=TrainTicket Login
+  field: name=Username; label=Username; selector=input[placeholder='Username']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Username']
+    locator: candidate; executable; role=textbox|Username
+  field: name=Password; label=Password; selector=input[placeholder='Password']; tag=input; type=password; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Password']
+    locator: candidate; executable; role=textbox|Password
+  action: name=Login; text=Login; selector=button:has-text('Login'); tag=button; role=button
+    locator: candidate; executable; css=button:has-text('Login')
+    locator: candidate; executable; role=button|Login
+- interaction 2: surface=web_page; kind=page; selector=http://localhost:8080/admin_station.html; anchor=Station List
+  action: name= Add; text= Add; selector=button:has-text('Add'); tag=button; role=button; opens_surface=web_modal
+    locator: candidate; executable; css=button:has-text('Add')
+    locator: candidate; executable; role=button| Add
+- interaction 3: surface=web_modal; kind=modal; selector=.modal, .am-modal, .overlay; anchor=Add Station
+  field: name=Name; label=Name; selector=input[placeholder='Station Name']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Station Name']
+    locator: candidate; executable; role=textbox|Name
+  field: name=Stay Time; label=Stay Time; selector=input[placeholder='Stay Time']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Stay Time']
+    locator: candidate; executable; role=textbox|Stay Time
+  action: name=Submit; text=Submit; selector=button:has-text('Submit'); tag=div; role=button
+    locator: candidate; executable; css=button:has-text('Submit')
+    locator: candidate; executable; role=button|Submit
+    triggers: POST /api/v1/adminbasicservice/adminbasic/stations status=200 interface=rest purpose=business_state_change
+  action: name=Cancel; text=Cancel; selector=button:has-text('Cancel'); tag=div; role=button
+    locator: candidate; executable; css=button:has-text('Cancel')
+    locator: candidate; executable; role=button|Cancel
+baseline_observations:
+- label=station_list_baseline; surface=web_page; kind=record; assertion=Station List page is loaded before creation; the list/table is present and will be re-queried after submission to confirm the new station appears.; scope=page.locator('body'); reason=Baseline state before adding a unique station.
+  locator: candidate; executable; role=get_by_role('heading', { name: 'Station List' })
+  locator: candidate; executable; role=get_by_role('button', { name: ' Add' })
+  scope_locator: candidate; executable; playwright=page.locator('body')
+success_observations:
+- label=station_created_visible_in_list; surface=web_page; kind=record; assertion=Station list contains the newly created station row with name station-20260428-2041 and stay time 5.; scope=table; target=station-20260428-2041; target_source=entered in Add Station modal; reason=Success criteria met by live station list refresh after POST 200.
+  locator: candidate; executable; role=get_by_role('table')
+  locator: candidate; executable; css=table
+  scope_locator: candidate; executable; css=table
+  assertion: assertion=contains row text 'station-20260428-2041'; locator=table
+    locator: candidate; executable; css=table
+  assertion: assertion=contains row text '5' for stay time; locator=table
+    locator: candidate; executable; css=table
+success_checks:
+- the new station appears in the station list
+- snapshot: Top navigation and left management panel are visible. I need the admin login route, which should be direct per spec, so I'll navigate to /adminlogin.html rather than exploring intermediate menu pages.
+- network_inspection: Confirmed login POST returned 200 and loaded admin data. Next, I need the station management screen to add a station and verify it appears in the station list.
+- inspect: Found visible sidebar text 'Station'; will use it to open station management rather than exploring unrelated sections.
+- click_failed: Direct text locator matched a hidden Station span. Need to resolve the visible sidebar control and click the actual interactive element inside the management menu.
+- snapshot: Expanded management sidebar shows five list items, but labels are collapsed/hidden in snapshot. I need to identify the correct station-related menu item via visible role-based buttons or links.
+- inspect: Attempted to inspect sidebar containers by generic selectors but no matching container was found. Will use the visible management list items directly.
+- snapshot: Basic section is expanded in the sidebar but labels are still not directly visible in the snapshot. I need to resolve the actual station item via role/text and then open the add-station form.
+- inspect: nth(4) is Route, so the remaining expanded sidebar entries differ from the visible label order. I will inspect the full list item texts and click the item containing Basic-station-related content.
+- snapshot: Station List page is open with an Add button and station table. I will log the page contract, then add a unique station and verify it appears in the refreshed list.
+- snapshot: Add Station modal is open. Anchor text: 'Add Station'. Action buttons: Cancel and Submit. Fields visible: Station Name and Stay Time.
+- inspect: Table refreshed and now includes the created station row with name station-20260428-2041 and stay time 5. I verified the exact row content in the station list.
+
+Save it as 'add_station_test.py' using create_python_test_file, then run it with run_test_file. If it fails, fix and retry at most 5 times.
+
+Locator strategy reminder: use get_by_role over get_by_text for interactive elements. Strict mode will fail if a locator matches more than one element. For every locator you write, ask: 'is this word unique on the page?' For form inputs, never use the field's current value as its locator — JS-filled values are invisible to CSS attribute selectors. Prefer id-based locators (#id), positional locators (locator('input').nth(N)), or get_by_placeholder() only when the placeholder attribute is set in the HTML source. If you see a pre-filled form during browsing, locate its fields by structure, not by content.
+
+Login submission: always click the actual login form submit control by role (button or input[type=submit]) scoped to the login form. Do not use get_by_text fallbacks or body clicks for login.
+
+If the browse logs include element ids for modal fields, prefer id-based locators over role/label lookups inside the modal. Only use role/label when ids are missing. Always scope modal field locators to the anchored modal container (for example modal.locator('#add_user_name')).
+
+Locator policy: use validated executable locator candidates first, scoped to their captured container. If none are validated, use stable executable CSS/test-id candidates, then scoped role/label candidates, then text candidates. Use positional locators only inside a validated container. Ignore non-executable snapshot locators such as browser refs, generic[ref=...], textbox[aria-label=...], combobox[aria-label=...], or button/text=....
+
+If the browse logs include the modal submit control tag/id/class/data attributes, use that exact selector within the modal. Do not assume the confirm control has a button role; if it is a span/div, locate it by tag/class/text and click it.
+
+Never use coordinate-based interactions in generated tests (for example page.mouse.click(x, y)); click explicit locators scoped to the correct container instead.
+
+For any form field that showed autocomplete behaviour during browsing (a dropdown appeared after typing), use `locator.press_sequentially(value)` instead of `locator.fill(value)` in the generated test. `fill()` sets the value silently without triggering JavaScript input events, so autocomplete never fires and the UI submits an unrecognised value — causing empty search results or silent form failures. After `press_sequentially()`, wait for the dropdown option to appear and click it before continuing: `page.get_by_role('option', name=value).first.click()` or the equivalent visible suggestion locator.
+
+If the browse logs include select option values, prefer `select_option(value=...)` over labels. Use label-based selection only when the label is confirmed visible in the control.
+
+For all text content assertions use re.compile('...', re.IGNORECASE) rather than a plain string — never rely on remembered capitalisation.
+
+
+        Modal-scoping helper: when a modal/dialog/overlay is involved, always locate a reliable
+        modal anchor (unique heading text or distinctive phrase) and scope subsequent actions
+        to that container using Playwright locators. Example:
+
+        modal = page.locator(":has-text('<modal anchor>')").last
+        modal.wait_for(state="visible")
+        modal.locator("#add_user_name").fill(value)
+        modal.locator("[data-am-modal-confirm]").click()
+        modal.wait_for(state="hidden")
+
+        This keeps locators unambiguous across UI frameworks and avoids background clicks.
+        
+
+When a modal is open, never use page-level locators for its buttons or fields. Always use modal-scoped locators anchored to modal text captured during browsing.
+
+For repeated-record success assertions, use the contract's scope locator and field assertions directly. If two fields can contain the same visible value, assert by stable child selector or position within the already-matched scope, such as `row.locator('td').nth(index).to_have_text(value)`, rather than `row.get_by_role('cell', name=value)`.
+
+Repair rule: use the failure_diagnosis first. If it says the test was blocked before the required service call, repair that first failing locator/action instead of chasing the missing network call. Only repair the service trigger when the diagnosis shows the flow reached the trigger action without emitting the required side effect.
+
+If you need credentials or any other specification details not already present above, call read_spec_file('C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\msa.yaml').

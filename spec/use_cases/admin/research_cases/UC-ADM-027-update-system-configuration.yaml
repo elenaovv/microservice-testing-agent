@@ -1,0 +1,14 @@
+﻿id: UC-ADM-027
+role: admin
+name: Update System Configuration
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one editable configuration entry exists in Configure List from the Basic sidebar menu
+goal: The admin updates the Value field of an existing configuration entry while leaving its Name and Description unchanged.
+input_constraints:
+  configuration_value: enter a non-negative numeric value that is distinct from the selected configuration entry's current Value
+success_criteria:
+  - the configuration update is submitted successfully
+  - after refresh or reload, the same configuration entry displays the submitted Value
+  - the configuration Name and Description remain unchanged

@@ -29,6 +29,7 @@ from core.models import (
     UseCaseMetadata,
 )
 from core.evaluation_utils import build_phase1_metrics, load_network_capture
+from core.journey_contract import build_journey_contract
 from core.report_rendering import render_journey_guide
 
 TEST_RESULTS_DIR = Path("test-results")
@@ -119,6 +120,7 @@ def build_journey_guide(
         coverage=coverage,
         use_case=use_case,
         browse_network_requests=list(browse_network_requests or []),
+        contract=build_journey_contract(requested_journey, capture),
         msa_spec_path=msa_spec_path,
     )
 
@@ -191,6 +193,7 @@ def build_execution_report(
         test_attempts=test_attempts,
         failed_test_attempts=failed_test_attempts,
         browse_api_calls=list(journey_guide.browse_network_requests) if journey_guide is not None else None,
+        journey_contract=journey_guide.contract if journey_guide is not None else None,
     )
 
     return ExecutionReport(
@@ -217,7 +220,7 @@ def write_execution_report(
     report: ExecutionReport,
     output_dir: Path = TEST_RESULTS_DIR,
 ) -> Path:
-    output_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     report_path = output_dir / report_filename_for_test(report.filename)
     report.report_path = report_path
     report_path.write_text(report.to_json(), encoding="utf-8")
@@ -239,7 +242,7 @@ def write_journey_guide(
     guide: JourneyGuide,
     output_dir: Path = TEST_RESULTS_DIR,
 ) -> tuple[Path, Path]:
-    output_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     markdown_path = output_dir / journey_markdown_filename_for_test(guide.test_filename)
     json_path = output_dir / journey_json_filename_for_test(guide.test_filename)
     guide.markdown_path = markdown_path

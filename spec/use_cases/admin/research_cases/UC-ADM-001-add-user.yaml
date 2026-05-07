@@ -1,0 +1,22 @@
+﻿id: UC-ADM-001
+role: admin
+name: Add User
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - the generated user details used for this run do not already exist in the user list
+goal: The admin provides the required user details to create a new user account.
+input_constraints:
+  user_name: unique non-empty username generated at runtime
+  password: non-empty password accepted by the UI
+  gender: any visible gender option accepted by the UI
+  email: unique email address derived from the generated username
+  document_type: any visible document type option accepted by the UI
+  document_number: unique non-empty document number generated at runtime
+success_criteria:
+  - the admin user management flow is used
+  - the admin provides a unique name, password, gender, email, document type, and document number for the new user
+  - the create action is submitted successfully
+  - the new account appears in the user list
+  - the displayed username matches the submitted username
+  - the displayed email matches the submitted email when the list exposes email values

@@ -1,0 +1,391 @@
+========================================================================================================================
+PROMPT ENTRY: add_test.py
+========================================================================================================================
+captured_at_utc: 2026-04-28T13:11:52.293928+00:00
+requested_journey: Admin use case UC-ADM-001: Add User. The admin provides the required user details to create a new user account. Preconditions: authenticated as ROLE_ADMIN; the generated user details used for this run do not already exist in the user list. Success criteria: the admin user management flow is used; the admin provides a unique name, password, gender, email, document type, and document number for the new user; the create action is submitted successfully; the system creates a new user account; the new account appears in the user list.
+message_index: 65
+part: retry-prompt[1]
+timestamp: 2026-04-28 13:07:01.715409+00:00
+
+SYSTEM PROMPT
+------------------------------------------------------------------------------------------------------------------------
+You are a browser automation agent. Use browser tools to complete tasks step by step. After each action, assess the result and decide what to do next - don't stop until the task is done. When asked to find a link or element 'like X', match by text content or semantic meaning. If something unexpected happens (login wall, cookie banner, CAPTCHA), handle it before continuing. Call log_action after every meaningful browser interaction - record what you did and why. Use start_timer / stop_timer around slow steps (page load, search results, navigation). When writing pytest-playwright tests: always use the `page` fixture, never manage the browser yourself. Do not hardcode the app URL; read it from `BASE_URL` with a localhost fallback and navigate with `page.goto(BASE_URL, ...)`. Always call `page.set_default_timeout(30000)` at the start of the test. Then override individual steps with explicit timeouts based on 2-3x the observed browse timings. If a cookie consent banner appeared, dismissing it must be the FIRST step after navigation. When a microservice system specification text is provided in the prompt, use it as domain context, but verify the actual UI live. When writing the test, implement only the steps that are part of the intended successful journey described in the use case. Use browsing observations (element locators, timings, UI text) as implementation guidance, but derive the test structure from the use case goal and success criteria — not from exploratory steps, failed attempts, or navigation mistakes made during browsing. The assertions in the test must be derived directly from the use case success criteria. Do not invent assertions based on errors or unexpected states observed during browsing. If the browse phase encountered failures, those must not appear as test assertions unless the use case success criteria explicitly describes that outcome. Use `expect(locator).to_be_visible()` before interacting with elements so failures are clear. Set per-step timeouts to 2-3x the observed duration from your timers. Always add an `if __name__ == '__main__':` block at the bottom that launches Playwright directly and calls the test function, so the file can also be run with `python test_foo.py`. When choosing locators, prefer role-based selectors over text-based ones: use get_by_role('button', name='...') for buttons, get_by_label for inputs, get_by_role('link', name='...') for links. Reserve get_by_text only for asserting text content in non-interactive elements (headings, paragraphs, confirmation messages). Never use get_by_text to locate buttons, links, or form controls - those words typically appear in labels and headings too, causing strict mode violations. For dropdown, combobox, and select fields during browsing: always click to open the field, wait for the options menu to appear, locate and verify the target option value, and explicitly select it. Do not assume any field has a default value already selected — always interact explicitly and confirm the selection is visible in the field before proceeding. This ensures the generated test can reliably and deterministically set the same value. Playwright API rules: dialog handling requires page.on('dialog', lambda d: d.accept()) registered BEFORE the click that triggers it — page.expect_dialog() does not exist. to_have_url() accepts only a string or re.compile() pattern, never a lambda. .first is a property not a method: write locator.first, never locator.first(). to_contain_text() and get_by_text() are case-sensitive by default — use the exact case observed in the live UI, or wrap in re.compile('...', re.IGNORECASE). During browsing, never wait or search for specific text that you have not yet confirmed appears on the page. Observe the page state first, then record what you actually see. Always use raw strings in re.compile(): write re.compile(r'pattern\s*text') not re.compile('pattern\s*text'). For network assertions in tests use page.expect_response() or page.expect_request() as context managers wrapping the action that triggers the request — page.wait_for_response() does not exist in this API. You must strictly use native Playwright interactions (e.g., locator.click(), locator.press_sequentially()) for all form submissions and button presses to ensure frontend reactive frameworks properly bind data. Never use custom JavaScript (fetch, XMLHttpRequest, page.evaluate, etc.) to synthesize API requests or bypass the UI. For date controls, use the format shown by the UI widget and commit it with blur/Tab before submitting forms; do not assume backend timestamp formatting from the visible input text. For search requests, verify exact outbound JSON payload key names and values, not just semantic similarity; if keys or formats differ from intended fields, retry using native UI interactions and re-check the payload. During browsing, browser tool element refs (e.g. ref_42 from a snapshot) are different from HTML id attributes — use refs from the latest snapshot when calling browser interaction tools, and use HTML ids or role-based locators only when writing the Python test code. After clicking any action that may trigger a confirmation step (a destructive or irreversible operation), you MUST immediately take a fresh snapshot before doing anything else — this is not optional. A confirmation modal or overlay may have appeared and must be explicitly handled before any other interaction. If a modal is visible in the snapshot, record its text with log_action, interact with it, and call log_api_call for the resulting backend request. Only after the modal has been handled and an API call has been logged may you verify the outcome. When an interaction surface is required to complete the microservice use case, call log_interaction_contract with actual observed container, field, action, and service-effect facts. Use generic surface types such as web_page, web_modal, web_drawer, rest_endpoint, graphql_operation, grpc_method, cli_command, or message_event. If one action opens a modal and another action submits it, record opens_surface on the opener and expected_service_calls or side_effects only on the submit action. After you verify the success criteria, call log_success_observation with the exact proof used: surface_type, assertion, target value/source when applicable, and executable locator candidates that were validated live. If a broad text assertion would match multiple elements, record the scoped or exact locator that avoided the ambiguity. Do not continue scrolling or interacting with the background page while a modal is open. When a modal or overlay is visible, treat the top-most modal as the active interaction scope: only click elements inside it until it is closed. When a modal is open, always take a fresh snapshot and use only element refs inside the modal container. Never click background elements with matching labels; if the modal button is not found, re-snapshot and retry. If the same label appears in both the modal and background page, always choose the modal element and ignore the background match. If there is ambiguity between modal and background candidates, call log_action with a short 'modal scope resolution' note (modal anchor text + chosen control) before clicking. When a confirmation modal appears during browsing, record the exact text of its heading or message in your log_action note — this text is the most reliable anchor for locating the modal in the generated test. When writing test code for a confirmation modal: do not rely solely on get_by_role('dialog') — many UI frameworks render modals without an ARIA dialog role, so this locator may silently return nothing while the modal is visually present on screen. Instead, first wait for a text string that is unique to the modal (e.g. the confirmation message) to become visible, then scope the confirmation button click to the container of that text. For example: modal = page.locator(':has-text("<confirmation phrase>")').last; expect(modal).to_be_visible(); modal.get_by_role('button', name='<action>').click(). Always record the exact modal text and the exact confirmation element type during browsing, so the test can use them as anchors rather than guessing. Never click a bare page-level get_by_role('button', name='...') when a modal is open — identically-named buttons from the background page will match and you will click the wrong one. Never use coordinate-based clicks in generated tests (for example page.mouse.click(x, y)) — always click a locator anchored to modal text, role, or stable container context. Modal confirmation elements may be <button> or <a> elements depending on the UI framework — determine the actual type from the snapshot taken during browsing.  You must treat modal dialogs and overlays reliably and system-agnostically: Always locate a modal root first (ARIA role=dialog OR element with class containing 'modal'/'overlay'). Perform subsequent find/fill/click actions scoped to that modal root (use within(modal_root): ...). Prefer role-based selectors (get_by_role, get_by_label) and visible text; avoid global nth-index selectors. Wait until the modal is visible and focused before interacting. After submit, verify success by confirming the modal closed or by checking a success message or that the new row appears in the list. If an input is hidden or readonly, try the associated label or open an edit mode; if not possible, log a DOM snapshot and stop so a human can inspect. 
+
+REQUEST PROMPT PART
+------------------------------------------------------------------------------------------------------------------------
+### Error
+TimeoutError: locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#add_prompt').getByRole('button', { name: 'Cancel' })[22m
+
+
+BROWSE PHASE PROMPT (REFERENCE)
+------------------------------------------------------------------------------------------------------------------------
+Follow this user journey step by step in the browser. Call log_action after every interaction and use start_timer/stop_timer around slow steps. Use the execution brief below as domain context, but verify the actual UI live before deciding the flow. If the spec you read provides a specific entry point URL for the journey, navigate there directly — do not explore intermediate pages to rediscover information you already have. The UI under test is served from http://localhost:8080; navigate there before you start browsing.
+
+Execution brief:
+Journey:
+Admin use case UC-ADM-001: Add User. The admin provides the required user details to create a new user account. Preconditions: authenticated as ROLE_ADMIN; the generated user details used for this run do not already exist in the user list. Success criteria: the admin user management flow is used; the admin provides a unique name, password, gender, email, document type, and document number for the new user; the create action is submitted successfully; the system creates a new user account; the new account appears in the user list.
+
+System description:
+# Train Ticket System Description
+
+The Train Ticket system is a web-based application for purchasing train tickets. Users can query for available tickets between two cities on a specific date. The system displays various travel options, including different train types and seat classes with their respective prices. Passengers can then select a desired trip and proceed with booking and payment to reserve their seat.
+
+System administrators have access to a separate management interface. Through this interface, they can manage the underlying data of the system. This includes adding, modifying, or deleting train routes, travel services, and pricing information. Admins can also oversee all user orders within the system.
+
+Structured use case:
+ID: UC-ADM-001
+Role: admin
+Name: Add User
+Goal: The admin provides the required user details to create a new user account.
+Preconditions:
+- authenticated as ROLE_ADMIN
+- the generated user details used for this run do not already exist in the user list
+Success criteria:
+- the admin user management flow is used
+- the admin provides a unique name, password, gender, email, document type, and document number for the new user
+- the create action is submitted successfully
+- the system creates a new user account
+- the new account appears in the user list
+Source file: C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\use_cases\admin\research_cases\UC-ADM-001-add-user.yaml
+
+Relevant MSA slice:
+ts-admin-basic-info-service:
+- DELETE /api/v1/adminbasicservice/adminbasic/configs/{name}
+- GET /api/v1/adminbasicservice/adminbasic/configs
+- POST /api/v1/adminbasicservice/adminbasic/configs
+- PUT /api/v1/adminbasicservice/adminbasic/configs
+ts-station-service:
+- POST /api/v1/stationservice/stations/namelist
+- POST /api/v1/stationservice/stations/idlist
+- GET /api/v1/stationservice/stations/id/{stationNameForId}
+- GET /api/v1/stationservice/stations/name/{stationIdForName}
+ts-admin-user-service:
+- GET /api/v1/adminuserservice/users
+- POST /api/v1/adminuserservice/users
+- PUT /api/v1/adminuserservice/users
+- DELETE /api/v1/adminuserservice/users/{userId}
+ts-news-service:
+- GET /news-service/news
+- GET /news-service/{path}
+ts-admin-order-service:
+- DELETE /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}
+- GET /api/v1/adminorderservice/adminorder
+- POST /api/v1/adminorderservice/adminorder
+- PUT /api/v1/adminorderservice/adminorder
+ts-inside-payment-service:
+- GET /api/v1/inside_pay_service/inside_payment/account
+- POST /api/v1/inside_pay_service/inside_payment/account
+- GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}
+- GET /api/v1/inside_pay_service/inside_payment/{userId}/{money}
+ts-order-other-service:
+- GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}
+- POST /api/v1/orderOtherService/orderOther/admin
+- PUT /api/v1/orderOtherService/orderOther/admin
+- GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}
+ts-order-service:
+- GET /api/v1/orderservice/order/security/{checkDate}/{accountId}
+- POST /api/v1/orderservice/order/admin
+- PUT /api/v1/orderservice/order/admin
+- GET /api/v1/orderservice/order/{travelDate}/{trainNumber}
+ts-admin-travel-service:
+- GET /api/v1/admintravelservice/admintravel
+- POST /api/v1/admintravelservice/admintravel
+- PUT /api/v1/admintravelservice/admintravel
+- DELETE /api/v1/admintravelservice/admintravel/{tripId}
+ts-notification-service:
+- POST /api/v1/notifyservice/notification/order_create_success
+- POST /api/v1/notifyservice/notification/order_cancel_success
+- POST /api/v1/notifyservice/notification/order_changed_success
+- POST /api/v1/notifyservice/notification/preserve_success
+ts-admin-route-service:
+- GET /api/v1/adminrouteservice/adminroute
+- POST /api/v1/adminrouteservice/adminroute
+- DELETE /api/v1/adminrouteservice/adminroute/{routeId}
+ts-contacts-service:
+- GET /api/v1/contactservice/contacts/account/{accountId}
+- POST /api/v1/contactservice/contacts/admin
+
+The success criteria describe the end state you must reach by actively performing every step of the journey. Observing text on the current page is not completion — you must take actions to drive the UI to the goal state. After any delete or update action, do not rely on the current table view to confirm success — the page may have reloaded or scrolled. Explicitly verify by reloading or re-querying and confirming the entity is truly absent or updated in the refreshed view.
+
+You must strictly use native Playwright interactions (e.g., locator.click(), locator.press_sequentially()) for all form submissions and button presses to ensure frontend reactive frameworks properly bind data. Never use browser_evaluate to bypass the UI.
+
+For date inputs or date-picker controls, use the format shown in the UI control, then commit the value with a blur action (for example Tab or clicking outside) before pressing Search/Submit. Do not assume the backend payload date format from the input text; the frontend may normalize it (for example to YYYY-MM-DD 00:00:00).
+
+After every state-changing browser action (clicking a confirm button, submitting a form, triggering a deletion), call browser_network_requests and then call log_api_call once for each significant backend request you observe (method, path, and status code). Do not summarise network activity in text — use log_api_call so it is recorded structurally. This is especially important after confirmation modals: log the DELETE/POST/PUT that the confirmation triggered and its response status, so you can verify the operation reached the backend.
+
+For search/filter journeys specifically, inspect the outbound search request after clicking Search. If the payload semantics do not match the UI values you entered (for example wrong route keys or date value), adjust the UI interaction sequence (picker selection, sequential typing, blur/Tab) and retry once before concluding failure. Do not validate by value similarity alone: verify exact payload key names and values from the outbound JSON body, and log those exact keys in log_action (for example startPlace vs startingPlace, endPlace vs terminalPlace).
+
+At the end of browsing, you MUST call report_journey_outcome(success, reason) to record the outcome. Call with success=True only if all success criteria were met and verified, AND for state-changing journeys you have called log_api_call confirming a 2xx response. Call with success=False if the journey could not be completed for any reason — whether the UI could not be interacted with, or the system responded with an error. In both cases include the reason clearly. Stop immediately after calling report_journey_outcome(success=False).
+
+If a modal, dialog, or overlay is open, it has interaction priority over the background page. Take a fresh snapshot and interact only with refs inside the top-most open container until it closes. If labels are duplicated (for example Confirm/Delete/Submit), choose the element inside the open modal, not the background page. If this requires disambiguation, add a log_action note labelled 'modal scope resolution' that records the modal text anchor and the control you chose.
+
+Modal priority is strict: when a modal is visible, take a fresh snapshot and interact ONLY with refs inside the modal container. Never click background elements with matching labels. If you cannot find the intended control inside the modal, log a note and re-snapshot before trying again.
+
+When a modal opens, immediately log a modal anchor note with: container id/class, heading text, and the exact labels of its action buttons. This anchor text will be used to scope test locators.
+
+When you inspect select fields, record both the visible option label and its value attribute (for example 'Female' -> value=1). Log the select id and the label/value pairs.
+
+For modal form fields, log each input/select id with its label text. Use log_action so the generator can prefer id-based locators in the test.
+
+If modal action buttons are not discoverable by role, locate them by text/tag inside the modal container using the latest snapshot and click by element ref. Log the submit control tag, text, and id/class.
+
+For every required interaction surface, call log_interaction_contract after you inspect the live UI/API surface. This contract must record actual observed facts, not prose guesses. Use generic surface types such as web_page, web_modal, web_drawer, rest_endpoint, graphql_operation, grpc_method, cli_command, or message_event. For web surfaces, include container.kind, a stable container selector or anchor text, every required visible editable field with selector/id/label/tag/type/options plus validated_locators when known, and every submit/confirm action with actual selector/tag/text/role. If one action opens a modal and another action submits it, record opens_surface on the first action and expected_service_calls or side_effects only on the submitting action. 
+
+After verifying the requested success criteria, call log_success_observation with the exact proof you used. Include the surface_type, assertion, target value/source when applicable, and executable locator candidates that were validated live. Prefer scoped or exact locators over broad text matches, especially when the same text appears in multiple fields.
+
+When creating new records, generate unique values (timestamp/nonce suffix) and log the exact values used, so retries and generated tests avoid duplicate collisions.
+
+When you observe a confirmation or status message, record its exact text (preserving capitalisation) in your log_action note. After clicking any button that triggers an action (login, booking, payment, cancellation), check the browser console for messages prefixed with [dialog:alert] — these are JavaScript alerts captured without blocking the page. Important: console messages are cumulative. A [dialog:alert] message visible after a click may have been logged at page load, not as a response to your click. Only treat a [dialog:alert] as a response to your action if it appears AFTER the action completes. Always also check the DOM state (visible text, status fields) to confirm the actual outcome.
+
+Before filling any form that requires account credentials or test data, you must call read_spec_file('C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\msa.yaml') first to retrieve the correct inputs from the MSA specification. Do not attempt to guess or infer credentials from the live UI. This applies to login forms, registration forms, payment fields, or any other form requiring specific test data. After calling read_spec_file, call log_action to record the credentials and entry point URLs you found, so they are available during test generation.
+
+TEST GENERATION PHASE PROMPT (REFERENCE)
+------------------------------------------------------------------------------------------------------------------------
+Using the execution brief, your logged actions, and your recorded timings below, write a pytest-playwright test that reproduces the intended successful journey steps exactly (exclude exploratory detours and failed intermediate attempts). Derive every assertion from the use case success criteria. Never assert states observed incidentally during browsing that are not part of the success criteria. For tests involving delete, update, or similar operations on existing data, do not hardcode a specific entity name or ID observed during browsing. Select the first available entity matching the preconditions dynamically at runtime, capture that target identifier from the chosen row, and use that same identifier for all post-action checks (network assertion and refreshed-list verification). Do not switch target rows mid-test. If a stable destructive target cannot be identified safely, prefer creating a disposable entity first and deleting that exact entity, or fail fast with a clear precondition assertion. Use `import os` and define `BASE_URL = os.environ.get("BASE_URL", "http://localhost:8080")` once near the top of the file. Always navigate with `page.goto(BASE_URL, ...)` instead of hardcoding the URL.
+
+For create/register flows, generate unique values at runtime (for example time.time_ns() or a UUID suffix) and reuse those variables for assertions. Avoid hardcoded static usernames/emails/document numbers that could collide across runs.
+
+Use the observed backend requests to add focused network-aware checks where appropriate. Prefer `page.expect_request()` or `page.expect_response()` for critical booking and order operations, and wrap them around the exact action that triggers the request. You are strictly forbidden from writing custom JavaScript (fetch, XMLHttpRequest, etc.) to synthesize API requests or bypass the UI. Let the frontend application handle all network communication.
+
+For date fields in booking/search forms, interact through the UI control format (often locale-formatted) and commit the value with blur/Tab before clicking Search. Do not force backend timestamp text into the input field. When possible, assert the outbound search request payload contains the expected route/date semantics from the use case.
+
+Execution brief:
+Journey:
+Admin use case UC-ADM-001: Add User. The admin provides the required user details to create a new user account. Preconditions: authenticated as ROLE_ADMIN; the generated user details used for this run do not already exist in the user list. Success criteria: the admin user management flow is used; the admin provides a unique name, password, gender, email, document type, and document number for the new user; the create action is submitted successfully; the system creates a new user account; the new account appears in the user list.
+
+System description:
+# Train Ticket System Description
+
+The Train Ticket system is a web-based application for purchasing train tickets. Users can query for available tickets between two cities on a specific date. The system displays various travel options, including different train types and seat classes with their respective prices. Passengers can then select a desired trip and proceed with booking and payment to reserve their seat.
+
+System administrators have access to a separate management interface. Through this interface, they can manage the underlying data of the system. This includes adding, modifying, or deleting train routes, travel services, and pricing information. Admins can also oversee all user orders within the system.
+
+Structured use case:
+ID: UC-ADM-001
+Role: admin
+Name: Add User
+Goal: The admin provides the required user details to create a new user account.
+Preconditions:
+- authenticated as ROLE_ADMIN
+- the generated user details used for this run do not already exist in the user list
+Success criteria:
+- the admin user management flow is used
+- the admin provides a unique name, password, gender, email, document type, and document number for the new user
+- the create action is submitted successfully
+- the system creates a new user account
+- the new account appears in the user list
+Source file: C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\use_cases\admin\research_cases\UC-ADM-001-add-user.yaml
+
+Relevant MSA slice:
+ts-admin-basic-info-service:
+- DELETE /api/v1/adminbasicservice/adminbasic/configs/{name}
+- GET /api/v1/adminbasicservice/adminbasic/configs
+- POST /api/v1/adminbasicservice/adminbasic/configs
+- PUT /api/v1/adminbasicservice/adminbasic/configs
+ts-station-service:
+- POST /api/v1/stationservice/stations/namelist
+- POST /api/v1/stationservice/stations/idlist
+- GET /api/v1/stationservice/stations/id/{stationNameForId}
+- GET /api/v1/stationservice/stations/name/{stationIdForName}
+ts-admin-user-service:
+- GET /api/v1/adminuserservice/users
+- POST /api/v1/adminuserservice/users
+- PUT /api/v1/adminuserservice/users
+- DELETE /api/v1/adminuserservice/users/{userId}
+ts-news-service:
+- GET /news-service/news
+- GET /news-service/{path}
+ts-admin-order-service:
+- DELETE /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}
+- GET /api/v1/adminorderservice/adminorder
+- POST /api/v1/adminorderservice/adminorder
+- PUT /api/v1/adminorderservice/adminorder
+ts-inside-payment-service:
+- GET /api/v1/inside_pay_service/inside_payment/account
+- POST /api/v1/inside_pay_service/inside_payment/account
+- GET /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}
+- GET /api/v1/inside_pay_service/inside_payment/{userId}/{money}
+ts-order-other-service:
+- GET /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}
+- POST /api/v1/orderOtherService/orderOther/admin
+- PUT /api/v1/orderOtherService/orderOther/admin
+- GET /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}
+ts-order-service:
+- GET /api/v1/orderservice/order/security/{checkDate}/{accountId}
+- POST /api/v1/orderservice/order/admin
+- PUT /api/v1/orderservice/order/admin
+- GET /api/v1/orderservice/order/{travelDate}/{trainNumber}
+ts-admin-travel-service:
+- GET /api/v1/admintravelservice/admintravel
+- POST /api/v1/admintravelservice/admintravel
+- PUT /api/v1/admintravelservice/admintravel
+- DELETE /api/v1/admintravelservice/admintravel/{tripId}
+ts-notification-service:
+- POST /api/v1/notifyservice/notification/order_create_success
+- POST /api/v1/notifyservice/notification/order_cancel_success
+- POST /api/v1/notifyservice/notification/order_changed_success
+- POST /api/v1/notifyservice/notification/preserve_success
+ts-admin-route-service:
+- GET /api/v1/adminrouteservice/adminroute
+- POST /api/v1/adminrouteservice/adminroute
+- DELETE /api/v1/adminrouteservice/adminroute/{routeId}
+ts-contacts-service:
+- GET /api/v1/contactservice/contacts/account/{accountId}
+- POST /api/v1/contactservice/contacts/admin
+
+Minimal replay plan derived from browsing:
+1. Surface web_page: TrainTicket Login
+   - fill/select Username: candidate css=input[placeholder='Username']
+   - fill/select Password: candidate css=input[placeholder='Password']
+   - action Login: candidate css=button; opens=admin authenticated area / user management flow
+2. Surface web_page: User List
+   - action Add: candidate css=button; opens=user creation form
+3. Surface web_modal: Add User
+   - fill/select Name: candidate css=input[placeholder='Name']
+   - fill/select Password: candidate css=input[placeholder='Password']
+   - fill/select Gender: candidate css=select
+     options: Male=0, Female=1
+   - fill/select Email: candidate css=input[placeholder='Email']
+   - fill/select Document Type: candidate css=select
+     options: ID Card=0, Passport=1, Other=2
+   - fill/select Document Number: candidate css=input[placeholder='Document Number']
+   - action Cancel: candidate css=span.am-modal-btn[data-am-modal-cancel]
+   - action Add: candidate css=span.am-modal-btn[data-am-modal-confirm]
+     expects POST /api/v1/adminuserservice/users status=200 purpose=create user account
+Success observations:
+- new user visible in user list: Refreshed user table contains the created username ucadm001_678277.; candidate css=table; target=ucadm001_678277; source=POST /api/v1/adminuserservice/users response body payload name
+Success checks:
+- the admin user management flow is used
+- the admin provides a unique name, password, gender, email, document type, and document number for the new user
+- the create action is submitted successfully
+- the system creates a new user account
+- the new account appears in the user list
+- inspect menu state: Management click did not visibly expand in snapshot; proceeding to use the visible Add action in the admin panel and then locate the user management path from the resulting view.
+- discover admin sections: Sidebar expanded and shows User link plus other admin sections. A date-picker overlay also appeared unexpectedly, but the visible user management entry is now available.
+- modal scope resolution: Visible overlay is a date-picker, not the task flow. Chose the background User link in the Management sidebar to reach user management.
+- verify refreshed user list: Waiting for the refreshed table after create submission so the new account can be confirmed in the user list.
+- inspect refreshed list: The user list reloaded after submission; need to verify the newly created username appears in the refreshed table.
+
+Exploratory browse actions are archived in the journey guide. Use this replay plan and the structured journey contract as the default source of truth; consult full logs only when the replay plan is incomplete.
+
+For final assertions, prefer structured success_observations from the contract. They are the exact evidence verified during browsing. Preserve their scoping and exactness instead of replacing them with broad page-level text matches.
+
+Recorded timings:
+- admin login load: 6.2s
+- open add user form: 6.2s
+- create unique user: 5.3s
+- browse_total: 246.2s
+
+Backend requests observed during exploration:
+GET   /api/v1/adminuserservice/users
+POST  /api/v1/adminuserservice/users
+GET   /api/v1/adminuserservice/users
+
+Structured journey contract:
+interaction_surface: web-ui
+service_interfaces: rest
+state_changing: False
+complete: True
+expected_service_calls:
+- GET /api/v1/adminuserservice/users (observed; status=200; purpose=verification_read)
+- POST /api/v1/adminuserservice/users (observed; status=200; purpose=create user account; trigger=Add; selector_hint=container=#add_prompt; action=span.am-modal-btn[data-am-modal-confirm])
+interaction_contracts:
+- interaction 1: surface=web_page; kind=page; selector=http://localhost:8080/adminlogin.html; anchor=TrainTicket Login
+  field: name=Username; label=Username; selector=input[placeholder='Username']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Username']
+    locator: candidate; executable; role=textbox|Username
+  field: name=Password; label=Password; selector=input[placeholder='Password']; tag=input; type=password; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Password']
+    locator: candidate; executable; role=textbox|Password
+  action: name=Login; text=Login; selector=button; tag=button; role=button; opens_surface=admin authenticated area / user management flow
+    locator: candidate; executable; css=button
+    locator: candidate; executable; role=button|Login
+- interaction 2: surface=web_page; kind=page; selector=http://localhost:8080/admin_user.html; anchor=User List
+  action: name=Add; text=Add; selector=button; tag=button; role=button; opens_surface=user creation form
+    locator: candidate; executable; css=button
+    locator: candidate; executable; role=button|Add
+- interaction 3: surface=web_modal; kind=modal; selector=#add_prompt; anchor=Add User
+  field: name=Name; label=Name; selector=input[placeholder='Name']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Name']
+    locator: candidate; executable; role=textbox|Name
+  field: name=Password; label=Password; selector=input[placeholder='Password']; tag=input; type=password; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Password']
+    locator: candidate; executable; role=textbox|Password
+  field: name=Gender; label=Gender; selector=select; tag=select; type=select; role=combobox; visible=True; editable=True
+    locator: candidate; executable; css=select
+    locator: candidate; executable; role=combobox|Gender
+    options: Male=0, Female=1
+  field: name=Email; label=Email; selector=input[placeholder='Email']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Email']
+    locator: candidate; executable; role=textbox|Email
+  field: name=Document Type; label=Document Type; selector=select; tag=select; type=select; role=combobox; visible=True; editable=True
+    locator: candidate; executable; css=select
+    locator: candidate; executable; role=combobox|Document Type
+    options: ID Card=0, Passport=1, Other=2
+  field: name=Document Number; label=Document Number; selector=input[placeholder='Document Number']; tag=input; type=text; role=textbox; visible=True; editable=True
+    locator: candidate; executable; css=input[placeholder='Document Number']
+    locator: candidate; executable; role=textbox|Document Number
+  action: name=Cancel; text=Cancel; selector=span.am-modal-btn[data-am-modal-cancel]; tag=span; role=button
+    locator: candidate; executable; css=span.am-modal-btn[data-am-modal-cancel]
+    locator: candidate; executable; role=button|Cancel
+  action: name=Add; text=Add; selector=span.am-modal-btn[data-am-modal-confirm]; tag=span; role=button
+    locator: candidate; executable; css=span.am-modal-btn[data-am-modal-confirm]
+    locator: candidate; executable; role=button|Add
+    triggers: POST /api/v1/adminuserservice/users status=200 interface=rest purpose=create user account
+success_observations:
+- label=new user visible in user list; surface=web_page; assertion=Refreshed user table contains the created username ucadm001_678277.; target=ucadm001_678277; target_source=POST /api/v1/adminuserservice/users response body payload name; reason=The refreshed user list displayed a row for ucadm001_678277 with matching email and document number.
+  locator: candidate; executable; text=ucadm001_678277
+  locator: candidate; executable; css=table
+success_checks:
+- the admin user management flow is used
+- the admin provides a unique name, password, gender, email, document type, and document number for the new user
+- the create action is submitted successfully
+- the system creates a new user account
+- the new account appears in the user list
+- inspect menu state: Management click did not visibly expand in snapshot; proceeding to use the visible Add action in the admin panel and then locate the user management path from the resulting view.
+- discover admin sections: Sidebar expanded and shows User link plus other admin sections. A date-picker overlay also appeared unexpectedly, but the visible user management entry is now available.
+- modal scope resolution: Visible overlay is a date-picker, not the task flow. Chose the background User link in the Management sidebar to reach user management.
+- verify refreshed user list: Waiting for the refreshed table after create submission so the new account can be confirmed in the user list.
+- inspect refreshed list: The user list reloaded after submission; need to verify the newly created username appears in the refreshed table.
+
+Save it as 'add_test.py' using create_python_test_file, then run it with run_test_file. If it fails, fix and retry at most 5 times.
+
+Locator strategy reminder: use get_by_role over get_by_text for interactive elements. Strict mode will fail if a locator matches more than one element. For every locator you write, ask: 'is this word unique on the page?' For form inputs, never use the field's current value as its locator — JS-filled values are invisible to CSS attribute selectors. Prefer id-based locators (#id), positional locators (locator('input').nth(N)), or get_by_placeholder() only when the placeholder attribute is set in the HTML source. If you see a pre-filled form during browsing, locate its fields by structure, not by content.
+
+Login submission: always click the actual login form submit control by role (button or input[type=submit]) scoped to the login form. Do not use get_by_text fallbacks or body clicks for login.
+
+If the browse logs include element ids for modal fields, prefer id-based locators over role/label lookups inside the modal. Only use role/label when ids are missing. Always scope modal field locators to the anchored modal container (for example modal.locator('#add_user_name')).
+
+Locator policy: use validated executable locator candidates first, scoped to their captured container. If none are validated, use stable executable CSS/test-id candidates, then scoped role/label candidates, then text candidates. Use positional locators only inside a validated container. Ignore non-executable snapshot locators such as browser refs, generic[ref=...], textbox[aria-label=...], combobox[aria-label=...], or button/text=....
+
+If the browse logs include the modal submit control tag/id/class/data attributes, use that exact selector within the modal. Do not assume the confirm control has a button role; if it is a span/div, locate it by tag/class/text and click it.
+
+Never use coordinate-based interactions in generated tests (for example page.mouse.click(x, y)); click explicit locators scoped to the correct container instead.
+
+For any form field that showed autocomplete behaviour during browsing (a dropdown appeared after typing), use `locator.press_sequentially(value)` instead of `locator.fill(value)` in the generated test. `fill()` sets the value silently without triggering JavaScript input events, so autocomplete never fires and the UI submits an unrecognised value — causing empty search results or silent form failures. After `press_sequentially()`, wait for the dropdown option to appear and click it before continuing: `page.get_by_role('option', name=value).first.click()` or the equivalent visible suggestion locator.
+
+If the browse logs include select option values, prefer `select_option(value=...)` over labels. Use label-based selection only when the label is confirmed visible in the control.
+
+For all text content assertions use re.compile('...', re.IGNORECASE) rather than a plain string — never rely on remembered capitalisation.
+
+
+        Modal-scoping helper: when a modal/dialog/overlay is involved, always locate a reliable
+        modal anchor (unique heading text or distinctive phrase) and scope subsequent actions
+        to that container using Playwright locators. Example:
+
+        modal = page.locator(":has-text('<modal anchor>')").last
+        modal.wait_for(state="visible")
+        modal.locator("#add_user_name").fill(value)
+        modal.locator("[data-am-modal-confirm]").click()
+        modal.wait_for(state="hidden")
+
+        This keeps locators unambiguous across UI frameworks and avoids background clicks.
+        
+
+When a modal is open, never use page-level locators for its buttons or fields. Always use modal-scoped locators anchored to modal text captured during browsing.
+
+Repair rule: use the failure_diagnosis first. If it says the test was blocked before the required service call, repair that first failing locator/action instead of chasing the missing network call. Only repair the service trigger when the diagnosis shows the flow reached the trigger action without emitting the required side effect.
+
+If you need credentials or any other specification details not already present above, call read_spec_file('C:\Users\eovsiann\Desktop\msa-browsing-agent-27-04\microservice-testing-agent\spec\msa.yaml').

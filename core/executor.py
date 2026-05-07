@@ -4,23 +4,27 @@ from pathlib import Path
 
 from core.models import ExecutionArtifact, ExecutionResult
 
-TEST_RESULTS_DIR = Path("runtime-results")
-PYTEST_ARGS = (
+DEFAULT_RUNTIME_RESULTS_DIR = Path("runtime-results")
+PYTEST_ARGS_BASE = (
     "-v",
     "--tb=short",
     "--headed",
-    "--timeout=30",
+    "--timeout=180",
     "--screenshot=only-on-failure",
-    "--output=runtime-results",
 )
+
+
+def _build_pytest_args(runtime_results_dir: Path) -> list[str]:
+    return [*PYTEST_ARGS_BASE, "--output", str(runtime_results_dir)]
 
 
 def run_generated_test(
     filename: str,
     generated_tests_dir: Path,
-    test_results_dir: Path = TEST_RESULTS_DIR,
+    test_results_dir: Path = DEFAULT_RUNTIME_RESULTS_DIR,
     base_url: str | None = None,
     network_results_dir: Path | None = None,
+    runtime_results_dir: Path | None = None,
 ) -> ExecutionResult:
     test_path = generated_tests_dir / filename
     if not test_path.exists():
@@ -37,8 +41,11 @@ def run_generated_test(
         network_results_dir.mkdir(parents=True, exist_ok=True)
         env["NETWORK_RESULTS_DIR"] = str(network_results_dir)
 
+    resolved_runtime_results_dir = runtime_results_dir or test_results_dir
+    resolved_runtime_results_dir.mkdir(parents=True, exist_ok=True)
+
     result = subprocess.run(
-        ["uv", "run", "pytest", str(test_path), *PYTEST_ARGS],
+        ["uv", "run", "pytest", str(test_path), *_build_pytest_args(resolved_runtime_results_dir)],
         capture_output=True,
         env=env,
         text=True,
@@ -47,7 +54,7 @@ def run_generated_test(
 
     artifacts: list[ExecutionArtifact] = []
     if result.returncode != 0:
-        screenshot = find_latest_artifact(test_results_dir, ".png")
+        screenshot = find_latest_artifact(resolved_runtime_results_dir, ".png")
         if screenshot is not None:
             artifacts.append(
                 ExecutionArtifact(kind="screenshot", path=screenshot)

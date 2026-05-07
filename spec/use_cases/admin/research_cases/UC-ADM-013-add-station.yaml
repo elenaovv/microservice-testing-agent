@@ -1,0 +1,14 @@
+﻿id: UC-ADM-013
+role: admin
+name: Add Station
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - input station name does not already exist in the Station List from the Basic sidebar menu
+goal: The admin provides a station name and stay time to register a new station.
+input_constraints:
+  station_name: unique non-empty station name generated at runtime
+  stay_time: positive integer
+success_criteria:
+  - the new station appears in the station list with the submitted station name
+  - the displayed stay time matches the submitted stay time
