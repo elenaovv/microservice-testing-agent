@@ -2,9 +2,9 @@
 
 Verifies every (use_case, fault) pair in [spec/faults/catalog.yaml](../../spec/faults/catalog.yaml)
 *before* the main study, so we never spend runs measuring detection of a fault
-that no oracle could possibly catch (the S7-on-UC-VIS-002 lesson).
+that no oracle could possibly catch.
 
-## Mechanism in one paragraph
+## Mechanism
 
 For each fault, the runner launches mitmproxy twice and runs the matching
 oracle test against each. **Passthrough run** — the proxy is transparent, the
