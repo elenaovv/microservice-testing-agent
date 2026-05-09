@@ -20,6 +20,7 @@ from prompts.generator import (
     load_structured_use_case_by_id,
     load_use_case_index,
     load_use_cases,
+    resolve_indexed_use_case_path,
 )
 
 # workflow is imported lazily inside each command handler so that --model can
@@ -174,6 +175,14 @@ def _model_slug(model: str) -> str:
     return slug or "default-model"
 
 
+def _is_default_structured_index(index_path: Path) -> bool:
+    return index_path.resolve() == STRUCTURED_USE_CASE_INDEX_PATH.resolve()
+
+
+def _is_research_case_entry(entry: dict[str, str]) -> bool:
+    return "research_cases" in Path(entry.get("path", "")).parts
+
+
 def _load_experiment_use_cases(args: argparse.Namespace) -> list[StructuredUseCase]:
     index_path = Path(args.use_case_index) if args.use_case_index else STRUCTURED_USE_CASE_INDEX_PATH
 
@@ -184,14 +193,14 @@ def _load_experiment_use_cases(args: argparse.Namespace) -> list[StructuredUseCa
         return [load_structured_use_case(Path(args.use_case_file))]
 
     entries = load_use_case_index(index_path)
+    if _is_default_structured_index(index_path):
+        entries = [entry for entry in entries if _is_research_case_entry(entry)]
     if not entries:
         raise ValueError(f"No use cases found in index: {index_path}")
 
     use_cases: list[StructuredUseCase] = []
     for entry in entries:
-        uc_path = Path(entry["path"])
-        if not uc_path.is_absolute():
-            uc_path = Path(__file__).resolve().parent / uc_path
+        uc_path = resolve_indexed_use_case_path(index_path, entry["path"])
         if not uc_path.exists():
             print(f"\033[33mWarning: use case file not found, skipping: {uc_path}\033[0m", flush=True)
             continue
