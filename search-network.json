@@ -1,6 +1,0 @@
-[POST] http://localhost:8080/api/v1/users/login => [200] 
-  Request body: {"username":"fdse_microservice","password":"111111","verificationCode":"1234"}
-[POST] http://localhost:8080/api/v1/travelservice/trips/left => [200] 
-  Request body: {"startPlace":"Shanghai Hongqiao","endPlace":"Jiaxingnan","departureTime":"2026-06-10 00:00:00"}
-[POST] http://localhost:8080/api/v1/travel2service/trips/left => [200] 
-  Request body: {"startPlace":"Shanghai Hongqiao","endPlace":"Jiaxingnan","departureTime":"2026-06-10 00:00:00"}

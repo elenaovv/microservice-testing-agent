@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -c ' *)",
-      "Bash(docker exec train-ticket-ts-mysql-1 mysql -uroot -proot -e ' *)",
-      "Bash(docker restart *)"
-    ]
-  }
-}
