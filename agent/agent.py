@@ -10,6 +10,7 @@ from core.models import Deps
 load_dotenv()
 
 MODEL_NAME = os.environ.get("OPENAI_MODEL", "openai:gpt-5.4").strip() or "openai:gpt-5.4"
+INTERNAL_AGENT_RETRIES = int(os.environ.get("AGENT_INTERNAL_RETRIES", "2"))
 
 _SUPPRESS_DIALOGS = str(Path(__file__).resolve().parent.parent / "suppress_dialogs.js")
 
@@ -51,6 +52,10 @@ SYSTEM_PROMPT_TEXT = (
     "(headings, paragraphs, confirmation messages). "
     "Never use get_by_text to locate buttons, links, or form controls - "
     "those words typically appear in labels and headings too, causing strict mode violations. "
+    "For dropdown, combobox, and select fields during browsing: always click to open the field, "
+    "wait for the options menu to appear, locate and verify the target option value, and explicitly select it. "
+    "Do not assume any field has a default value already selected — always interact explicitly and confirm the selection "
+    "is visible in the field before proceeding. This ensures the generated test can reliably and deterministically set the same value. "
     "Playwright API rules: "
     "dialog handling requires page.on('dialog', lambda d: d.accept()) registered BEFORE the click that triggers it — page.expect_dialog() does not exist. "
     "to_have_url() accepts only a string or re.compile() pattern, never a lambda. "
@@ -77,9 +82,35 @@ SYSTEM_PROMPT_TEXT = (
     "If a modal is visible in the snapshot, record its text with log_action, interact with it, "
     "and call log_api_call for the resulting backend request. "
     "Only after the modal has been handled and an API call has been logged may you verify the outcome. "
+    "When an interaction surface is required to complete the microservice use case, call "
+    "log_interaction_contract with actual observed container, field, action, and service-effect facts. "
+    "Use generic surface types such as web_page, web_modal, web_drawer, rest_endpoint, graphql_operation, "
+    "grpc_method, cli_command, or message_event. If one action opens a modal and another action submits it, "
+    "record opens_surface on the opener and expected_service_calls or side_effects only on the submit action. "
+    "For required fields and state-changing actions, include at least one locator candidate that was validated "
+    "with a live lookup inside the active surface; never pair an observed tag with an incompatible selector "
+    "such as tag=div and selector=button:has-text(...). "
+    "If you first log an interaction contract with guessed or incomplete locators, and a later DOM inspection "
+    "discovers stable IDs, scoped selectors, or the actual submit control, call log_interaction_contract again "
+    "for the same surface with the corrected fields/actions and validated_locators. Do not leave the corrected "
+    "evidence only in a log_action note. "
+    "When you inspect pre-action state that will be needed later, such as the selected target record "
+    "and original values that must be preserved, call log_baseline_observation with structured facts. "
+    "Baseline observations are setup evidence only; they must never be used as final success proof. "
+    "After you verify the success criteria, call log_success_observation with the exact proof used: "
+    "surface_type, assertion, target value/source when applicable, and executable locator candidates that were "
+    "validated live. If a broad text assertion would match multiple elements, record the scoped or exact "
+    "locator that avoided the ambiguity. For repeated records such as rows, cards, list items, or detail "
+    "panels, record a scope locator for the record/container plus one assertion per important field. "
+    "When duplicate values appear inside the same scope, prefer structural locators within the scope "
+    "(for example nth cell/field positions or stable child selectors) and record them exactly. "
+    "Do not call log_success_observation until the required operation has completed, required state-changing "
+    "backend effects have been observed when applicable, and the final UI/API/CLI/event proof has been verified. "
     "Do not continue scrolling or interacting with the background page while a modal is open. "
     "When a modal or overlay is visible, treat the top-most modal as the active interaction scope: "
     "only click elements inside it until it is closed. "
+    "When a modal is open, always take a fresh snapshot and use only element refs inside the modal container. "
+    "Never click background elements with matching labels; if the modal button is not found, re-snapshot and retry. "
     "If the same label appears in both the modal and background page, always choose the modal element "
     "and ignore the background match. "
     "If there is ambiguity between modal and background candidates, call log_action with a short "
@@ -101,13 +132,20 @@ SYSTEM_PROMPT_TEXT = (
     "always click a locator anchored to modal text, role, or stable container context. "
     "Modal confirmation elements may be <button> or <a> elements depending on the UI framework — "
     "determine the actual type from the snapshot taken during browsing. "
+    " You must treat modal dialogs and overlays reliably and system-agnostically: "
+    "Always locate a modal root first (ARIA role=dialog OR element with class containing 'modal'/'overlay'). "
+    "Perform subsequent find/fill/click actions scoped to that modal root (use within(modal_root): ...). "
+    "Prefer role-based selectors (get_by_role, get_by_label) and visible text; avoid global nth-index selectors. "
+    "Wait until the modal is visible and focused before interacting. "
+    "After submit, verify success by confirming the modal closed or by checking a success message or that the new row appears in the list. "
+    "If an input is hidden or readonly, try the associated label or open an edit mode; if not possible, log a DOM snapshot and stop so a human can inspect. "
 )
 
 agent = Agent(
     MODEL_NAME,
     deps_type=Deps,
     mcp_servers=[mcp],
-    retries=5,
+    retries=INTERNAL_AGENT_RETRIES,
     system_prompt=SYSTEM_PROMPT_TEXT,
 )
 

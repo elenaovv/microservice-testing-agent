@@ -1,9 +1,0 @@
-﻿id: UC-ADM-013
-role: admin
-name: Add Station
-preconditions:
-  authenticated_as: ROLE_ADMIN
-  state: []
-goal: The admin provides a station name and stay time to register a new station.
-success_criteria:
-  - the new station appears in the station list

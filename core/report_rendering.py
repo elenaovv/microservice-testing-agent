@@ -84,6 +84,47 @@ def render_execution_report(report: ExecutionReport) -> str:
         )
         if report.phase1.failure_kind:
             lines.append(f"- phase1.failure_kind: {report.phase1.failure_kind}")
+        if report.phase1.failure_diagnosis is not None:
+            diagnosis = report.phase1.failure_diagnosis
+            if diagnosis.kind:
+                lines.append(f"- phase1.failure_diagnosis.kind: {diagnosis.kind}")
+            if diagnosis.failing_line:
+                lines.append(
+                    f"- phase1.failure_diagnosis.failing_line: {diagnosis.failing_line}"
+                )
+            if diagnosis.failing_locator:
+                lines.append(
+                    f"- phase1.failure_diagnosis.failing_locator: {diagnosis.failing_locator}"
+                )
+            lines.append(
+                "- phase1.failure_diagnosis.blocked_before_required_call: "
+                f"{diagnosis.blocked_before_required_call}"
+            )
+            if diagnosis.suggested_contract_surface:
+                lines.append(
+                    "- phase1.failure_diagnosis.suggested_contract_surface: "
+                    f"{diagnosis.suggested_contract_surface}"
+                )
+            if diagnosis.suggested_repair_strategy:
+                lines.append(
+                    "- phase1.failure_diagnosis.suggested_repair_strategy: "
+                    f"{diagnosis.suggested_repair_strategy}"
+                )
+            if diagnosis.repair_candidates:
+                rendered_candidates = ", ".join(
+                    f"{candidate.strategy}={candidate.value}"
+                    for candidate in diagnosis.repair_candidates[:3]
+                )
+                lines.append(
+                    "- phase1.failure_diagnosis.repair_candidates: "
+                    f"{rendered_candidates}"
+                )
+        if report.phase1.missing_expected_service_calls:
+            missing = ", ".join(
+                f"{item.get('method', '')} {item.get('path', '')}"
+                for item in report.phase1.missing_expected_service_calls
+            )
+            lines.append(f"- phase1.missing_expected_service_calls: {missing}")
 
     if report.use_case is not None:
         lines.append(f"- use_case.id: {report.use_case.id}")
@@ -128,6 +169,9 @@ def render_journey_guide_summary(guide: JourneyGuide) -> str:
     lines.append(f"- endpoint_candidates: {guide.coverage.endpoint_candidate_count}")
     lines.append(f"- services: {guide.coverage.service_candidate_count}")
     lines.append(f"- browse_api_requests: {len(guide.browse_network_requests)}")
+    if guide.contract is not None:
+        lines.append(f"- contract.complete: {guide.contract.complete}")
+        lines.append(f"- contract.state_changing: {guide.contract.state_changing}")
     return "\n".join(lines)
 
 def render_journey_guide(guide: JourneyGuide) -> str:
@@ -176,6 +220,117 @@ def render_journey_guide(guide: JourneyGuide) -> str:
     else:
         lines.append("No timings were recorded.")
 
+    if guide.contract is not None:
+        lines.extend(
+            [
+                "",
+                "## Journey Contract",
+                f"- Interaction surface: {guide.contract.interaction_surface}",
+                "- Service interfaces: "
+                + (
+                    ", ".join(guide.contract.service_interfaces)
+                    if guide.contract.service_interfaces
+                    else "none observed"
+                ),
+                f"- State changing: {guide.contract.state_changing}",
+                f"- Complete: {guide.contract.complete}",
+            ]
+        )
+        if guide.contract.completeness_issues:
+            lines.append("")
+            lines.append("### Contract Issues")
+            for issue in guide.contract.completeness_issues:
+                lines.append(f"- {issue}")
+        if guide.contract.expected_service_calls:
+            lines.append("")
+            lines.append("### Expected Service Calls")
+            for call in guide.contract.expected_service_calls:
+                required = "required" if call.required else "observed"
+                status = f" -> {call.status_code}" if call.status_code else ""
+                purpose = f"; purpose={call.purpose}" if call.purpose else ""
+                trigger = (
+                    f"; trigger={call.trigger_action}"
+                    if call.trigger_action
+                    else ""
+                )
+                selector = (
+                    f"; selector_hint={call.trigger_selector_hint}"
+                    if call.trigger_selector_hint
+                    else ""
+                )
+                lines.append(
+                    f"- {call.method} {call.path}{status} ({required}{purpose}{trigger}{selector})"
+                )
+        if guide.contract.interaction_contracts:
+            lines.append("")
+            lines.append("### Interaction Contracts")
+            for index, interaction in enumerate(
+                guide.contract.interaction_contracts,
+                start=1,
+            ):
+                container = interaction.container
+                lines.append(
+                    f"- {index}. surface={interaction.surface_type}; "
+                    f"kind={container.kind or 'unknown'}; "
+                    f"selector={container.selector or '-'}; "
+                    f"anchor={container.anchor_text or '-'}"
+                )
+                for field in interaction.fields:
+                    label = field.semantic_name or field.label or field.name or "field"
+                    lines.append(
+                        f"  - field {label}: selector={field.selector or '-'}; "
+                        f"id={field.element_id or '-'}; tag={field.tag or '-'}; "
+                        f"type={field.input_type or '-'}; visible={field.visible}; "
+                        f"editable={field.editable}"
+                    )
+                    for locator in field.validated_locators:
+                        state = "validated" if locator.validated else "candidate"
+                        executable = "executable" if locator.executable else "non-executable"
+                        scope = f"; scope={locator.scope}" if locator.scope else ""
+                        lines.append(
+                            f"    - locator {state}/{executable}: "
+                            f"{locator.strategy}={locator.value}{scope}"
+                        )
+                for action in interaction.actions:
+                    label = action.semantic_name or action.label or action.text or "action"
+                    lines.append(
+                        f"  - action {label}: selector={action.selector or '-'}; "
+                        f"tag={action.tag or '-'}; role={action.role or '-'}; "
+                        f"text={action.text or action.label or '-'}"
+                    )
+                    if action.opens_surface:
+                        lines.append(f"    - opens surface: {action.opens_surface}")
+                    for locator in action.validated_locators:
+                        state = "validated" if locator.validated else "candidate"
+                        executable = "executable" if locator.executable else "non-executable"
+                        scope = f"; scope={locator.scope}" if locator.scope else ""
+                        lines.append(
+                            f"    - locator {state}/{executable}: "
+                            f"{locator.strategy}={locator.value}{scope}"
+                        )
+                    for effect in [*action.side_effects, *action.expected_service_calls]:
+                        status = f" -> {effect.status_code}" if effect.status_code else ""
+                        purpose = f"; purpose={effect.purpose}" if effect.purpose else ""
+                        lines.append(
+                            f"    - triggers {effect.method} {effect.path}{status}"
+                            f" ({effect.interface}{purpose})"
+                        )
+        if guide.contract.success_checks:
+            lines.append("")
+            lines.append("### Success Checks")
+            for check in guide.contract.success_checks:
+                lines.append(f"- {check}")
+        if guide.contract.baseline_observations:
+            lines.append("")
+            lines.append("### Baseline Observations")
+            for observation in guide.contract.baseline_observations:
+                _append_observation_lines(lines, observation, success=False)
+        if guide.contract.success_observations:
+            lines.append("")
+            lines.append("### Success Observations")
+            for observation in guide.contract.success_observations:
+                _append_observation_lines(lines, observation, success=True)
+
     lines.extend(
         [
             "",
@@ -213,9 +368,74 @@ def render_journey_guide(guide: JourneyGuide) -> str:
             method = str(item.get("method", "")).upper().strip()
             path = str(item.get("path", "")).strip()
             url = str(item.get("url", "")).strip()
+            status_code = int(item.get("status_code", 0) or 0)
+            status = f" -> {status_code}" if status_code else ""
             if method and path:
-                lines.append(f"- {method} {path}")
+                lines.append(f"- {method} {path}{status}")
             elif url:
                 lines.append(f"- {url}")
 
     return "\n".join(lines)
+
+
+def _append_observation_lines(lines: list[str], observation, *, success: bool) -> None:
+    label = observation.label or observation.assertion or (
+        "success" if success else "baseline"
+    )
+    bits = [
+        f"surface={observation.surface_type}" if observation.surface_type else "",
+        f"kind={observation.observation_kind}" if observation.observation_kind else "",
+        f"assertion={observation.assertion}",
+        f"scope={observation.scope_locator}" if observation.scope_locator else "",
+        f"target={observation.target_value}" if observation.target_value else "",
+        f"source={observation.target_value_source}"
+        if observation.target_value_source
+        else "",
+    ]
+    lines.append(f"- {label}: " + "; ".join(bit for bit in bits if bit))
+    if observation.reason:
+        lines.append(f"  - reason: {observation.reason}")
+    for locator in observation.validated_locators:
+        state = "validated" if locator.validated else "candidate"
+        executable = "executable" if locator.executable else "non-executable"
+        scope = f"; scope={locator.scope}" if locator.scope else ""
+        lines.append(
+            f"  - locator {state}/{executable}: "
+            f"{locator.strategy}={locator.value}{scope}"
+        )
+    for locator in observation.scope_validated_locators:
+        state = "validated" if locator.validated else "candidate"
+        executable = "executable" if locator.executable else "non-executable"
+        scope = f"; scope={locator.scope}" if locator.scope else ""
+        lines.append(
+            f"  - scope locator {state}/{executable}: "
+            f"{locator.strategy}={locator.value}{scope}"
+        )
+    for assertion in observation.assertions:
+        assertion_bits = [
+            f"assertion={assertion.assertion}",
+            f"locator={assertion.locator}" if assertion.locator else "",
+            f"expected={assertion.expected_value}" if assertion.expected_value else "",
+            f"expected_source={assertion.expected_value_source}"
+            if assertion.expected_value_source
+            else "",
+        ]
+        field = assertion.field_name or "field"
+        lines.append(
+            f"  - assertion {field}: "
+            + "; ".join(bit for bit in assertion_bits if bit)
+        )
+        for locator in assertion.validated_locators:
+            state = "validated" if locator.validated else "candidate"
+            executable = "executable" if locator.executable else "non-executable"
+            scope = f"; scope={locator.scope}" if locator.scope else ""
+            lines.append(
+                f"    - locator {state}/{executable}: "
+                f"{locator.strategy}={locator.value}{scope}"
+            )
+    if observation.refresh_strategy:
+        refresh = ", ".join(
+            f"{key}={value}"
+            for key, value in observation.refresh_strategy.items()
+        )
+        lines.append(f"  - refresh strategy: {refresh}")

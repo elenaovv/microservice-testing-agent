@@ -9,7 +9,13 @@ TEST_RESULTS_DIR = Path(os.environ.get("NETWORK_RESULTS_DIR", "test-results"))
 
 
 @pytest.fixture(autouse=True)
-def capture_frontend_api_calls(page, request):
+def capture_frontend_api_calls(request):
+    test_path = Path(str(getattr(request.node, "path", request.node.fspath)))
+    if "generated-tests" not in test_path.parts:
+        yield
+        return
+
+    page = request.getfixturevalue("page")
     requests: list[dict[str, str]] = []
 
     def on_request(playwright_request) -> None:
@@ -28,7 +34,6 @@ def capture_frontend_api_calls(page, request):
     yield
 
     TEST_RESULTS_DIR.mkdir(exist_ok=True)
-    test_path = Path(str(getattr(request.node, "path", request.node.fspath)))
     network_path = TEST_RESULTS_DIR / f"{test_path.stem}.network.json"
     network_path.write_text(
         json.dumps(

@@ -6,5 +6,9 @@ preconditions:
   state:
     - the admin has a registered account
 goal: A registered admin provides their credentials to gain authenticated access.
+input_constraints:
+  username: valid admin username from the system specification or configured test credentials
+  password: matching admin password from the system specification or configured test credentials
 success_criteria:
-  - the admin sees managemnet panel 
+  - the admin submits valid admin login credentials through the admin login flow
+  - the application shows an authenticated admin post-login state, such as a management panel, admin navigation, or authenticated admin header
