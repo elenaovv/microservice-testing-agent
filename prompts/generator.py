@@ -182,6 +182,22 @@ def load_use_case_index(
     return normalized
 
 
+def resolve_indexed_use_case_path(index_path: Path, raw_path: str) -> Path:
+    path = Path(raw_path)
+    if path.is_absolute():
+        return path
+
+    candidates = [
+        index_path.parent / path,
+        STRUCTURED_USE_CASES_DIR / path,
+        Path(__file__).resolve().parent.parent / path,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
 def _normalize_preconditions(data: dict[str, Any]) -> list[str]:
     preconditions_data = data.get("preconditions", {})
     if not isinstance(preconditions_data, dict):
@@ -231,7 +247,9 @@ def load_structured_use_case_by_id(
         relative_path = item.get("path", "")
         if not relative_path:
             raise ValueError(f"Use case {normalized_id} has no path in {index_path}")
-        use_case = load_structured_use_case(index_path.parent / relative_path)
+        use_case = load_structured_use_case(
+            resolve_indexed_use_case_path(index_path, relative_path)
+        )
         if not use_case.smith_equivalent:
             use_case.smith_equivalent = item.get("smith_equivalent", "")
         return use_case

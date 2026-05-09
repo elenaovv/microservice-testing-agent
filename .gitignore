@@ -15,5 +15,6 @@ __pycache__/
 .env
 # Misc
 .pytest_cache/
+.tmp/
 
 .vscode/
