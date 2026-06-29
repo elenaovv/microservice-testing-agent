@@ -2,7 +2,18 @@
 
 This is the operator guide for running the browsing-driven test generation prototype.
 
-## What It Does
+## Repository Layout
+
+- `agent/`: constructs the single Pydantic AI agent and registers its tools.
+- `workflow/`: coordinates browse, journey-contract creation, test generation, execution, repair, and reporting.
+- `core/`: shared models, execution, reporting, coverage mapping, retry handling, and evaluation helpers.
+- `prompts/`: loads use cases, MSA specification, and system description, then builds agent prompts.
+- `direct_baseline/`: static-input baseline that skips browser exploration.
+- `spec/`: MSA specification, system description, research use cases, and fault catalog.
+- `research/`: post-hoc analysis and preflight utilities used for the paper evaluation.
+- `tests/`: unit tests for prompt loading, retry budgets, network diffing, and journey-contract gates.
+
+## Runtime Behavior
 
 The runtime takes a user journey or a structured use case, explores the live application in a browser, generates a Python end-to-end test, runs that test, and saves the results.
 
@@ -29,6 +40,8 @@ OPENAI_MODEL=openai:gpt-5.4
 BASE_URL=http://localhost:8080
 ```
 
+The same values are shown in `.env.example`. Keep real API keys in `.env`; do not commit them.
+
 `BASE_URL` can also be overridden on the command line.
 
 ## Setup
@@ -45,7 +58,7 @@ If Playwright browsers are not installed yet:
 npx playwright install chromium
 ```
 
-## Main Commands
+## Commands
 
 Ad-hoc journey:
 
@@ -83,7 +96,7 @@ Rerun an existing generated test:
 uv run python main.py retest booking_test.py --variant-label original --base-url http://localhost:8080
 ```
 
-## How To Read The Result
+## Result Files
 
 After a run:
 - the generated Python test file is in `generated-tests/`
@@ -91,8 +104,9 @@ After a run:
 - the execution report is in `test-results/<name>.report.json`
 - the aggregated evaluation summary is in `test-results/evaluation-summary.md`
 
-## Notes
+## Operational Notes
 
 - If `--filename` is omitted, the runtime derives a test filename from the selected journey or use case.
 - If `journey` is omitted entirely, the runtime falls back to the legacy `spec/use-cases.txt` list.
 - The current browse phase uses Playwright MCP. Evaluation coverage is persisted, but true Python-side Phase 1 network listening is not implemented yet.
+- Local run outputs such as `generated-tests/`, `test-results/`, `runtime-results/`, and `prompt-captures/` are ignored by default. See `SUBMISSION_CLEANUP.md` before preparing a clean artifact package.

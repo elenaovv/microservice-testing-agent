@@ -10,6 +10,7 @@ Heavy analysis helpers live in:
 import json
 from pathlib import Path
 
+from core.run_artifacts import GENERATED_TESTS_DIR, TEST_RESULTS_DIR
 from core.coverage_utils import (
     apply_operation_coverage,
     dedupe_preserve_order,
@@ -31,9 +32,6 @@ from core.models import (
 from core.evaluation_utils import build_phase1_metrics, load_network_capture
 from core.journey_contract import build_journey_contract
 from core.report_rendering import render_journey_guide
-
-TEST_RESULTS_DIR = Path("test-results")
-GENERATED_TESTS_DIR = Path("generated-tests")
 
 
 # ---------------------------------------------------------------------------

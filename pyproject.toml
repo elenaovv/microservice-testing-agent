@@ -1,7 +1,7 @@
 [project]
 name = "browsing-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Agentic GUI end-to-end test generation for microservice systems"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -11,4 +11,23 @@ dependencies = [
     "pytest>=8.0.0",
     "pytest-playwright>=0.5.0",
     "pytest-timeout>=2.3.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "--basetemp=.tmp/pytest"
+cache_dir = ".tmp/pytest_cache"
+testpaths = ["tests"]
+norecursedirs = [
+    ".git",
+    ".venv",
+    ".uv-cache",
+    ".tmp",
+    "tmp",
+    "generated-tests",
+    "test-results",
+    "runtime-results",
+    "prompt-captures",
+    "results",
+    "UC-ADM-007_runs",
+    "paper",
 ]

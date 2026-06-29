@@ -3,8 +3,9 @@ import subprocess
 from pathlib import Path
 
 from core.models import ExecutionArtifact, ExecutionResult
+from core.run_artifacts import RUNTIME_RESULTS_DIR
 
-DEFAULT_RUNTIME_RESULTS_DIR = Path("runtime-results")
+DEFAULT_RUNTIME_RESULTS_DIR = RUNTIME_RESULTS_DIR
 PYTEST_ARGS_BASE = (
     "-v",
     "--tb=short",

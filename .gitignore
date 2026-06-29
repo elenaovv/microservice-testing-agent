@@ -24,5 +24,6 @@ add_user_*_snapshot.*
 # Misc
 .pytest_cache/
 .tmp/
+tmp/
 
 .vscode/

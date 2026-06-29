@@ -1,7 +1,13 @@
 # Exploration Artifacts
 
-This directory holds manual exploration material that is useful for analysis but is not part of the runtime path.
+This directory stores manual exploration material that is not loaded by the
+runtime.
 
-- `ui-dumps/`: text and YAML snapshots captured during browser exploration, UI inspection, and form analysis
+## Contents
 
-The agent runtime does not load these files directly. They are kept here as supporting material instead of cluttering the repository root.
+| Path | Purpose |
+| --- | --- |
+| `ui-dumps/` | Text and YAML snapshots captured during UI inspection and form analysis. |
+
+These files are kept for audit and analysis. They are not part of prompt
+construction, test generation, execution, or reporting.
