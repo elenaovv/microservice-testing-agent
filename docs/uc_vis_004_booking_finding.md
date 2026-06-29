@@ -1,35 +1,34 @@
-# UC-VIS-004 Booking Finding
+# UC-VIS-004 Booking Result
 
-This note records the issue observed while running:
+Command:
 
 ```bash
 uv run python main.py test --use-case-id UC-VIS-004 --base-url http://localhost:8080
 ```
 
-## Observation
+## Observed Result
 
-After the default `spec/msa.yaml` path was passed into the prompt, the agent was
-able to read the MSA specification, use the correct client login entry point,
-authenticate as `ROLE_USER`, search for tickets, select a trip and passenger,
-submit the booking modal, and observe:
+With the default `spec/msa.yaml` available, the browse phase could:
 
-```text
-POST /api/v1/preserveservice/preserve -> 200
-```
+- read the MSA specification;
+- use the client login entry point;
+- authenticate as `ROLE_USER`;
+- search for tickets;
+- select a trip and passenger;
+- submit the booking modal;
+- observe `POST /api/v1/preserveservice/preserve -> 200`;
+- verify a new `Not Paid` order in the Order List.
 
-The created order appeared in the Order List with status `Not Paid`.
+## Issue
 
-## Failure Cause
-
-The browse phase still marked the journey as failed because the use-case goal
-contained the phrase:
+The original use-case wording included:
 
 ```text
 with no assurance, no food and no consign
 ```
 
-Although the UI was used without explicitly selecting food, the preserve request
-payload still included default food fields:
+The UI was used without explicitly selecting optional services, but the preserve
+request still contained default food fields:
 
 ```text
 foodType=1
@@ -37,18 +36,17 @@ foodName='Bone Soup'
 foodPrice=2.5
 ```
 
-This made the agent treat the run as not satisfying the exact use-case wording,
-even though the core booking and order-creation behavior succeeded.
+The browse phase therefore rejected the run because the exact optional-service
+payload did not match the use-case text, even though booking and order creation
+succeeded.
 
 ## Decision
 
-For the research subset, `UC-VIS-004` should focus on the booking outcome rather
-than optional food/assurance/consign payload details. The success criteria should
-remain:
+For the research subset, `UC-VIS-004` measures the booking outcome:
 
-- a new order appears in Order List for the selected trip and route
-- the order status is `Not Paid`
+- a new order appears in Order List for the selected route and trip;
+- the order status is `Not Paid`.
 
-The optional-service payload behavior may be recorded separately as a system
-observation, but it should not block the booking use case unless the research
-question explicitly targets optional service selection.
+Default optional-service payload behavior is recorded as a system observation.
+It should only block the use case when optional-service selection is the target
+of the research question.

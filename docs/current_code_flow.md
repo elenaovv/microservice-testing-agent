@@ -1,83 +1,88 @@
-# Current Code Flow (as implemented)
+# Current Code Flow
 
-> How the root-level Python runtime actually works today.
+This file summarizes the root-level Python runtime.
 
 ```mermaid
 flowchart LR
-    subgraph CLI ["main.py CLI"]
-        CMD_RUN["'run' command"]
-        CMD_TEST["'test' command"]
+    subgraph CLI ["CLI"]
+        MAIN["main.py"]
+        RUN["run"]
+        TEST["test"]
     end
 
-    USER_INPUT["User\n(free-text journey\nvia CLI argument)"]
-
-    subgraph AGENT ["agent.py — Single LLM Agent"]
-        direction TB
-        LLM["OpenAI LLM API\n(pydantic-ai Agent)"]
-        TOOLS["Agent Tools"]
-        LOG["log_action()"]
-        TIMER["start/stop_timer()"]
-        CREATE["create_test_file()"]
-        RUN_TEST["run_test_file()"]
-        TOOLS --- LOG
-        TOOLS --- TIMER
-        TOOLS --- CREATE
-        TOOLS --- RUN_TEST
+    subgraph INPUTS ["Inputs"]
+        JOURNEY["Free-text journey"]
+        USECASE["Structured use case"]
+        SPEC["spec/msa.yaml"]
+        SYSTEM["spec/system_description.md"]
     end
 
-    subgraph PHASE1 ["Phase 1 — Browse Journey"]
-        BROWSE["Agent browses\nlive app via\nPlaywright MCP"]
-        ACTIONS["Logged actions\n+ timings"]
+    subgraph WORKFLOW ["Workflow"]
+        WF["workflow/workflow.py"]
+        BROWSE["Browse phase"]
+        CONTRACT["Journey evidence and contract"]
+        GENERATE["Test generation and repair"]
     end
 
-    subgraph PHASE2 ["Phase 2 — Generate Test"]
-        GEN["Agent writes\npytest-playwright\ntest from actions"]
-        FILE["Single .py\ntest file"]
+    subgraph AGENT ["Agent Runtime"]
+        AGENT_CORE["agent/agent.py"]
+        TOOLS["agent/tools.py"]
+        MCP["Playwright MCP"]
     end
 
-    subgraph PHASE3 ["Phase 3 — Execute & Retry"]
-        EXEC["pytest subprocess\n(run_test_file)"]
-        OUTPUT["Raw stdout/stderr\n+ failure screenshot"]
-        RETRY{"Pass?"}
+    subgraph OUTPUTS ["Artifacts"]
+        TEST_FILE["generated-tests/*.py"]
+        JOURNEY_MD["test-results/*.journey.md"]
+        JOURNEY_JSON["test-results/*.journey.json"]
+        REPORT["test-results/*.report.json"]
+        HISTORY["test-results/evaluation-runs.jsonl"]
     end
 
-    subgraph DOCKER ["External — Hosted in Docker"]
-        MSA["MSA Under Test\nlocalhost:8080"]
+    subgraph SUT ["System Under Test"]
+        UI["UI gateway"]
+        API["MSA endpoints"]
     end
 
-    USER_INPUT -->|journey string| CMD_TEST
-    CMD_TEST --> PHASE1
-    BROWSE -->|calls| LLM
-    LLM -->|browser actions via MCP| BROWSE
-    BROWSE --> ACTIONS
-    ACTIONS --> PHASE2
-    GEN -->|calls| LLM
-    LLM -->|test code| GEN
-    GEN -->|create_test_file| FILE
-    FILE --> PHASE3
-    EXEC --> OUTPUT
-    OUTPUT --> RETRY
-    RETRY -->|No — retry up to N times| GEN
-    RETRY -->|Yes| DONE["Done\n(console print)"]
-    EXEC -->|HTTP requests| MSA
-    MSA -->|responses| EXEC
-
-    CMD_RUN -->|ad-hoc task| LLM
-
-    style CLI fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
-    style AGENT fill:#ede9fe,stroke:#7c3aed,color:#3b0764
-    style PHASE1 fill:#dcfce7,stroke:#16a34a,color:#14532d
-    style PHASE2 fill:#fef9c3,stroke:#ca8a04,color:#713f12
-    style PHASE3 fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
-    style MSA fill:#e0f0ff,stroke:#1D63ED,color:#003f7f
-    style DOCKER fill:#eaf4ff,stroke:#1D63ED,color:#003f7f
+    MAIN --> RUN
+    MAIN --> TEST
+    JOURNEY --> WF
+    USECASE --> WF
+    SPEC --> WF
+    SYSTEM --> WF
+    TEST --> WF
+    WF --> BROWSE
+    BROWSE --> AGENT_CORE
+    AGENT_CORE --> TOOLS
+    AGENT_CORE --> MCP
+    MCP --> UI
+    UI --> API
+    BROWSE --> CONTRACT
+    CONTRACT --> JOURNEY_MD
+    CONTRACT --> JOURNEY_JSON
+    CONTRACT --> GENERATE
+    GENERATE --> TEST_FILE
+    GENERATE --> REPORT
+    REPORT --> HISTORY
 ```
 
-## Key Differences from the Target Architecture
+## Run Sequence
 
-| Target Architecture | Current Code |
-|---|---|
-| **User Journey Extractor** takes use-case + MSA-spec documents and calls LLM to produce journeys | Journey is a **raw CLI string** typed by the user |
-| **GUI description** document is fed into the Test Suite Generator | Agent **discovers the GUI live** by browsing via Playwright MCP |
-| Generator and Executor are **separate components** | Both live inside **one monolithic agent** with a retry loop |
-| A structured **Test Report** is produced and fed back | Only **raw console output** + optional failure screenshots |
+1. `main.py` parses the CLI arguments and calls the workflow layer.
+2. `workflow/workflow.py` loads the selected use case, MSA specification, and system description.
+3. The browse phase drives the deployed UI through Playwright MCP.
+4. Agent tools record actions, timings, API calls, interaction contracts, baseline observations, and success observations.
+5. The workflow builds and persists the journey guide before generating code.
+6. The generation phase writes a `pytest-playwright` file under `generated-tests/`.
+7. The generated test is executed through the pytest subprocess runner.
+8. Reports and evaluation history are written under `test-results/`.
+
+## Runtime Boundaries
+
+| Area | Current behavior |
+| --- | --- |
+| Use-case input | Free-text journey, use-case ID, or use-case file |
+| GUI model | Discovered through live browsing, not loaded from a static GUI description |
+| Test output | One generated Python test file per run |
+| Execution | pytest subprocess through `core/executor.py` |
+| Reporting | Journey Markdown/JSON, report JSON, network data, evaluation history |
+| Backend evidence | Frontend-visible HTTP requests matched to `spec/msa.yaml` |
