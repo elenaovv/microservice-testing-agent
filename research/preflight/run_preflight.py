@@ -83,7 +83,7 @@ def launch_mitmdump(port: int, fault_id: str | None,
         time.sleep(0.2)
     if _port_in_use(port):
         raise RuntimeError(
-            f"port {port} is already bound — likely a stale mitmdump from a prior run. "
+            f"port {port} is already bound - likely a stale mitmdump from a prior run. "
             f"Kill it and retry: Get-Process mitmdump | Stop-Process -Force"
         )
     cmd = [
@@ -228,7 +228,7 @@ def run_one_fault(fault_id: str, use_case_id: str, args,
         passthrough_cache[use_case_id] = (pt_status, pt_dur)
 
     if pt_status != "passed":
-        # Skip mutant phase entirely if passthrough is broken — running
+        # Skip mutant phase entirely if passthrough is broken - running
         # anything against a broken oracle wastes time and produces noise.
         print("  mutant      -> skipped (passthrough not passing)")
         verdict = "ORACLE-BROKEN"

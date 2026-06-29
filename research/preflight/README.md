@@ -7,8 +7,8 @@ that no oracle could possibly catch.
 ## Mechanism
 
 For each fault, the runner launches mitmproxy twice and runs the matching
-oracle test against each. **Passthrough run** — the proxy is transparent, the
-oracle should pass. **Mutant run** — the proxy applies the catalog's
+oracle test against each. **Passthrough run**: the proxy is transparent, the
+oracle should pass. **Mutant run**: the proxy applies the catalog's
 mutations, the oracle should fail. Verdict comes from the pair: pass+fail =
 USE; pass+pass = EQUIVALENT-DROP; fail+anything = ORACLE-BROKEN. Per-run logs
 and Playwright traces land on disk for later inspection.
@@ -43,17 +43,17 @@ python research\preflight\run_preflight.py
 ```
 
 CLI options:
-- `--filter SUBSTR` — only faults whose id contains SUBSTR (e.g. `F-VIS-002`)
-- `--base-url URL` — defaults to `http://localhost:8080`
-- `--proxy-port N` — defaults to 8888
-- `--timeout SECS` — pytest timeout per oracle (default 180)
-- `--output-dir DIR` — defaults to `research/preflight/results/preflight_<timestamp>/`
+- `--filter SUBSTR`: only faults whose id contains SUBSTR (e.g. `F-VIS-002`)
+- `--base-url URL`: defaults to `http://localhost:8080`
+- `--proxy-port N`: defaults to 8888
+- `--timeout SECS`: pytest timeout per oracle (default 180)
+- `--output-dir DIR`: defaults to `research/preflight/results/preflight_<timestamp>/`
 
 ## Outputs
 
 ```
 research/preflight/results/preflight_<timestamp>/
-├── verdict.csv       master table — one row per fault
+├── verdict.csv       master table, one row per fault
 ├── verdict.jsonl     same data in JSONL
 ├── summary.md        human-readable rollup
 └── runs/

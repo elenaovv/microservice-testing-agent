@@ -72,7 +72,7 @@ def _syntax_check(path: Path) -> str | None:
 def log_action(ctx: RunContext[Deps], action: str, note: str) -> str:
     """Log a browser action and the reason it was taken. Call after every meaningful interaction."""
     ctx.deps.capture.log_action(action, note)
-    _log(f"{action} — {note}")
+    _log(f"{action} - {note}")
     return f"Logged: {action}"
 
 
@@ -153,7 +153,7 @@ def log_interaction_contract(
     field_count = len(interaction.fields)
     action_count = len(interaction.actions)
     _log(
-        "interaction contract — "
+        "interaction contract - "
         f"{surface_type}/{container_kind}; fields={field_count}; actions={action_count}"
     )
     return (
@@ -322,11 +322,11 @@ def report_journey_outcome(ctx: RunContext[Deps], success: bool, reason: str) ->
     """Report whether the browse phase successfully completed the use case journey.
     MUST be called at the end of every browse phase.
     success: True if all success criteria were met and verified, False otherwise.
-    reason: brief explanation — what was achieved or what blocked completion."""
+    reason: brief explanation - what was achieved or what blocked completion."""
     ctx.deps.journey_succeeded = success
     ctx.deps.journey_outcome_reason = reason
     status = "SUCCEEDED" if success else "FAILED"
-    _log(f"Journey outcome: {status} — {reason}")
+    _log(f"Journey outcome: {status} - {reason}")
     return f"Journey outcome recorded: {status}"
 
 
@@ -347,7 +347,7 @@ def create_python_test_file(ctx: RunContext[Deps], filename: str, code: str) -> 
         return (
             f"Rejected: this code is identical to your previous attempt (hash {current_hash}). "
             "Running it again will produce the same failure. "
-            "You must take a meaningfully different approach — change the locator strategy, "
+            "You must take a meaningfully different approach - change the locator strategy, "
             "restructure the flow, or reconsider which elements you are targeting."
         )
     ctx.deps.last_test_hash = current_hash
