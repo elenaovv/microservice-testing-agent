@@ -1,0 +1,11 @@
+﻿id: UC-VIS-013
+role: user
+name: Delete a Contact
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has at least one saved contact
+goal: The traveler removes one of their saved contacts.
+success_criteria:
+  - the contact is no longer associated with the traveler
+  - subsequent contact list queries do not return the deleted contact

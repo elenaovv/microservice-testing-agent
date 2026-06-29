@@ -1,0 +1,10 @@
+﻿id: UC-ADM-035
+role: admin
+name: Update Order
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one order exists
+goal: The admin modifies the details of an existing order from the admin order panel.
+success_criteria:
+  - the updated order reflects the modified details

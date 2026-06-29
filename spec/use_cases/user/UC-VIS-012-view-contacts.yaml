@@ -1,0 +1,10 @@
+﻿id: UC-VIS-012
+role: user
+name: View Contacts
+preconditions:
+  authenticated_as: ROLE_USER
+  state: []
+goal: The traveler requests their saved contact list.
+success_criteria:
+  - the system returns all contacts belonging to the traveler
+  - no contacts belonging to other users are returned

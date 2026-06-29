@@ -1,0 +1,11 @@
+﻿id: UC-VIS-015
+role: user
+name: Order Food
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has an existing paid order
+goal: The traveler selects food items to be delivered during their trip.
+success_criteria:
+  - a food delivery record is associated with the order
+  - the chosen food items are recorded against the trip

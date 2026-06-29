@@ -1,0 +1,10 @@
+﻿id: UC-ADM-018
+role: admin
+name: Delete Schedule
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one schedule exists
+goal: The admin removes an existing schedule.
+success_criteria:
+  - the schedule no longer exists

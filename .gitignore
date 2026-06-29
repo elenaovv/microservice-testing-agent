@@ -1,17 +1,29 @@
 # Generated test output (both agents write here)
 generated-tests/
+test-results/
+runtime-results/
 
 # Python
 __pycache__/
 *.py[oc]
 .venv/
-
-# Java
-target/
-*.class
+.uv-cache/
 
 # Sessions (saved browser state)
 .sessions/
+.playwright-mcp/
+.env
+
+# Local exploratory/debug artifacts
+.claude/
+prompt-captures/
+*-network.json
+*_network.json
+add_user_*_snapshot.*
 
 # Misc
 .pytest_cache/
+.tmp/
+tmp/
+
+.vscode/

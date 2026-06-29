@@ -1,0 +1,10 @@
+﻿id: UC-ADM-009
+role: admin
+name: Add Route
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - the stations referenced in the route exist
+goal: The admin defines a new route as a sequence of stations with distances and a start and terminal station.
+success_criteria:
+  - the new route appears in the route list

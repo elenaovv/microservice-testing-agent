@@ -1,0 +1,12 @@
+﻿id: UC-VIS-006
+role: user
+name: Pay for an Order
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the user has an existing unpaid order in the Order List
+goal: The user pays an existing unpaid order.
+input_constraints: []
+success_criteria:
+  - the payment action is submitted successfully for an unpaid order
+  - after refresh or reload, the same target order status changes to "Paid & Not Collected"

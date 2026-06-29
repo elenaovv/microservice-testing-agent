@@ -1,0 +1,10 @@
+﻿id: UC-ADM-015
+role: admin
+name: Update Station
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one station exists
+goal: The admin modifies the details of an existing station.
+success_criteria:
+  - the station reflects the modified details

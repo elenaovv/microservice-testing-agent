@@ -1,0 +1,9 @@
+﻿id: UC-ADM-032
+role: admin
+name: View All Contacts (Admin Panel)
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: The admin requests the full list of contacts across all users from the admin contact panel.
+success_criteria:
+  - the system returns every contact regardless of owner

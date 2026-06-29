@@ -1,0 +1,9 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - text: TrainTicket Login
+    - generic [ref=e6]: 
+  - group [ref=e9]:
+    - textbox "Username" [ref=e11]
+    - textbox "Password" [ref=e13]
+    - paragraph [ref=e14]:
+      - button "Login" [ref=e15] [cursor=pointer]

@@ -1,0 +1,10 @@
+﻿id: UC-ADM-029
+role: admin
+name: Add Contact (Admin Panel)
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: The admin creates a contact entry from the admin contact panel by providing name, document type, document number, and phone number.
+success_criteria:
+  - a new contact exists in the system
+  - the contact appears in the admin contact list

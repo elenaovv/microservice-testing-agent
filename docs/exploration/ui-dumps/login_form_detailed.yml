@@ -1,0 +1,70 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - link [ref=e5] [cursor=pointer]:
+      - /url: javascript:;
+    - generic [ref=e6]: 
+    - text: 
+    - list [ref=e8]:
+      - listitem [ref=e9]:
+        - link "admin-panel" [ref=e10] [cursor=pointer]:
+          - /url: adminlogin.html
+      - listitem [ref=e11]:
+        - link " FullScreen" [ref=e12] [cursor=pointer]:
+          - /url: javascript:;
+          - generic [ref=e13]: 
+          - text: FullScreen
+      - listitem [ref=e14]:
+        - generic [ref=e15]: Not Login
+      - listitem [ref=e16]:
+        - img [ref=e19]
+      - listitem [ref=e20]:
+        - link "" [ref=e21] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e22]: 
+  - generic [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]: Management
+      - list [ref=e27]:
+        - listitem [ref=e28]:
+          - link " Ticket Reserve " [ref=e29] [cursor=pointer]:
+            - /url: index.html
+            - generic [ref=e30]: 
+            - text: Ticket Reserve
+            - generic [ref=e31]: 
+        - listitem [ref=e32]:
+          - link " Order List" [ref=e33] [cursor=pointer]:
+            - /url: client_order_list.html
+            - generic [ref=e34]: 
+            - text: Order List
+        - listitem [ref=e35]:
+          - link " Consign List" [ref=e36] [cursor=pointer]:
+            - /url: client_consign_list.html
+            - generic [ref=e37]: 
+            - text: Consign List
+        - listitem [ref=e38]:
+          - link " Advanced Search" [ref=e39] [cursor=pointer]:
+            - /url: client_adsearch.html
+            - generic [ref=e40]: 
+            - text: Advanced Search
+        - listitem [ref=e41]:
+          - link " Execute Flow " [ref=e42] [cursor=pointer]:
+            - /url: javascript:;
+            - generic [ref=e43]: 
+            - text: Execute Flow
+            - generic [ref=e44]: 
+          - text:  
+    - generic [ref=e46]:
+      - generic [ref=e48]: Login
+      - form [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]: "UserName:"
+          - textbox [ref=e60]: fdse_microservice
+        - generic [ref=e61]:
+          - generic [ref=e62]: "Password:"
+          - textbox [ref=e64]: "111111"
+        - generic [ref=e65]:
+          - generic [ref=e66]: "Verification Code:"
+          - textbox [ref=e68]: "1234"
+        - img [ref=e71] [cursor=pointer]
+        - button "Login" [ref=e74] [cursor=pointer]
+        - generic [ref=e77]: "Login Status:"

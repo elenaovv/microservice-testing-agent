@@ -1,0 +1,10 @@
+﻿id: UC-ADM-006
+role: admin
+name: Delete Train
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one train exists in the catalog
+goal: The admin removes a train from the catalog.
+success_criteria:
+  - the deleted train no longer appears in the train list

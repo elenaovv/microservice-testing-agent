@@ -1,0 +1,13 @@
+﻿id: UC-ADM-014
+role: admin
+name: Delete Station
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one station exists in the Station List from the Basic sidebar menu
+goal: The admin removes an existing station from the system.
+input_constraints: []
+success_criteria:
+  - the delete action is submitted successfully
+  - after refresh or reload, the deleted station record no longer appears in the station list
+  - other station records remain visible when the list contains more than the deleted station

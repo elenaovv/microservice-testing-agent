@@ -1,0 +1,9 @@
+﻿id: UC-ADM-024
+role: admin
+name: View All Prices
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state: []
+goal: The admin requests the full list of price configurations.
+success_criteria:
+  - the system returns every price configuration

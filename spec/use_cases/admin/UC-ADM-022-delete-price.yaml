@@ -1,0 +1,10 @@
+﻿id: UC-ADM-022
+role: admin
+name: Delete Price
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one price configuration exists
+goal: The admin removes a price configuration.
+success_criteria:
+  - the price configuration no longer exists

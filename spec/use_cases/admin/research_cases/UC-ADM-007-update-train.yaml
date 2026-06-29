@@ -1,0 +1,14 @@
+﻿id: UC-ADM-007
+role: admin
+name: Update Train
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one train exists in the Train List from the Basic sidebar menu
+goal: The admin modifies the AverageSpeed of an existing train.
+input_constraints:
+  average_speed: enter a value distinct from the target train's current AverageSpeed
+success_criteria:
+  - the update action is submitted successfully
+  - after refresh or reload, the same target train record displays the newly assigned AverageSpeed
+  - all unmodified attributes of the target train (Name, Economy Class, Comfort Class) retain their original values exactly

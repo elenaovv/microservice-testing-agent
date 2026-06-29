@@ -1,0 +1,109 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link [ref=e4] [cursor=pointer]:
+      - /url: javascript:;
+    - generic [ref=e5]: 
+    - text: 
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - link "admin-panel" [ref=e9] [cursor=pointer]:
+          - /url: adminlogin.html
+      - listitem [ref=e10]:
+        - link " FullScreen" [ref=e11] [cursor=pointer]:
+          - /url: javascript:;
+          - generic [ref=e12]: 
+          - text: FullScreen
+      - listitem [ref=e13]:
+        - generic [ref=e14]: Not Login
+      - listitem [ref=e15]:
+        - img [ref=e18]
+      - listitem [ref=e19]:
+        - link "" [ref=e20] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e21]: 
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - generic [ref=e24]: Management
+      - list [ref=e26]:
+        - listitem [ref=e27]:
+          - link " Ticket Reserve " [ref=e28] [cursor=pointer]:
+            - /url: index.html
+            - generic [ref=e29]: 
+            - text: Ticket Reserve
+            - generic [ref=e30]: 
+        - listitem [ref=e31]:
+          - link " Order List" [ref=e32] [cursor=pointer]:
+            - /url: client_order_list.html
+            - generic [ref=e33]: 
+            - text: Order List
+        - listitem [ref=e34]:
+          - link " Consign List" [ref=e35] [cursor=pointer]:
+            - /url: client_consign_list.html
+            - generic [ref=e36]: 
+            - text: Consign List
+        - listitem [ref=e37]:
+          - link " Advanced Search" [ref=e38] [cursor=pointer]:
+            - /url: client_adsearch.html
+            - generic [ref=e39]: 
+            - text: Advanced Search
+        - listitem [ref=e40]:
+          - link " Execute Flow " [ref=e41] [cursor=pointer]:
+            - /url: javascript:;
+            - generic [ref=e42]: 
+            - text: Execute Flow
+            - generic [ref=e43]: 
+          - text:  
+    - generic [ref=e45]:
+      - generic [ref=e47]: Ticket Booking
+      - generic [ref=e51]:
+        - heading "Ticket Reserve" [level=3] [ref=e53]: Ticket Reserve
+        - list [ref=e59]:
+          - listitem [ref=e60]:
+            - text: "Starting Place:"
+            - textbox [ref=e61]: Shang Hai
+          - listitem [ref=e62]:
+            - text: "Terminal Place:"
+            - textbox [ref=e63]: Su Zhou
+          - listitem [ref=e64]:
+            - text: "Date:"
+            - textbox [ref=e65]: 2026-04-02
+          - listitem [ref=e66]:
+            - text: "Train Type:"
+            - combobox [ref=e67]:
+              - option "All"
+              - option "GaoTie DongChe" [selected]
+              - option "Other"
+          - listitem [ref=e68]:
+            - button "Search" [active] [ref=e69] [cursor=pointer]
+        - heading "Tickets Searching Result" [level=3] [ref=e71]
+        - table [ref=e73]:
+          - rowgroup [ref=e74]:
+            - row "No. Trip Id Train Type Id From To Starting Time End Time 2rd Class Seat Number 1st Class Seat Number Select Seat Operation" [ref=e75]:
+              - columnheader "No." [ref=e76]
+              - columnheader "Trip Id" [ref=e77]
+              - columnheader "Train Type Id" [ref=e78]
+              - columnheader "From" [ref=e79]
+              - columnheader "To" [ref=e80]
+              - columnheader "Starting Time" [ref=e81]
+              - columnheader "End Time" [ref=e82]
+              - columnheader "2rd Class Seat Number" [ref=e83]
+              - columnheader "1st Class Seat Number" [ref=e84]
+              - columnheader "Select Seat" [ref=e85]
+              - columnheader "Operation" [ref=e86]
+          - rowgroup [ref=e88]:
+            - row "0 D1345 DongCheOne Shang Hai Su Zhou 2:0 2:16 1073741821 1073741821 1st - 50.0 Booking" [ref=e89]:
+              - cell "0" [ref=e90]
+              - cell "D1345" [ref=e91]
+              - cell "DongCheOne" [ref=e92]
+              - cell "Shang Hai" [ref=e93]
+              - cell "Su Zhou" [ref=e94]
+              - cell "2:0" [ref=e95]
+              - cell "2:16" [ref=e96]
+              - cell "1073741821" [ref=e97]
+              - cell "1073741821" [ref=e98]
+              - cell "1st - 50.0" [ref=e99]:
+                - combobox [ref=e100]:
+                  - option "1st - 50.0" [selected]
+                  - option "2st - 22.5"
+              - cell "Booking" [ref=e101]:
+                - button "Booking" [ref=e102] [cursor=pointer]

@@ -1,0 +1,275 @@
+﻿# TrainTicket use case benchmark - index (v2)
+# smith_equivalent points to the Smith et al. Selenium test class that
+# exercises the same functionality, or 'none' if no Smith test covers it.
+total: 54
+use_cases:
+  - id: UC-VIS-001
+    role: user
+    name: Login
+    smith_equivalent: Login.java
+    path: user/research_cases/UC-VIS-001-login.yaml
+  - id: UC-VIS-002
+    role: user
+    name: Search for Tickets
+    smith_equivalent: Booking.java
+    path: user/research_cases/UC-VIS-002-search-for-tickets.yaml
+  - id: UC-VIS-003
+    role: user
+    name: Search for Tickets (Advanced)
+    smith_equivalent: Booking.java
+    path: user/UC-VIS-003-search-tickets-advanced.yaml
+  - id: UC-VIS-004
+    role: user
+    name: Book a Ticket
+    smith_equivalent: Booking.java
+    path: user/research_cases/UC-VIS-004-book-ticket.yaml
+  - id: UC-VIS-005
+    role: user
+    name: View Orders
+    smith_equivalent: none
+    path: user/UC-VIS-005-view-orders.yaml
+  - id: UC-VIS-006
+    role: user
+    name: Pay for an Order
+    smith_equivalent: Booking.java
+    path: user/research_cases/UC-VIS-006-pay-for-order.yaml
+  - id: UC-VIS-007
+    role: user
+    name: Cancel an Order
+    smith_equivalent: Booking.java
+    path: user/UC-VIS-007-cancel-order.yaml
+  - id: UC-VIS-008
+    role: user
+    name: Rebook a Ticket
+    smith_equivalent: Booking.java
+    path: user/UC-VIS-008-rebook-ticket.yaml
+  - id: UC-VIS-009
+    role: user
+    name: Collect a Ticket
+    smith_equivalent: Booking.java
+    path: user/research_cases/UC-VIS-009-collect-ticket.yaml
+  - id: UC-VIS-010
+    role: user
+    name: Enter Station
+    smith_equivalent: Booking.java
+    path: user/research_cases/UC-VIS-010-enter-station.yaml
+  - id: UC-VIS-011
+    role: user
+    name: Add a Contact
+    smith_equivalent: Booking.java
+    path: user/UC-VIS-011-add-contact.yaml
+  - id: UC-VIS-012
+    role: user
+    name: View Contacts
+    smith_equivalent: none
+    path: user/UC-VIS-012-view-contacts.yaml
+  - id: UC-VIS-013
+    role: user
+    name: Delete a Contact
+    smith_equivalent: none
+    path: user/UC-VIS-013-delete-contact.yaml
+  - id: UC-VIS-014
+    role: user
+    name: Purchase Insurance
+    smith_equivalent: Booking.java
+    path: user/UC-VIS-014-purchase-insurance.yaml
+  - id: UC-VIS-015
+    role: user
+    name: Order Food
+    smith_equivalent: Booking.java
+    path: user/UC-VIS-015-order-food.yaml
+  - id: UC-VIS-016
+    role: user
+    name: Consign Luggage
+    smith_equivalent: Booking.java
+    path: user/UC-VIS-016-consign-luggage.yaml
+  - id: UC-VIS-017
+    role: user
+    name: Book a Ticket with Advanced Search
+    smith_equivalent: none
+    path: user/UC-VIS-017-book-ticket-advanced.yaml
+  - id: UC-ADM-001
+    role: admin
+    name: Add User
+    smith_equivalent: AdminUserList.java
+    path: admin/research_cases/UC-ADM-001-add-user.yaml
+  - id: UC-ADM-002
+    role: admin
+    name: Delete User
+    smith_equivalent: AdminUserList.java
+    path: admin/UC-ADM-002-delete-user.yaml
+  - id: UC-ADM-003
+    role: admin
+    name: Update User
+    smith_equivalent: AdminUserList.java
+    path: admin/UC-ADM-003-update-user.yaml
+  - id: UC-ADM-004
+    role: admin
+    name: View All Users
+    smith_equivalent: AdminUserList.java
+    path: admin/UC-ADM-004-view-all-users.yaml
+  - id: UC-ADM-005
+    role: admin
+    name: Add Train
+    smith_equivalent: AdminTrainList.java
+    path: admin/UC-ADM-005-add-train.yaml
+  - id: UC-ADM-006
+    role: admin
+    name: Delete Train
+    smith_equivalent: AdminTrainList.java
+    path: admin/UC-ADM-006-delete-train.yaml
+  - id: UC-ADM-007
+    role: admin
+    name: Update Train
+    smith_equivalent: AdminTrainList.java
+    path: admin/research_cases/UC-ADM-007-update-train.yaml
+  - id: UC-ADM-008
+    role: admin
+    name: View All Trains
+    smith_equivalent: AdminTrainList.java
+    path: admin/UC-ADM-008-view-all-trains.yaml
+  - id: UC-ADM-009
+    role: admin
+    name: Add Route
+    smith_equivalent: AdminRouteList.java
+    path: admin/UC-ADM-009-add-route.yaml
+  - id: UC-ADM-010
+    role: admin
+    name: Delete Route
+    smith_equivalent: AdminRouteList.java
+    path: admin/UC-ADM-010-delete-route.yaml
+  - id: UC-ADM-011
+    role: admin
+    name: Update Route
+    smith_equivalent: AdminRouteList.java
+    path: admin/UC-ADM-011-update-route.yaml
+  - id: UC-ADM-012
+    role: admin
+    name: View All Routes
+    smith_equivalent: AdminRouteList.java
+    path: admin/UC-ADM-012-view-all-routes.yaml
+  - id: UC-ADM-013
+    role: admin
+    name: Add Station
+    smith_equivalent: AdminStationList.java
+    path: admin/research_cases/UC-ADM-013-add-station.yaml
+  - id: UC-ADM-014
+    role: admin
+    name: Delete Station
+    smith_equivalent: AdminStationList.java
+    path: admin/research_cases/UC-ADM-014-delete-station.yaml
+  - id: UC-ADM-015
+    role: admin
+    name: Update Station
+    smith_equivalent: AdminStationList.java
+    path: admin/UC-ADM-015-update-station.yaml
+  - id: UC-ADM-016
+    role: admin
+    name: View All Stations
+    smith_equivalent: AdminStationList.java
+    path: admin/UC-ADM-016-view-all-stations.yaml
+  - id: UC-ADM-017
+    role: admin
+    name: Add Schedule
+    smith_equivalent: AdminTravelList.java
+    path: admin/UC-ADM-017-add-schedule.yaml
+  - id: UC-ADM-018
+    role: admin
+    name: Delete Schedule
+    smith_equivalent: AdminTravelList.java
+    path: admin/UC-ADM-018-delete-schedule.yaml
+  - id: UC-ADM-019
+    role: admin
+    name: Update Schedule
+    smith_equivalent: AdminTravelList.java
+    path: admin/UC-ADM-019-update-schedule.yaml
+  - id: UC-ADM-020
+    role: admin
+    name: View All Schedules
+    smith_equivalent: AdminTravelList.java
+    path: admin/UC-ADM-020-view-all-schedules.yaml
+  - id: UC-ADM-021
+    role: admin
+    name: Add Price
+    smith_equivalent: AdminPriceList.java
+    path: admin/UC-ADM-021-add-price.yaml
+  - id: UC-ADM-022
+    role: admin
+    name: Delete Price
+    smith_equivalent: AdminPriceList.java
+    path: admin/UC-ADM-022-delete-price.yaml
+  - id: UC-ADM-023
+    role: admin
+    name: Update Price
+    smith_equivalent: AdminPriceList.java
+    path: admin/UC-ADM-023-update-price.yaml
+  - id: UC-ADM-024
+    role: admin
+    name: View All Prices
+    smith_equivalent: AdminPriceList.java
+    path: admin/UC-ADM-024-view-all-prices.yaml
+  - id: UC-ADM-025
+    role: admin
+    name: Add System Configuration
+    smith_equivalent: AdminConfigList.java
+    path: admin/UC-ADM-025-add-system-configuration.yaml
+  - id: UC-ADM-026
+    role: admin
+    name: Delete System Configuration
+    smith_equivalent: AdminConfigList.java
+    path: admin/UC-ADM-026-delete-system-configuration.yaml
+  - id: UC-ADM-027
+    role: admin
+    name: Update System Configuration
+    smith_equivalent: AdminConfigList.java
+    path: admin/research_cases/UC-ADM-027-update-system-configuration.yaml
+  - id: UC-ADM-028
+    role: admin
+    name: View All System Configurations
+    smith_equivalent: AdminConfigList.java
+    path: admin/UC-ADM-028-view-all-system-configurations.yaml
+  - id: UC-ADM-029
+    role: admin
+    name: Add Contact (Admin Panel)
+    smith_equivalent: AdminContactList.java
+    path: admin/UC-ADM-029-add-admin-contact.yaml
+  - id: UC-ADM-030
+    role: admin
+    name: Delete Contact (Admin Panel)
+    smith_equivalent: AdminContactList.java
+    path: admin/UC-ADM-030-delete-admin-contact.yaml
+  - id: UC-ADM-031
+    role: admin
+    name: Update Contact (Admin Panel)
+    smith_equivalent: AdminContactList.java
+    path: admin/UC-ADM-031-update-admin-contact.yaml
+  - id: UC-ADM-032
+    role: admin
+    name: View All Contacts (Admin Panel)
+    smith_equivalent: AdminContactList.java
+    path: admin/UC-ADM-032-view-all-admin-contacts.yaml
+  - id: UC-ADM-033
+    role: admin
+    name: Add Order (Admin Panel)
+    smith_equivalent: AdminOrderList.java
+    path: admin/UC-ADM-033-add-admin-order.yaml
+  - id: UC-ADM-034
+    role: admin
+    name: Delete Order (Admin Panel)
+    smith_equivalent: AdminOrderList.java
+    path: admin/UC-ADM-034-delete-admin-order.yaml
+  - id: UC-ADM-035
+    role: admin
+    name: Update Order (Admin Panel)
+    smith_equivalent: AdminOrderList.java
+    path: admin/UC-ADM-035-update-admin-order.yaml
+  - id: UC-ADM-036
+    role: admin
+    name: View All Orders
+    smith_equivalent: AdminOrderList.java
+    path: admin/UC-ADM-036-view-all-orders.yaml
+  - id: UC-ADM-037
+    role: admin
+    name: Login
+    smith_equivalent: none
+    path: admin/research_cases/UC-ADM-037-admin-login.yaml

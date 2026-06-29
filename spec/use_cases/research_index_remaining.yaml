@@ -1,0 +1,47 @@
+total: 9
+use_cases:
+  - id: UC-ADM-013
+    role: admin
+    name: Add Station
+    smith_equivalent: AdminStationList.java
+    path: spec/use_cases/admin/research_cases/UC-ADM-013-add-station.yaml
+  - id: UC-ADM-014
+    role: admin
+    name: Delete Station
+    smith_equivalent: AdminStationList.java
+    path: spec/use_cases/admin/research_cases/UC-ADM-014-delete-station.yaml
+  - id: UC-ADM-027
+    role: admin
+    name: Update System Configuration
+    smith_equivalent: AdminConfigList.java
+    path: spec/use_cases/admin/research_cases/UC-ADM-027-update-system-configuration.yaml
+  - id: UC-VIS-001
+    role: user
+    name: Login
+    smith_equivalent: Login.java
+    path: spec/use_cases/user/research_cases/UC-VIS-001-login.yaml
+  - id: UC-VIS-002
+    role: user
+    name: Search for Tickets
+    smith_equivalent: Booking.java
+    path: spec/use_cases/user/research_cases/UC-VIS-002-search-for-tickets.yaml
+  - id: UC-VIS-004
+    role: user
+    name: Book a Ticket
+    smith_equivalent: Booking.java
+    path: spec/use_cases/user/research_cases/UC-VIS-004-book-ticket.yaml
+  - id: UC-VIS-006
+    role: user
+    name: Pay for an Order
+    smith_equivalent: Booking.java
+    path: spec/use_cases/user/research_cases/UC-VIS-006-pay-for-order.yaml
+  - id: UC-VIS-009
+    role: user
+    name: Collect a Ticket
+    smith_equivalent: Booking.java
+    path: spec/use_cases/user/research_cases/UC-VIS-009-collect-ticket.yaml
+  - id: UC-VIS-010
+    role: user
+    name: Enter Station
+    smith_equivalent: Booking.java
+    path: spec/use_cases/user/research_cases/UC-VIS-010-enter-station.yaml

@@ -1,0 +1,19 @@
+﻿id: UC-VIS-004
+role: user
+name: Book a Ticket
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - at least one reservable trip exists from Shanghai Hongqiao to Jiaxingnan on 2026-06-10
+goal: In Ticket Reserve, the user searches for trips using train type All, then books a ticket by selecting an available trip and seat class for travel from Shanghai Hongqiao to Jiaxingnan on 2026-06-10.
+input_constraints:
+  origin_station: Shanghai Hongqiao
+  destination_station: Jiaxingnan
+  travel_date: "2026-06-10"
+  train_type: All
+  trip: select the first available visible trip from the reservation results
+  seat_class: select the first visible seat class with availability for the selected trip
+success_criteria:
+  - the user submits the booking confirmation for the selected destination, travel date and seat class
+  - the application confirms that the booking was placed
+  - the booking request completes successfully for the selected trip

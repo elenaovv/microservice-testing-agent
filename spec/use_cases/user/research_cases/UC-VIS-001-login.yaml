@@ -1,0 +1,14 @@
+﻿id: UC-VIS-001
+role: user
+name: Login
+preconditions:
+  authenticated_as: none
+  state:
+    - the user has a registered account
+goal: A registered user provides their credentials to gain authenticated access.
+input_constraints:
+  username: valid user username from the system specification or configured test credentials
+  password: matching user password from the system specification or configured test credentials
+success_criteria:
+  - the user submits valid user login credentials through the user-facing login flow
+  - the application shows an authenticated user-facing post-login state, such as the logged-in username or authenticated header on the user flow

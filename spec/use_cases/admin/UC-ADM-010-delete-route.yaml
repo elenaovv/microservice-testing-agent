@@ -1,0 +1,10 @@
+﻿id: UC-ADM-010
+role: admin
+name: Delete Route
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - at least one route exists
+goal: The admin removes an existing route.
+success_criteria:
+  - the deleted route no longer appears in the route list

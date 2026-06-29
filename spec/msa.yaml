@@ -1,0 +1,740 @@
+﻿##############################################################################
+# TrainTicket MSA Specification - documentation-derived architecture baseline
+#
+# Purpose:
+# - Domain context for prompt generation
+# - Endpoint/service mapping input for coverage inference
+#
+# Notes:
+# - Endpoint entries are compiled from TrainTicket public wiki/API documentation
+# - The wiki has minor path-format inconsistencies (leading slash, casing, and
+#   occasional typos). Canonical forms are preserved where unambiguous and
+#   inconsistencies are documented in x_path_normalization.
+##############################################################################
+
+msa:
+  gateway:
+    description: "The ts-ui-dashboard gateway reverse-proxies API calls under /api/v1/* to backend services."
+    usage_note: "All browser and test traffic should target the UI gateway BASE_URL."
+    ui_entry_points:
+      client_login: /client_login.html
+      admin_login: /adminlogin.html
+      ticket_reserve: /index.html
+
+  known_credentials:
+    client_user:
+      username: fdse_microservice
+      password: "111111"
+      verification_code: "1234"
+      role: ROLE_USER
+    admin_user:
+      username: admin
+      password: "222222"
+      role: ROLE_ADMIN
+
+  services:
+    ts-admin-basic-info-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/adminbasicservice/adminbasic/configs/{name}
+        method: DELETE
+      - path: /api/v1/adminbasicservice/adminbasic/contacts/{contactsId}
+        method: DELETE
+      - path: /api/v1/adminbasicservice/adminbasic/prices/{pricesId}
+        method: DELETE
+      - path: /api/v1/adminbasicservice/adminbasic/stations/{id}
+        method: DELETE
+      - path: /api/v1/adminbasicservice/adminbasic/trains/{id}
+        method: DELETE
+      - path: /api/v1/adminbasicservice/adminbasic/configs
+        method: GET
+      - path: /api/v1/adminbasicservice/adminbasic/contacts
+        method: GET
+      - path: /api/v1/adminbasicservice/adminbasic/prices
+        method: GET
+      - path: /api/v1/adminbasicservice/adminbasic/stations
+        method: GET
+      - path: /api/v1/adminbasicservice/adminbasic/trains
+        method: GET
+      - path: /api/v1/adminbasicservice/adminbasic/configs
+        method: POST
+      - path: /api/v1/adminbasicservice/adminbasic/contacts
+        method: POST
+      - path: /api/v1/adminbasicservice/adminbasic/prices
+        method: POST
+      - path: /api/v1/adminbasicservice/adminbasic/stations
+        method: POST
+      - path: /api/v1/adminbasicservice/adminbasic/trains
+        method: POST
+      - path: /api/v1/adminbasicservice/adminbasic/configs
+        method: PUT
+      - path: /api/v1/adminbasicservice/adminbasic/contacts
+        method: PUT
+      - path: /api/v1/adminbasicservice/adminbasic/prices
+        method: PUT
+      - path: /api/v1/adminbasicservice/adminbasic/stations
+        method: PUT
+      - path: /api/v1/adminbasicservice/adminbasic/trains
+        method: PUT
+    ts-admin-order-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/adminorderservice/adminorder/{orderId}/{trainNumber}
+        method: DELETE
+      - path: /api/v1/adminorderservice/adminorder
+        method: GET
+      - path: /api/v1/adminorderservice/adminorder
+        method: POST
+      - path: /api/v1/adminorderservice/adminorder
+        method: PUT
+    ts-admin-route-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/adminrouteservice/adminroute/{routeId}
+        method: DELETE
+      - path: /api/v1/adminrouteservice/adminroute
+        method: GET
+      - path: /api/v1/adminrouteservice/adminroute
+        method: POST
+    ts-admin-travel-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/admintravelservice/admintravel/{tripId}
+        method: DELETE
+      - path: /api/v1/admintravelservice/admintravel
+        method: GET
+      - path: /api/v1/admintravelservice/admintravel
+        method: POST
+      - path: /api/v1/admintravelservice/admintravel
+        method: PUT
+    ts-admin-user-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/adminuserservice/users/{userId}
+        method: DELETE
+      - path: /api/v1/adminuserservice/users
+        method: GET
+      - path: /api/v1/adminuserservice/users
+        method: POST
+      - path: /api/v1/adminuserservice/users
+        method: PUT
+    ts-assurance-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/assuranceservice/assurances/assuranceid/{assuranceId}
+        method: DELETE
+      - path: /api/v1/assuranceservice/assurances/orderid/{orderId}
+        method: DELETE
+      - path: /api/v1/assuranceservice/assurance/orderid/{orderId}
+        method: GET
+      - path: /api/v1/assuranceservice/assurances
+        method: GET
+      - path: /api/v1/assuranceservice/assurances/{typeIndex}/{orderId}
+        method: GET
+      - path: /api/v1/assuranceservice/assurances/assuranceid/{assuranceId}
+        method: GET
+      - path: /api/v1/assuranceservice/assurances/types
+        method: GET
+      - path: /api/v1/assuranceservice/assurances/{assuranceId}/{orderId}/{typeIndex}
+        method: PATCH
+    ts-auth-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/users/{userId}
+        method: DELETE
+      - path: /api/v1/users
+        method: GET
+      - path: /api/v1/auth
+        method: POST
+      - path: /api/v1/users/login
+        method: POST
+    ts-avatar-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/avatar
+        method: POST
+    ts-basic-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/basicservice/basic/{stationName}
+        method: GET
+      - path: /api/v1/basicservice/basic/travel
+        method: POST
+      - path: /api/v1/basicservice/basic/travels
+        method: POST
+    ts-cancel-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/cancelservice/cancel/{orderId}/{loginId}
+        method: GET
+      - path: /api/v1/cancelservice/cancel/refound/{orderId}
+        method: GET
+    ts-common:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints: []
+    ts-config-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/configservice/configs/{configName}
+        method: DELETE
+      - path: /api/v1/configservice/configs
+        method: GET
+      - path: /api/v1/configservice/configs/{configName}
+        method: GET
+      - path: /api/v1/configservice/configs
+        method: POST
+      - path: /api/v1/configservice/configs
+        method: PUT
+    ts-consign-price-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/consignpriceservice/consignprice/{weight}/{isWithinRegion}
+        method: GET
+      - path: /api/v1/consignpriceservice/consignprice/config
+        method: GET
+      - path: /api/v1/consignpriceservice/consignprice/price
+        method: GET
+      - path: /api/v1/consignpriceservice/consignprice
+        method: POST
+    ts-consign-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/consignservice/consigns/{consignee}
+        method: GET
+      - path: /api/v1/consignservice/consigns/account/{id}
+        method: GET
+      - path: /api/v1/consignservice/consigns/order/{id}
+        method: GET
+      - path: /api/v1/consignservice/consigns
+        method: POST
+      - path: /api/v1/consignservice/consigns
+        method: PUT
+    ts-contacts-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/contactservice/contacts/{contactsId}
+        method: DELETE
+      - path: /api/v1/contactservice/contacts
+        method: GET
+      - path: /api/v1/contactservice/contacts/{id}
+        method: GET
+      - path: /api/v1/contactservice/contacts/account/{accountId}
+        method: GET
+      - path: /api/v1/contactservice/contacts
+        method: POST
+      - path: /api/v1/contactservice/contacts/admin
+        method: POST
+      - path: /api/v1/contactservice/contacts
+        method: PUT
+    ts-delivery-service:
+      summary: "Delivery worker service (event-driven MQ consumer)."
+      x_endpoint_confidence: code-derived
+      x_endpoint_note: "No HTTP route handlers found in source; this service consumes messages from RabbitMQ."
+      endpoints: []
+    ts-execute-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/executeservice/execute/collected/{orderId}
+        method: GET
+      - path: /api/v1/executeservice/execute/execute/{orderId}
+        method: GET
+    ts-food-delivery-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/fooddeliveryservice/orders/d/{orderId}
+        method: DELETE
+      - path: /api/v1/fooddeliveryservice/orders/{orderId}
+        method: GET
+      - path: /api/v1/fooddeliveryservice/orders/all
+        method: GET
+      - path: /api/v1/fooddeliveryservice/orders/store/{storeId}
+        method: GET
+      - path: /api/v1/fooddeliveryservice/orders
+        method: POST
+      - path: /api/v1/fooddeliveryservice/orders/dtime
+        method: PUT
+      - path: /api/v1/fooddeliveryservice/orders/seatno
+        method: PUT
+      - path: /api/v1/fooddeliveryservice/orders/tripid
+        method: PUT
+    ts-food-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/foodservice/orders/{orderId}
+        method: DELETE
+      - path: /api/v1/foodservice/foods/{date}/{startStation}/{endStation}/{tripId}
+        method: GET
+      - path: /api/v1/foodservice/orders
+        method: GET
+      - path: /api/v1/foodservice/orders/{orderId}
+        method: GET
+      - path: /api/v1/foodservice/createOrderBatch
+        method: POST
+      - path: /api/v1/foodservice/orders
+        method: POST
+      - path: /api/v1/foodservice/orders
+        method: PUT
+    ts-gateway-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints: []
+    ts-inside-payment-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/inside_pay_service/inside_payment/{userId}/{money}
+        method: GET
+      - path: /api/v1/inside_pay_service/inside_payment/account
+        method: GET
+      - path: /api/v1/inside_pay_service/inside_payment/drawback/{userId}/{money}
+        method: GET
+      - path: /api/v1/inside_pay_service/inside_payment/money
+        method: GET
+      - path: /api/v1/inside_pay_service/inside_payment/payment
+        method: GET
+      - path: /api/v1/inside_pay_service/inside_payment
+        method: POST
+      - path: /api/v1/inside_pay_service/inside_payment/account
+        method: POST
+      - path: /api/v1/inside_pay_service/inside_payment/difference
+        method: POST
+    ts-news-service:
+      summary: "News service implemented with Go Web package catch-all GET route."
+      x_endpoint_confidence: code-derived
+      x_endpoint_note: "Service handler uses web.Get(\"/(.*)\", ...) and is externally routed under /news-service/."
+      endpoints:
+      - path: /news-service/news
+        method: GET
+      - path: /news-service/{path}
+        method: GET
+    ts-notification-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/notifyservice/notification/order_cancel_success
+        method: POST
+      - path: /api/v1/notifyservice/notification/order_changed_success
+        method: POST
+      - path: /api/v1/notifyservice/notification/order_create_success
+        method: POST
+      - path: /api/v1/notifyservice/notification/preserve_success
+        method: POST
+    ts-order-other-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/orderOtherService/orderOther/{orderId}
+        method: DELETE
+      - path: /api/v1/orderOtherService/orderOther
+        method: GET
+      - path: /api/v1/orderOtherService/orderOther/{orderId}
+        method: GET
+      - path: /api/v1/orderOtherService/orderOther/{travelDate}/{trainNumber}
+        method: GET
+      - path: /api/v1/orderOtherService/orderOther/orderPay/{orderId}
+        method: GET
+      - path: /api/v1/orderOtherService/orderOther/price/{orderId}
+        method: GET
+      - path: /api/v1/orderOtherService/orderOther/security/{checkDate}/{accountId}
+        method: GET
+      - path: /api/v1/orderOtherService/orderOther/status/{orderId}/{status}
+        method: GET
+      - path: /api/v1/orderOtherService/orderOther
+        method: POST
+      - path: /api/v1/orderOtherService/orderOther/admin
+        method: POST
+      - path: /api/v1/orderOtherService/orderOther/query
+        method: POST
+      - path: /api/v1/orderOtherService/orderOther/refresh
+        method: POST
+      - path: /api/v1/orderOtherService/orderOther/tickets
+        method: POST
+      - path: /api/v1/orderOtherService/orderOther
+        method: PUT
+      - path: /api/v1/orderOtherService/orderOther/admin
+        method: PUT
+    ts-order-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/orderservice/order/{orderId}
+        method: DELETE
+      - path: /api/v1/orderservice/order
+        method: GET
+      - path: /api/v1/orderservice/order/{orderId}
+        method: GET
+      - path: /api/v1/orderservice/order/{travelDate}/{trainNumber}
+        method: GET
+      - path: /api/v1/orderservice/order/orderPay/{orderId}
+        method: GET
+      - path: /api/v1/orderservice/order/price/{orderId}
+        method: GET
+      - path: /api/v1/orderservice/order/security/{checkDate}/{accountId}
+        method: GET
+      - path: /api/v1/orderservice/order/status/{orderId}/{status}
+        method: GET
+      - path: /api/v1/orderservice/order
+        method: POST
+      - path: /api/v1/orderservice/order/admin
+        method: POST
+      - path: /api/v1/orderservice/order/query
+        method: POST
+      - path: /api/v1/orderservice/order/refresh
+        method: POST
+      - path: /api/v1/orderservice/order/tickets
+        method: POST
+      - path: /api/v1/orderservice/order
+        method: PUT
+      - path: /api/v1/orderservice/order/admin
+        method: PUT
+    ts-payment-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/paymentservice/payment
+        method: GET
+      - path: /api/v1/paymentservice/payment
+        method: POST
+      - path: /api/v1/paymentservice/payment/money
+        method: POST
+    ts-preserve-other-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/preserveotherservice/preserveOther
+        method: POST
+    ts-preserve-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/preserveservice/preserve
+        method: POST
+    ts-price-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/priceservice/prices/{pricesId}
+        method: DELETE
+      - path: /api/v1/priceservice/prices
+        method: GET
+      - path: /api/v1/priceservice/prices/{routeId}/{trainType}
+        method: GET
+      - path: /api/v1/priceservice/prices
+        method: POST
+      - path: /api/v1/priceservice/prices/byRouteIdsAndTrainTypes
+        method: POST
+      - path: /api/v1/priceservice/prices
+        method: PUT
+    ts-rebook-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/rebookservice/rebook
+        method: POST
+      - path: /api/v1/rebookservice/rebook/difference
+        method: POST
+    ts-route-plan-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/routeplanservice/routePlan/cheapestRoute
+        method: POST
+      - path: /api/v1/routeplanservice/routePlan/minStopStations
+        method: POST
+      - path: /api/v1/routeplanservice/routePlan/quickestRoute
+        method: POST
+    ts-route-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/routeservice/routes/{routeId}
+        method: DELETE
+      - path: /api/v1/routeservice/routes
+        method: GET
+      - path: /api/v1/routeservice/routes/{routeId}
+        method: GET
+      - path: /api/v1/routeservice/routes/{start}/{end}
+        method: GET
+      - path: /api/v1/routeservice/routes
+        method: POST
+      - path: /api/v1/routeservice/routes/byIds
+        method: POST
+    ts-seat-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/seatservice/seats
+        method: POST
+      - path: /api/v1/seatservice/seats/left_tickets
+        method: POST
+    ts-security-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/securityservice/securityConfigs/{id}
+        method: DELETE
+      - path: /api/v1/securityservice/securityConfigs
+        method: GET
+      - path: /api/v1/securityservice/securityConfigs/{accountId}
+        method: GET
+      - path: /api/v1/securityservice/securityConfigs
+        method: POST
+      - path: /api/v1/securityservice/securityConfigs
+        method: PUT
+    ts-station-food-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/stationfoodservice/stationfoodstores
+        method: GET
+      - path: /api/v1/stationfoodservice/stationfoodstores/{stationId}
+        method: GET
+      - path: /api/v1/stationfoodservice/stationfoodstores/bystoreid/{stationFoodStoreId}
+        method: GET
+      - path: /api/v1/stationfoodservice/stationfoodstores
+        method: POST
+    ts-station-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/stationservice/stations/{stationsId}
+        method: DELETE
+      - path: /api/v1/stationservice/stations
+        method: GET
+      - path: /api/v1/stationservice/stations/id/{stationNameForId}
+        method: GET
+      - path: /api/v1/stationservice/stations/name/{stationIdForName}
+        method: GET
+      - path: /api/v1/stationservice/stations
+        method: POST
+      - path: /api/v1/stationservice/stations/idlist
+        method: POST
+      - path: /api/v1/stationservice/stations/namelist
+        method: POST
+      - path: /api/v1/stationservice/stations
+        method: PUT
+    ts-ticket-office-service:
+      summary: "Ticket office management service (Express)."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /office
+        method: GET
+      - path: /office/getAll
+        method: GET
+      - path: /office/getRegionList
+        method: GET
+      - path: /office/getSpecificOffices
+        method: POST
+      - path: /office/addOffice
+        method: POST
+      - path: /office/deleteOffice
+        method: POST
+      - path: /office/updateOffice
+        method: POST
+    ts-train-food-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/trainfoodservice/trainfoods
+        method: GET
+      - path: /api/v1/trainfoodservice/trainfoods/{tripId}
+        method: GET
+    ts-train-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/trainservice/trains/{id}
+        method: DELETE
+      - path: /api/v1/trainservice/trains
+        method: GET
+      - path: /api/v1/trainservice/trains/{id}
+        method: GET
+      - path: /api/v1/trainservice/trains/byName/{name}
+        method: GET
+      - path: /api/v1/trainservice/trains
+        method: POST
+      - path: /api/v1/trainservice/trains/byNames
+        method: POST
+      - path: /api/v1/trainservice/trains
+        method: PUT
+    ts-travel2-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/travel2service/trips/{tripId}
+        method: DELETE
+      - path: /api/v1/travel2service/admin_trip
+        method: GET
+      - path: /api/v1/travel2service/routes/{tripId}
+        method: GET
+      - path: /api/v1/travel2service/train_types/{tripId}
+        method: GET
+      - path: /api/v1/travel2service/trips
+        method: GET
+      - path: /api/v1/travel2service/trips/{tripId}
+        method: GET
+      - path: /api/v1/travel2service/trip_detail
+        method: POST
+      - path: /api/v1/travel2service/trips
+        method: POST
+      - path: /api/v1/travel2service/trips/left
+        method: POST
+      - path: /api/v1/travel2service/trips/routes
+        method: POST
+      - path: /api/v1/travel2service/trips
+        method: PUT
+    ts-travel-plan-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/travelplanservice/travelPlan/cheapest
+        method: POST
+      - path: /api/v1/travelplanservice/travelPlan/minStation
+        method: POST
+      - path: /api/v1/travelplanservice/travelPlan/quickest
+        method: POST
+      - path: /api/v1/travelplanservice/travelPlan/transferResult
+        method: POST
+    ts-travel-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/travelservice/trips/{tripId}
+        method: DELETE
+      - path: /api/v1/travelservice/admin_trip
+        method: GET
+      - path: /api/v1/travelservice/routes/{tripId}
+        method: GET
+      - path: /api/v1/travelservice/train_types/{tripId}
+        method: GET
+      - path: /api/v1/travelservice/trips
+        method: GET
+      - path: /api/v1/travelservice/trips/{tripId}
+        method: GET
+      - path: /api/v1/travelservice/trip_detail
+        method: POST
+      - path: /api/v1/travelservice/trips
+        method: POST
+      - path: /api/v1/travelservice/trips/left
+        method: POST
+      - path: /api/v1/travelservice/trips/left_parallel
+        method: POST
+      - path: /api/v1/travelservice/trips/routes
+        method: POST
+      - path: /api/v1/travelservice/trips
+        method: PUT
+    ts-ui-dashboard:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints: []
+    ts-user-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/userservice/users/{userId}
+        method: DELETE
+      - path: /api/v1/userservice/users
+        method: GET
+      - path: /api/v1/userservice/users/{userName}
+        method: GET
+      - path: /api/v1/userservice/users/id/{userId}
+        method: GET
+      - path: /api/v1/userservice/users/register
+        method: POST
+      - path: /api/v1/userservice/users
+        method: PUT
+    ts-verification-code-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/verifycode/generate
+        method: GET
+      - path: /api/v1/verifycode/verify/{verifyCode}
+        method: GET
+    ts-voucher-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /getVoucher
+        method: POST
+    ts-wait-order-service:
+      summary: "Code-derived service entry from repository source."
+      x_endpoint_confidence: code-derived
+      endpoints:
+      - path: /api/v1/waitorderservice/orders
+        method: GET
+      - path: /api/v1/waitorderservice/waitlistorders
+        method: GET
+      - path: /api/v1/waitorderservice/order
+        method: POST
+
+  x_spec_version: "2026-04-02"
+  x_scope:
+    description: "Expanded TrainTicket API coverage using public TrainTicket wiki documentation."
+    includes:
+    - auth and verification flows
+    - booking, preserve, order, and order refresh flows
+    - route/travel/seat/price supporting services
+    - related admin and utility services listed in wiki
+
+  x_architecture:
+    system_type: "Train ticket booking system based on microservice architecture."
+    microservice_count: 47
+    languages_frameworks:
+    - "Java: Spring Boot, Spring Cloud"
+    - "Node.js: Express"
+    - "Python: Django"
+    - "Go: Webgo"
+    data_stores:
+    - Mongo
+    - MySQL
+
+  x_observability:
+    documented_tools:
+    - Zipkin
+    - Jaeger
+    - Prometheus
+    - Weave Scope
+
+  x_path_normalization:
+    policy:
+    - "Endpoint path values are stored in canonical API form when documentation is consistent."
+    - "When public docs contain inconsistent forms, notes are captured below."
+    documented_inconsistencies:
+    - "Some wiki rows omit leading '/' (for example api/v1/configservice/configs)."
+    - "Some invocation rows use orderService vs orderservice casing variants."
+    - "Some rows include typos such as double slash in waitlist path examples."
+    caution_examples:
+    - "/api/v1/orderService/order (casing variant appears in some invocation text)"
+    - "/api/v1/waitorderservice//waitlistorders (double slash shown in wiki text)"
+
+  x_sources:
+  - https://github.com/FudanSELab/train-ticket/wiki
+  - https://github.com/FudanSELab/train-ticket/wiki/Service-Guide-and-API-Reference
+  - https://github.com/FudanSELab/train-ticket/wiki/User-Guide
+  - https://github.com/FudanSELab/train-ticket/wiki/Quick-Start
+  - https://github.com/FudanSELab/train-ticket/wiki/Installation-Guide
+  - https://github.com/FudanSELab/train-ticket/wiki/Monitoring-Mechanism
+
+  x_gateway:
+    base_url_env: BASE_URL
+    default_base_url: http://localhost:8080
+    request_routing: All /api/v1/* calls go through the UI gateway (ts-ui-dashboard).

@@ -1,0 +1,11 @@
+﻿id: UC-VIS-016
+role: user
+name: Consign Luggage
+preconditions:
+  authenticated_as: ROLE_USER
+  state:
+    - the traveler has an existing paid order
+goal: The traveler arranges luggage transport for their trip.
+success_criteria:
+  - a luggage consignment record is associated with the order
+  - the consignment fee is recorded

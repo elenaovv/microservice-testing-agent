@@ -1,0 +1,10 @@
+﻿id: UC-ADM-033
+role: admin
+name: Add Order
+preconditions:
+  authenticated_as: ROLE_ADMIN
+  state:
+    - a train exists in the catalog
+goal: The admin creates an order from the admin order panel by providing a document number and selecting a train.
+success_criteria:
+  - the new order appears in the admin order list
