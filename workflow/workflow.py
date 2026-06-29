@@ -23,6 +23,11 @@ from core.prompt_capture import (
     write_prompt_capture,
     write_prompt_capture_entries,
 )
+from core.run_artifacts import (
+    GENERATED_TESTS_DIR,
+    resolve_generation_artifacts,
+    resolve_retest_artifacts,
+)
 from core.reporting import (
     build_execution_report,
     build_journey_guide,
@@ -48,7 +53,6 @@ from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.usage import UsageLimits
 
 AGENT_USAGE_LIMITS = UsageLimits(request_limit=200)
-GENERATED_TESTS_DIR = Path("generated-tests")
 
 
 def _required_contract_calls_observed(
@@ -240,10 +244,17 @@ async def generate_test(
     filename = filename or derive_python_test_filename(journey)
     validate_python_test_filename(filename)
 
-    _output_dir = output_dir or Path("test-results")
-    _history_dir = history_dir or Path("test-results")
-    _generated_tests_dir = generated_tests_dir or GENERATED_TESTS_DIR
-    _runtime_results_dir = runtime_results_dir or Path("runtime-results")
+    artifacts = resolve_generation_artifacts(
+        output_dir=output_dir,
+        history_dir=history_dir,
+        generated_tests_dir=generated_tests_dir,
+        runtime_results_dir=runtime_results_dir,
+        aggregate_history_dir=aggregate_history_dir,
+    )
+    _output_dir = artifacts.output_dir
+    _history_dir = artifacts.history_dir
+    _generated_tests_dir = artifacts.generated_tests_dir
+    _runtime_results_dir = artifacts.runtime_results_dir
 
     evaluation = _build_evaluation_context(
         variant_label=variant_label,
@@ -471,8 +482,8 @@ async def generate_test(
                 and final_report.report_path.stat().st_mtime >= run_started_at
             ):
                 append_evaluation_history(final_report, history_dir=_history_dir)
-                if aggregate_history_dir and Path(aggregate_history_dir) != _history_dir:
-                    append_evaluation_history(final_report, history_dir=Path(aggregate_history_dir))
+                if artifacts.aggregate_history_dir and artifacts.aggregate_history_dir != _history_dir:
+                    append_evaluation_history(final_report, history_dir=artifacts.aggregate_history_dir)
                 history_appended = True
         except Exception as append_error:
             print(
@@ -495,8 +506,8 @@ async def generate_test(
             try:
                 write_execution_report(browse_fail_report, output_dir=_output_dir)
                 append_evaluation_history(browse_fail_report, history_dir=_history_dir)
-                if aggregate_history_dir and Path(aggregate_history_dir) != _history_dir:
-                    append_evaluation_history(browse_fail_report, history_dir=Path(aggregate_history_dir))
+                if artifacts.aggregate_history_dir and artifacts.aggregate_history_dir != _history_dir:
+                    append_evaluation_history(browse_fail_report, history_dir=artifacts.aggregate_history_dir)
             except Exception as browse_fail_error:
                 print(
                     f"\033[33mBrowse-failed history append failed: {browse_fail_error}\033[0m",
@@ -537,8 +548,8 @@ async def generate_test(
             try:
                 write_execution_report(fallback_report, output_dir=_output_dir)
                 append_evaluation_history(fallback_report, history_dir=_history_dir)
-                if aggregate_history_dir and Path(aggregate_history_dir) != _history_dir:
-                    append_evaluation_history(fallback_report, history_dir=Path(aggregate_history_dir))
+                if artifacts.aggregate_history_dir and artifacts.aggregate_history_dir != _history_dir:
+                    append_evaluation_history(fallback_report, history_dir=artifacts.aggregate_history_dir)
             except Exception as fallback_error:
                 print(
                     f"\033[33mFallback history append failed: {fallback_error}\033[0m",
@@ -561,12 +572,20 @@ async def retest_generated_test(
     runtime_results_dir: Path | None = None,
     aggregate_history_dir: Path | None = None,
 ) -> str:
-    _output_dir = output_dir or Path("test-results")
-    _history_dir = history_dir or Path("test-results")
-    _generated_tests_dir = generated_tests_dir or GENERATED_TESTS_DIR
-    _runtime_results_dir = runtime_results_dir or Path("runtime-results")
-    # Journey guide was written during generation; look in source_dir (default: test-results/).
-    _source_dir = source_dir or Path("test-results")
+    artifacts = resolve_retest_artifacts(
+        output_dir=output_dir,
+        history_dir=history_dir,
+        source_dir=source_dir,
+        generated_tests_dir=generated_tests_dir,
+        runtime_results_dir=runtime_results_dir,
+        aggregate_history_dir=aggregate_history_dir,
+    )
+    _output_dir = artifacts.output_dir
+    _history_dir = artifacts.history_dir
+    _generated_tests_dir = artifacts.generated_tests_dir
+    _runtime_results_dir = artifacts.runtime_results_dir
+    # Journey guide was written during generation; look in the configured source dir.
+    _source_dir = artifacts.source_dir
     validate_python_test_filename(filename)
     evaluation = _build_evaluation_context(
         variant_label=variant_label,
@@ -593,8 +612,8 @@ async def retest_generated_test(
     )
     write_execution_report(report, output_dir=_output_dir)
     append_evaluation_history(report, history_dir=_history_dir)
-    if aggregate_history_dir and Path(aggregate_history_dir) != _history_dir:
-        append_evaluation_history(report, history_dir=Path(aggregate_history_dir))
+    if artifacts.aggregate_history_dir and artifacts.aggregate_history_dir != _history_dir:
+        append_evaluation_history(report, history_dir=artifacts.aggregate_history_dir)
 
     parts: list[str] = []
     if journey_guide is not None:

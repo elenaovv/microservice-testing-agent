@@ -27,10 +27,10 @@ from core.models import (
     LocatorCandidate,
     Phase1Metrics,
 )
+from core.run_artifacts import TEST_RESULTS_DIR
 from core.sequence_extractor import action_sequence_hash as compute_seq_hash
 from core.sequence_extractor import extract_action_sequence
 
-TEST_RESULTS_DIR = Path("test-results")
 EVALUATION_HISTORY_FILENAME = "evaluation-runs.jsonl"
 LEGACY_HISTORY_FILENAME = "phase1-runs.jsonl"
 EVALUATION_SUMMARY_FILENAME = "evaluation-summary.md"

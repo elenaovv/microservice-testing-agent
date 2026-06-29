@@ -16,6 +16,12 @@ from pydantic_ai import BinaryContent, RunContext
 from agent.agent import agent
 from core.executor import run_generated_test
 from core.models import ApiCall, Deps, ExecutionResult, InteractionContract, SuccessObservation
+from core.run_artifacts import (
+    GENERATED_TESTS_DIR,
+    RUNTIME_RESULTS_DIR,
+    RunArtifactPaths,
+    TEST_RESULTS_DIR,
+)
 from core.reporting import (
     build_execution_report,
     load_journey_guide,
@@ -26,8 +32,6 @@ from core.retry_budget import (
     render_repair_budget,
     repair_budget_exhausted,
 )
-
-GENERATED_TESTS_DIR = Path("generated-tests")
 
 
 @agent.tool
@@ -354,9 +358,8 @@ def create_python_test_file(ctx: RunContext[Deps], filename: str, code: str) -> 
     path.write_text(code, encoding="utf-8")
     _log(f"{path} ({len(code.splitlines())} lines)")
 
-    # Archive every generated attempt under test-results/test-attempts/<test_stem>/
-    archive_root = (ctx.deps.output_dir or Path("test-results")) / "test-attempts"
-    archive_dir = archive_root / Path(filename).stem
+    # Archive every generated attempt under test-results/test-attempts/<test_stem>/.
+    archive_dir = RunArtifactPaths(output_dir=ctx.deps.output_dir or TEST_RESULTS_DIR).test_attempts_dir(filename)
     archive_dir.mkdir(parents=True, exist_ok=True)
     attempt_name = f"attempt-{ctx.deps.generation_attempts:03d}-{current_hash}.py"
     archive_path = archive_dir / attempt_name
@@ -379,9 +382,9 @@ def run_test_file(ctx: RunContext[Deps], filename: str) -> str | list:
     _log(f"Running {filename} ...")
     ctx.deps.test_attempts += 1
     evaluation = ctx.deps.evaluation
-    _output_dir = ctx.deps.output_dir or Path("test-results")
+    _output_dir = ctx.deps.output_dir or TEST_RESULTS_DIR
     generated_tests_dir = ctx.deps.generated_tests_dir or GENERATED_TESTS_DIR
-    runtime_results_dir = ctx.deps.runtime_results_dir or Path("runtime-results")
+    runtime_results_dir = ctx.deps.runtime_results_dir or RUNTIME_RESULTS_DIR
     test_path = generated_tests_dir / filename
     syntax_error = _syntax_check(test_path)
     if syntax_error:
