@@ -94,7 +94,7 @@ def _selector_from_node(node: ast.expr, var_map: dict[str, str]) -> str:
             return _selector_from_node(func.value, var_map)
 
         if isinstance(func, ast.Name) and func.id == "expect":
-            # expect(locator) — look inside the first argument
+            # expect(locator) - look inside the first argument
             if node.args:
                 return _selector_from_node(node.args[0], var_map)
 

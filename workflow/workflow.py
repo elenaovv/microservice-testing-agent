@@ -367,11 +367,11 @@ async def generate_test(
             if deps.journey_succeeded is False:
                 reason = deps.journey_outcome_reason or "Browse phase did not complete the journey successfully."
                 # Note: HTTP status codes are not a reliable proxy for application-level
-                # success — many systems return 200 for business-logic failures (e.g. wrong
+                # success - many systems return 200 for business-logic failures (e.g. wrong
                 # credentials, constraint violations). We cannot programmatically distinguish
                 # "agent failed to interact with the UI" from "system under test misbehaved"
                 # without an external network observer. Both cases abort test generation here.
-                print(f"\033[33mSkipping test generation — browse phase failed: {reason}\033[0m", flush=True)
+                print(f"\033[33mSkipping test generation - browse phase failed: {reason}\033[0m", flush=True)
                 deps.browse_failure_reason = f"journey_failed: {reason}"
                 if deps.capture.api_calls:
                     call_summary = ", ".join(
@@ -496,7 +496,7 @@ async def generate_test(
                 filename=filename,
                 status="browse_failed",
                 exit_code=1,
-                summary=f"Test '{filename}' not generated — browse phase did not complete.",
+                summary=f"Test '{filename}' not generated - browse phase did not complete.",
                 details=deps.browse_failure_reason,
                 requested_journey=journey,
                 use_case=use_case,

@@ -262,7 +262,7 @@ def _build_sequence_section(grouped: dict[str, list[dict]]) -> list[str]:
             run_count = len(runs)
             filenames = ", ".join(r[0] for r in runs)
             seq = runs[0][1]
-            lines.append(f"**Seq `{seq_hash}` — {run_count}/{n_runs} runs** ({filenames})")
+            lines.append(f"**Seq `{seq_hash}` - {run_count}/{n_runs} runs** ({filenames})")
             lines.append("")
             for i, step in enumerate(seq, 1):
                 lines.append(f"{i}. `{step}`")
@@ -316,7 +316,7 @@ def render_evaluation_summary(
         [
             "`Journey` is the structured use-case ID and name when available, otherwise the requested journey text or filename fallback; `Runs`, `Generated`, `Pass`, and `Fail` are run counts.",
             "`Blocked` means the run failed before meaningful execution, `Error` means the run crashed before any test was generated or executed (e.g. browser connection lost), `Syntax invalid` means invalid Python, `Suspected FP` means a likely false positive, `Variants` counts distinct generated code hashes, `Stability` is the share of runs using the most common hash, and `Top hash` shows that dominant hash value and count.",
-            "`Seq variants` counts distinct action sequences (Playwright step order + selectors, fill values dropped), `Seq stability` is the share of runs with the most common sequence — these measure structural non-determinism independently of code hash.",
+            "`Seq variants` counts distinct action sequences (Playwright step order + selectors, fill values dropped), `Seq stability` is the share of runs with the most common sequence - these measure structural non-determinism independently of code hash.",
             "`Retries avg` is the average repair retries used per run in `used/max` form, `Pass w/o repairs` is how many passing runs used `0/max`, `Same fault` checks whether all failures share one signature, and `Avg GUI`/`Avg API`/`Avg lines` are averages for GUI checks, frontend API calls, and test size.",
         ],
     )
@@ -350,7 +350,7 @@ def render_evaluation_summary(
             lines,
             "Phase 2 Operation Coverage By Service",
             [
-                "`Journey` is the grouping key, `Service` is the MSA service name, `Covered ops` is the number of distinct observed operations, `Total ops` is the spec total, `Coverage` is covered divided by total, and `Operations` lists each matched operation with its per-run hit count in `(N/runs)` form — e.g. `POST /x (3/5)` means 3 of 5 runs covered that operation.",
+                "`Journey` is the grouping key, `Service` is the MSA service name, `Covered ops` is the number of distinct observed operations, `Total ops` is the spec total, `Coverage` is covered divided by total, and `Operations` lists each matched operation with its per-run hit count in `(N/runs)` form - e.g. `POST /x (3/5)` means 3 of 5 runs covered that operation.",
             ],
         )
     if smith_bucket_rows:

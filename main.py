@@ -273,7 +273,7 @@ async def _run_experiment(args: argparse.Namespace) -> None:
             source_path=str(uc.source_path) if uc.source_path else "",
         )
 
-        safe_print(f"\n[{uc_index}/{total_uc}] Use case: {uc.id} — {uc.name}")
+        safe_print(f"\n[{uc_index}/{total_uc}] Use case: {uc.id} - {uc.name}")
 
         start_run = getattr(args, "start_run", 1)
         for run_num in range(start_run, start_run + total_runs):

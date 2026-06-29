@@ -378,14 +378,14 @@ def build_browse_prompt(
         "Follow this user journey step by step in the browser. "
         "Call log_action after every interaction and use start_timer/stop_timer around slow steps. "
         "Use the execution brief below as domain context, but verify the actual UI live before deciding the flow. "
-        "If the spec you read provides a specific entry point URL for the journey, navigate there directly — "
+        "If the spec you read provides a specific entry point URL for the journey, navigate there directly - "
         "do not explore intermediate pages to rediscover information you already have. "
         f"The UI under test is served from {base_url}; navigate there before you start browsing.",
         f"Execution brief:\n{execution_brief}",
         "The success criteria describe the end state you must reach by actively performing "
-        "every step of the journey. Observing text on the current page is not completion — "
+        "every step of the journey. Observing text on the current page is not completion - "
         "you must take actions to drive the UI to the goal state. "
-        "After any delete or update action, do not rely on the current table view to confirm success — "
+        "After any delete or update action, do not rely on the current table view to confirm success - "
         "the page may have reloaded or scrolled. Explicitly verify by reloading or re-querying "
         "and confirming the entity is truly absent or updated in the refreshed view.",
         "You must strictly use native Playwright interactions (e.g., locator.click(), locator.press_sequentially()) "
@@ -397,7 +397,7 @@ def build_browse_prompt(
         "(for example to YYYY-MM-DD 00:00:00).",
         "After every state-changing browser action (clicking a confirm button, submitting a form, triggering a deletion), "
         "call browser_network_requests and then call log_api_call once for each significant backend request you observe "
-        "(method, path, and status code). Do not summarise network activity in text — use log_api_call so it is recorded structurally. "
+        "(method, path, and status code). Do not summarise network activity in text - use log_api_call so it is recorded structurally. "
         "This is especially important after confirmation modals: log the DELETE/POST/PUT that the confirmation triggered "
         "and its response status, so you can verify the operation reached the backend.",
         "For search/filter journeys specifically, inspect the outbound search request after clicking Search. "
@@ -409,7 +409,7 @@ def build_browse_prompt(
         "to record the outcome. "
         "Call with success=True only if all success criteria were met and verified, "
         "AND for state-changing journeys you have called log_api_call confirming a 2xx response. "
-        "Call with success=False if the journey could not be completed for any reason — "
+        "Call with success=False if the journey could not be completed for any reason - "
         "whether the UI could not be interacted with, or the system responded with an error. "
         "In both cases include the reason clearly. "
         "Stop immediately after calling report_journey_outcome(success=False).",
@@ -463,7 +463,7 @@ def build_browse_prompt(
         "When you observe a confirmation or status message, record its exact text "
         "(preserving capitalisation) in your log_action note. "
         "After clicking any button that triggers an action (login, booking, payment, cancellation), "
-        "check the browser console for messages prefixed with [dialog:alert] — "
+        "check the browser console for messages prefixed with [dialog:alert] - "
         "these are JavaScript alerts captured without blocking the page. "
         "Important: console messages are cumulative. A [dialog:alert] message visible after a click "
         "may have been logged at page load, not as a response to your click. "
@@ -566,7 +566,7 @@ def build_test_generation_prompt(
         "Locator strategy reminder: use get_by_role over get_by_text for interactive elements. "
         "Strict mode will fail if a locator matches more than one element. "
         "For every locator you write, ask: 'is this word unique on the page?' "
-        "For form inputs, never use the field's current value as its locator — "
+        "For form inputs, never use the field's current value as its locator - "
         "JS-filled values are invisible to CSS attribute selectors. "
         "Prefer id-based locators (#id), positional locators (locator('input').nth(N)), "
         "or get_by_placeholder() only when the placeholder attribute is set in the HTML source. "
@@ -590,13 +590,13 @@ def build_test_generation_prompt(
         "For any form field that showed autocomplete behaviour during browsing (a dropdown appeared after typing), "
         "use `locator.press_sequentially(value)` instead of `locator.fill(value)` in the generated test. "
         "`fill()` sets the value silently without triggering JavaScript input events, so autocomplete never fires "
-        "and the UI submits an unrecognised value — causing empty search results or silent form failures. "
+        "and the UI submits an unrecognised value - causing empty search results or silent form failures. "
         "After `press_sequentially()`, wait for the dropdown option to appear and click it before continuing: "
         "`page.get_by_role('option', name=value).first.click()` or the equivalent visible suggestion locator.",
         "If the browse logs include select option values, prefer `select_option(value=...)` over labels. "
         "Use label-based selection only when the label is confirmed visible in the control.",
         "For all text content assertions use re.compile('...', re.IGNORECASE) "
-        "rather than a plain string — never rely on remembered capitalisation.",
+        "rather than a plain string - never rely on remembered capitalisation.",
         """
         Modal-scoping helper: when a modal/dialog/overlay is involved, always locate a reliable
         modal anchor (unique heading text or distinctive phrase) and scope subsequent actions

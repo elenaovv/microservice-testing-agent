@@ -88,7 +88,7 @@ use_cases:
     name: Login
     note: >
       Login asserts only the positive path. Faults must break the valid-creds
-      flow — security-style "accepts invalid" mutants are NOT detectable here
+      flow - security-style "accepts invalid" mutants are NOT detectable here
       and must be excluded.
     faults:
 
@@ -466,7 +466,7 @@ use_cases:
 
   - id: UC-ADM-007
     name: Update Train
-    note: This UC asserts non-modified fields stay unchanged — strong OVERREACH surface.
+    note: This UC asserts non-modified fields stay unchanged - strong OVERREACH surface.
     faults:
 
       - id: F-ADM-007-01
@@ -584,7 +584,7 @@ use_cases:
 
   - id: UC-ADM-014
     name: Delete Station
-    note: UC asserts other records remain — direct surface for OVERREACH.
+    note: UC asserts other records remain - direct surface for OVERREACH.
     faults:
 
       - id: F-ADM-014-01
@@ -619,7 +619,7 @@ use_cases:
                 count: 2
               note: >
                 Real delete intercepted (no DB change). Read mutation drops
-                two records from the visible list — matching the user's
+                two records from the visible list - matching the user's
                 deletion target visually plus one extra, so list size
                 appears to shrink by 2.
 
@@ -649,7 +649,7 @@ use_cases:
 
   - id: UC-ADM-027
     name: Update System Configuration
-    note: Like UC-ADM-007, this UC asserts unmodified fields stay unchanged — strong OVERREACH surface.
+    note: Like UC-ADM-007, this UC asserts unmodified fields stay unchanged - strong OVERREACH surface.
     faults:
 
       - id: F-ADM-027-01
@@ -716,7 +716,7 @@ use_cases:
 
   - id: UC-ADM-037
     name: Admin Login
-    note: Same surface limitations as UC-VIS-001 — only positive-path faults detect.
+    note: Same surface limitations as UC-VIS-001 - only positive-path faults detect.
     faults:
 
       - id: F-ADM-037-01
@@ -760,4 +760,4 @@ use_cases:
                 Real backend issues a valid JWT with admin claims; this
                 transformer additionally forces the JSON body's role field to
                 ROLE_USER. If the frontend gates admin nav purely on the JWT
-                claim (not the JSON body), this won't detect — hence borderline.
+                claim (not the JSON body), this won't detect - hence borderline.

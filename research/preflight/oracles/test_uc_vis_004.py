@@ -53,7 +53,7 @@ def test_uc_vis_004_book_oracle(page: Page) -> None:
     form.get_by_role("button", name="Login").click()
     expect(page.locator("#flow_preserve_login_msg")).to_have_text(re.compile(r"login success", re.IGNORECASE), timeout=15000)
 
-    # baseline order count — used after booking to confirm a row was actually added
+    # baseline order count - used after booking to confirm a row was actually added
     page.goto(f"{BASE_URL}/client_order_list.html", wait_until="domcontentloaded")
     order_table = page.locator("table.am-table.am-table-striped.am-table-hover.table-main")
     expect(order_table).to_be_visible(timeout=15000)
@@ -79,7 +79,7 @@ def test_uc_vis_004_book_oracle(page: Page) -> None:
     target.locator("select.booking_seat_class").select_option(value="2")
     target.locator("button.ticket_booking_button").click()
 
-    # contacts + assurance — rows 0 and 1 are header/template; the third row is the
+    # contacts + assurance - rows 0 and 1 are header/template; the third row is the
     # first usable contact (matches the existing booking_test pattern).
     contacts = page.locator("#contacts_booking_list_table tbody tr")
     expect(contacts.first).to_be_visible(timeout=10000)
@@ -108,7 +108,7 @@ def test_uc_vis_004_book_oracle(page: Page) -> None:
     )
 
     # success_criterion 2: "the booking request completes successfully for the
-    # selected trip" — verify the new order was actually persisted. We use a
+    # selected trip" - verify the new order was actually persisted. We use a
     # delta count rather than searching for selected_trip_id, because previous
     # passthrough runs may have already booked the same trip and the row would
     # match even when the current booking didn't persist (NO-OP fault case).

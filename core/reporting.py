@@ -1,10 +1,10 @@
 """Core reporting: report/journey builders and file I/O.
 
 Heavy analysis helpers live in:
-  - core.coverage_utils  – MSA spec parsing and endpoint/service inference
-  - core.inference       – code and failure analysis
-  - core.evaluation_rendering – evaluation summary markdown rendering
-  - core.report_rendering     – execution-report and journey-guide rendering
+  - core.coverage_utils  - MSA spec parsing and endpoint/service inference
+  - core.inference       - code and failure analysis
+  - core.evaluation_rendering - evaluation summary markdown rendering
+  - core.report_rendering     - execution-report and journey-guide rendering
 """
 
 import json

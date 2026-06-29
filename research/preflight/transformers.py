@@ -23,7 +23,7 @@ def _resolve(body: Any, path: str) -> list[tuple[Any, Any]]:
     """Resolve `path` against `body`, returning (parent_container, key) pairs.
 
     Raises ValueError for malformed paths. Silently skips path branches whose
-    intermediate nodes are missing — yields fewer results, never crashes.
+    intermediate nodes are missing - yields fewer results, never crashes.
     """
     if not path:
         raise ValueError("empty path")

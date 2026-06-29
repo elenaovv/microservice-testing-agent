@@ -85,7 +85,7 @@ REPAIR_HINTS: dict[str, str] = {
         "Check whether a modal or overlay is blocking the page and must be dismissed first."
     ),
     "assertion-failure": (
-        "An assertion failed — the expected state was not reached. "
+        "An assertion failed - the expected state was not reached. "
         "Re-examine the success criteria and verify the exact text or element state "
         "visible on the page at that point. Use re.compile with IGNORECASE for text assertions."
     ),

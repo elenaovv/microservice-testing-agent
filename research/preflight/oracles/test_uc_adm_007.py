@@ -2,7 +2,7 @@
 
 PASS on healthy MSA; FAIL on F-ADM-007-{01,02,03,04}.
 
-Reads current AverageSpeed and submits current+1 — a safe delta that does
+Reads current AverageSpeed and submits current+1 - a safe delta that does
 NOT corrupt downstream search/book.
 
 Asserts after refresh:
