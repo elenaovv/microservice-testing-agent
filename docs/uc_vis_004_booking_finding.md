@@ -8,7 +8,7 @@ uv run python main.py test --use-case-id UC-VIS-004 --base-url http://localhost:
 
 ## Observed Result
 
-With the default `spec/msa.yaml` available, the browse phase could:
+With the default `spec/msa.yaml` available, the browse phase was able to:
 
 - read the MSA specification;
 - use the client login entry point;
@@ -27,8 +27,8 @@ The original use-case wording included:
 with no assurance, no food and no consign
 ```
 
-The UI was used without explicitly selecting optional services, but the preserve
-request still contained default food fields:
+The UI flow did not explicitly select optional services, but the preserve request
+still contained default food fields:
 
 ```text
 foodType=1
@@ -36,8 +36,8 @@ foodName='Bone Soup'
 foodPrice=2.5
 ```
 
-The browse phase therefore rejected the run because the exact optional-service
-payload did not match the use-case text, even though booking and order creation
+The browse phase therefore rejected the run because the optional-service payload
+did not match the use-case text exactly, even though booking and order creation
 succeeded.
 
 ## Decision
@@ -48,5 +48,5 @@ For the research subset, `UC-VIS-004` measures the booking outcome:
 - the order status is `Not Paid`.
 
 Default optional-service payload behavior is recorded as a system observation.
-It should only block the use case when optional-service selection is the target
+It should block the use case only when optional-service selection is the target
 of the research question.

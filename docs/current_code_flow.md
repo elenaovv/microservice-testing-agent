@@ -1,6 +1,6 @@
 # Current Code Flow
 
-This file summarizes the root-level Python runtime.
+This document summarizes the root-level Python runtime.
 
 ```mermaid
 flowchart LR
@@ -71,9 +71,9 @@ flowchart LR
 2. `workflow/workflow.py` loads the selected use case, MSA specification, and system description.
 3. The browse phase drives the deployed UI through Playwright MCP.
 4. Agent tools record actions, timings, API calls, interaction contracts, baseline observations, and success observations.
-5. The workflow builds and persists the journey guide before generating code.
-6. The generation phase writes a `pytest-playwright` file under `generated-tests/`.
-7. The generated test is executed through the pytest subprocess runner.
+5. The workflow builds and saves the journey guide before generating code.
+6. The generation phase writes a `pytest-playwright` file to `generated-tests/`.
+7. The generated test runs through the pytest subprocess runner.
 8. Reports and evaluation history are written under `test-results/`.
 
 ## Runtime Boundaries
@@ -85,4 +85,4 @@ flowchart LR
 | Test output | One generated Python test file per run |
 | Execution | pytest subprocess through `core/executor.py` |
 | Reporting | Journey Markdown/JSON, report JSON, network data, evaluation history |
-| Backend evidence | Frontend-visible HTTP requests matched to `spec/msa.yaml` |
+| Backend evidence | Browser-visible HTTP requests matched to `spec/msa.yaml` |
