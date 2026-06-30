@@ -1,0 +1,9 @@
+{
+  "name": "browsing-agent",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Runtime JavaScript dependencies for MAESTRO browser control",
+  "devDependencies": {
+    "@playwright/mcp": "0.0.77"
+  }
+}

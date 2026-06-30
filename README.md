@@ -4,10 +4,10 @@ This is the operator guide for running the browsing-driven test generation proto
 
 ## Repository Layout
 
-- `agent/`: constructs the single Pydantic AI agent and registers its tools.
-- `workflow/`: coordinates browse, journey-contract creation, test generation, execution, repair, and reporting.
-- `core/`: shared models, execution, reporting, coverage mapping, retry handling, and evaluation helpers.
-- `prompts/`: loads use cases, MSA specification, and system description, then builds agent prompts.
+- `src/agent/`: constructs the single Pydantic AI agent and registers its tools.
+- `src/workflow/`: coordinates browse, journey-contract creation, test generation, execution, repair, and reporting.
+- `src/core/`: shared contracts plus execution, reporting, evaluation, analysis, coverage, and capture helpers.
+- `src/prompts/`: loads use cases, MSA specification, and system description, then builds agent prompts.
 - `direct_baseline/`: static-input baseline that skips browser exploration.
 - `spec/`: MSA specification, system description, research use cases, and fault catalog.
 - `research/`: post-hoc analysis and preflight utilities used for the paper evaluation.
@@ -26,7 +26,7 @@ Outputs:
 Install these first:
 - Python 3.12
 - `uv`
-- Node.js with `npx`
+- Node.js with `npm`
 
 The runtime also expects:
 - a reachable application URL, usually passed with `--base-url`
@@ -50,12 +50,13 @@ From the repository root:
 
 ```bash
 uv sync
+npm ci
 ```
 
 If Playwright browsers are not installed yet:
 
 ```bash
-npx playwright install chromium
+uv run playwright install chromium
 ```
 
 ## Commands

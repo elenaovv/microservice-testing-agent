@@ -1,4 +1,4 @@
-from core.models import ApiCall, JourneyContract, ServiceCallRequirement
+from core.contracts.models import ApiCall, JourneyContract, ServiceCallRequirement
 from workflow.workflow import (
     _incomplete_state_changing_contract_can_continue,
     _missing_state_changing_trigger_locator,

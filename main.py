@@ -7,7 +7,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core.models import UseCaseMetadata
+# Add src/ to path so moved packages are found automatically
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+from core.contracts.models import UseCaseMetadata
 from prompts.generator import (
     STRUCTURED_USE_CASE_INDEX_PATH,
     SYSTEM_DESCRIPTION_PATH,
@@ -227,7 +230,7 @@ def _collect_jsonl_records(root: Path, glob_pattern: str) -> list[dict]:
 
 def _write_aggregate_summary(aggregate_dir: Path, source_root: Path, glob_pattern: str) -> None:
     """Merge evaluation-runs.jsonl records matching glob_pattern into aggregate_dir."""
-    from core.evaluation_utils import (
+    from core.evaluation.evaluation_utils import (
         EVALUATION_HISTORY_FILENAME,
         write_evaluation_summary,
     )
@@ -244,7 +247,7 @@ def _write_aggregate_summary(aggregate_dir: Path, source_root: Path, glob_patter
 
 async def _run_experiment(args: argparse.Namespace) -> None:
     generate_test, _, _ = _import_workflow()
-    from core.evaluation_utils import write_evaluation_summary
+    from core.evaluation.evaluation_utils import write_evaluation_summary
 
     output_root = Path(args.output_dir).resolve()
     model_slug = _model_slug(args.model)
@@ -310,7 +313,7 @@ async def _run_experiment(args: argparse.Namespace) -> None:
                 safe_print(f"  \033[31mError in run {run_num}: {exc}\033[0m")
 
     # Model-level aggregate summary: collect from <uc-dir>/evaluation-runs.jsonl only
-    from core.evaluation_utils import EVALUATION_HISTORY_FILENAME
+    from core.evaluation.evaluation_utils import EVALUATION_HISTORY_FILENAME
     safe_print(f"\nWriting model-level summary → {model_dir}")
     _write_aggregate_summary(model_dir, model_dir, f"*/{EVALUATION_HISTORY_FILENAME}")
 

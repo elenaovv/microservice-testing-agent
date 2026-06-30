@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.run_artifacts import (
+from core.execution.run_artifacts import (
     GENERATED_TESTS_DIR,
     RUNTIME_RESULTS_DIR,
     TEST_RESULTS_DIR,

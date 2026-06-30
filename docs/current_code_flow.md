@@ -1,6 +1,7 @@
 # Current Code Flow
 
-This document summarizes the root-level Python runtime.
+This document summarizes the Python runtime after the `src/` layout and `core/`
+subpackage split.
 
 ```mermaid
 flowchart LR
@@ -18,15 +19,15 @@ flowchart LR
     end
 
     subgraph WORKFLOW ["Workflow"]
-        WF["workflow/workflow.py"]
+        WF["src/workflow/workflow.py"]
         BROWSE["Browse phase"]
         CONTRACT["Journey evidence and contract"]
         GENERATE["Test generation and repair"]
     end
 
     subgraph AGENT ["Agent Runtime"]
-        AGENT_CORE["agent/agent.py"]
-        TOOLS["agent/tools.py"]
+        AGENT_CORE["src/agent/agent.py"]
+        TOOLS["src/agent/tools.py"]
         MCP["Playwright MCP"]
     end
 
@@ -68,7 +69,7 @@ flowchart LR
 ## Run Sequence
 
 1. `main.py` parses the CLI arguments and calls the workflow layer.
-2. `workflow/workflow.py` loads the selected use case, MSA specification, and system description.
+2. `src/workflow/workflow.py` loads the selected use case, MSA specification, and system description.
 3. The browse phase drives the deployed UI through Playwright MCP.
 4. Agent tools record actions, timings, API calls, interaction contracts, baseline observations, and success observations.
 5. The workflow builds and saves the journey guide before generating code.
@@ -83,6 +84,6 @@ flowchart LR
 | Use-case input | Free-text journey, use-case ID, or use-case file |
 | GUI model | Discovered through live browsing, not loaded from a static GUI description |
 | Test output | One generated Python test file per run |
-| Execution | pytest subprocess through `core/executor.py` |
+| Execution | pytest subprocess through `src/core/execution/executor.py` |
 | Reporting | Journey Markdown/JSON, report JSON, network data, evaluation history |
 | Backend evidence | Browser-visible HTTP requests matched to `spec/msa.yaml` |

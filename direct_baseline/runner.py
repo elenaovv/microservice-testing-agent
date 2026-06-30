@@ -14,6 +14,9 @@ from pathlib import Path
 from typing import Any, Sequence
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = REPO_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -34,27 +37,27 @@ from pydantic_ai import Agent
 from pydantic_ai.usage import UsageLimits
 from pydantic_ai import RunContext
 
-from core.evaluation_utils import (
+from core.evaluation.evaluation_utils import (
     EVALUATION_HISTORY_FILENAME,
     append_evaluation_history,
     write_evaluation_summary,
 )
-from core.executor import run_generated_test
-from core.models import (
+from core.execution.executor import run_generated_test
+from core.contracts.models import (
     EvaluationContext,
     ExecutionArtifact,
     ExecutionReport,
     ExecutionResult,
     UseCaseMetadata,
 )
-from core.prompt_capture import write_prompt_capture_entries
-from core.reporting import (
+from core.capture.prompt_capture import write_prompt_capture_entries
+from core.reporting.reporting import (
     build_execution_report,
     load_execution_report,
     write_execution_report,
 )
-from core.report_rendering import render_execution_report
-from core.retry_budget import render_repair_budget, repair_budget_exhausted
+from core.reporting.report_rendering import render_execution_report
+from core.execution.retry_budget import render_repair_budget, repair_budget_exhausted
 from prompts.generator import (
     MSA_SPEC_PATH,
     SYSTEM_DESCRIPTION_PATH,

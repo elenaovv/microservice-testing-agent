@@ -9,6 +9,9 @@ __pycache__/
 .venv/
 .uv-cache/
 
+# Node
+node_modules/
+
 # Sessions (saved browser state)
 .sessions/
 .playwright-mcp/
@@ -16,6 +19,8 @@ __pycache__/
 
 # Local exploratory/debug artifacts
 .claude/
+_local_untracked_do_not_push/
+SUBMISSION_CLEANUP.md
 prompt-captures/
 docs/exploration/
 docs/quatic_2026_pdf_review.md
