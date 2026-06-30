@@ -1,7 +1,7 @@
 from pathlib import Path
 from types import SimpleNamespace
 
-from core.prompt_capture import write_prompt_capture_entries
+from core.capture.prompt_capture import write_prompt_capture_entries
 
 
 def test_prompt_capture_entries_are_run_scoped(tmp_path: Path):

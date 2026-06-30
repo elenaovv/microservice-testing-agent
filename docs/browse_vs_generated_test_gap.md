@@ -1,7 +1,8 @@
 # Browse Pass vs Generated-Test Pass
 
-Successful browsing and successful replay measure different things. A journey
-can complete in the live browser and still produce a test that fails later.
+Browsing success and replay success measure different properties. A journey can
+complete in the live browser and still produce a generated test that fails during
+deterministic replay.
 
 ## Metric Definitions
 
@@ -11,16 +12,16 @@ can complete in the live browser and still produce a test that fails later.
 | `Gen.` | The run produced a syntactically valid Python test file. |
 | `Pass` | The generated test passed when executed by pytest after zero or more repair attempts. |
 
-The metrics describe different stages. A browse pass means the live UI journey
-was completed once. A generated-test pass means the same workflow survived as
-deterministic replay code.
+These metrics refer to different stages. A browse pass means the live UI journey
+completed once. A generated-test pass means the workflow survived as fixed
+replay code.
 
 ## Replay Failure Causes
 
-The browse phase can adapt to the current UI state. It can inspect pages, retry
+The browse phase adapts to the current UI state. It can inspect pages, retry
 actions, dismiss dialogs, and choose visible controls. The generated test does
-not have that adaptive context. It replays one fixed path and can fail if any of
-the following change between browsing and replay:
+not keep that adaptive context. It replays one fixed path and can fail when any
+of the following differ between browsing and replay:
 
 - selector stability
 - modal timing
@@ -31,13 +32,14 @@ the following change between browsing and replay:
 - expected backend state
 - assertions tied too closely to one screen state
 
-The gap between `Gen.` and `Pass` is therefore a replay-stability result. It is
-not the same as a browse failure.
+The gap between `Gen.` and `Pass` is therefore a replay-stability result, not a
+browse-failure result.
 
 ## Journey Evidence Used During Generation
 
 The live in-memory browse capture is the source of the generation evidence. The
-workflow also saves that evidence as a `*.journey.json` artifact after browsing.
+workflow also saves the same evidence as a `*.journey.json` artifact after
+browsing.
 
 The generator does not receive the raw saved JSON file. It receives a rendered
 subset that includes:
@@ -49,8 +51,8 @@ subset that includes:
 - selected use-case and MSA context
 
 If a generated test fails, the usual cause is not a mismatch between memory and
-the saved JSON. The more relevant cause is loss or weakening of evidence while
-turning adaptive browser observations into fixed replay code.
+the saved JSON. The more relevant risk is that evidence is weakened while
+adaptive browser observations are converted into fixed replay code.
 
 ## Failure Categories
 
@@ -60,7 +62,7 @@ Saved run artifacts can be classified without rerunning the experiment:
 uv run python research/classify_failure_modes.py path/to/result-folder --output-dir path/to/failure-mode-summary
 ```
 
-The script reads `evaluation-runs.jsonl` and `*.report.json` files, then writes:
+The script reads `evaluation-runs.jsonl` and `*.report.json`, then writes:
 
 - `failure-modes.md`
 - `failure-modes.csv`
@@ -80,15 +82,15 @@ Current categories:
 
 ## Paper Use
 
-Use the result to describe the conversion problem:
+Use this result to describe the conversion problem:
 
 > The workflow can often complete a live GUI journey and generate executable
 > test code, but deterministic replay remains sensitive to selectors, timing,
 > state, and oracle strength.
 
-Avoid framing the table as proof that GUI test generation is solved. The result
-is more precise when paired with failure categories and concrete examples from
-the saved reports.
+Avoid presenting the table as proof that GUI test generation is solved. The
+result is more useful when paired with failure categories and concrete examples
+from the saved reports.
 
 ## Figure Labels
 

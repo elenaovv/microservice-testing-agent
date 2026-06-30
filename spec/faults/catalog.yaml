@@ -1,8 +1,6 @@
 # TrainTicket fault-seeding catalog (research/fault-evaluation)
 #
-# Each fault is bound to a single use case. The fault's observable surface MUST
-# overlap with at least one of that use case's success_criteria, otherwise the
-# pair is methodologically void (see the S7-on-UC-VIS-002 incident).
+# Each fault is bound to a single use case.
 #
 # Detection rule (from core/mutation_utils.py): original test passed AND mutant
 # retest failed on the same generated test.

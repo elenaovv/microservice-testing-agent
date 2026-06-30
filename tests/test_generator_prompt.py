@@ -1,4 +1,4 @@
-from core.models import JourneyCapture, JourneyContract, SuccessAssertion, SuccessObservation
+from core.contracts.models import JourneyCapture, JourneyContract, SuccessAssertion, SuccessObservation
 from prompts.generator import _render_replay_plan
 
 

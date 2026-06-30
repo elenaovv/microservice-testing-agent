@@ -1,5 +1,5 @@
-from core.journey_contract import build_journey_contract
-from core.models import (
+from core.contracts.journey_contract import build_journey_contract
+from core.contracts.models import (
     ApiCall,
     InteractionContract,
     JourneyCapture,

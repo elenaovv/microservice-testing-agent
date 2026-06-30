@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from core.evaluation_utils import build_phase1_metrics
-from core.models import (
+from core.evaluation.evaluation_utils import build_phase1_metrics
+from core.contracts.models import (
     ExecutionResult,
     InteractionContract,
     JourneyContract,

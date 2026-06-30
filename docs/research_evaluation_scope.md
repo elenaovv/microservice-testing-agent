@@ -1,7 +1,7 @@
 # Research Evaluation Scope
 
 This document records how the runtime uses `spec/msa.yaml` and which structured
-use cases form the first repeated-run evaluation subset.
+use cases define the repeated-run evaluation subset.
 
 ## MSA Specification Usage
 
@@ -15,11 +15,11 @@ use cases form the first repeated-run evaluation subset.
 
 The full YAML is available to the runtime, but it is not inserted wholesale into
 every prompt. This keeps prompt context smaller and avoids mixing unrelated
-services into a specific use case.
+services into a use-case-specific prompt.
 
 ## Endpoint And Service Counts
 
-Current parser counts from `spec/msa.yaml`:
+Current parser counts from `spec/msa.yaml` are:
 
 | Measure | Count |
 | --- | ---: |
@@ -33,13 +33,13 @@ Current parser counts from `spec/msa.yaml`:
 
 The YAML also contains `microservice_count: 47` as architecture metadata from
 the TrainTicket system description. That value is not computed from the endpoint
-map. The parser reports 43 because only services with endpoint definitions under
-`msa.services` are counted.
+map. The parser reports 43 services because only services with endpoint
+definitions under `msa.services` are counted.
 
 ## Study Use Cases
 
-The repeated-run study uses the files under `research_cases/`, not every use
-case in `spec/use_cases/index.yaml`.
+The repeated-run study uses the files under `research_cases/`, not every indexed
+use case in `spec/use_cases/index.yaml`.
 
 ### User Cases
 
@@ -79,4 +79,4 @@ For each selected use case, the current study records:
 
 The subset covers authentication, read-only workflows, create/update/delete
 operations, payment-related workflows, and state transitions. It does not cover
-all 54 indexed use cases.
+all indexed use cases.
