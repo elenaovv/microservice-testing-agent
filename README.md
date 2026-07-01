@@ -85,6 +85,8 @@ Structured use case by YAML file:
 uv run python main.py test --use-case-file spec/use_cases/user/research_cases/UC-VIS-004-book-ticket.yaml --base-url http://localhost:8080
 ```
 
+Before running structured use cases, check the YAML test data against the live deployment. TrainTicket dates, source stations, and destination stations must be valid for the current database and UI calendar. A past date or unavailable route can make the browse journey fail before test generation, or make replay fail after generation.
+
 Run against another MSA or another local spec set:
 
 ```bash
@@ -110,4 +112,4 @@ After a run:
 - If `--filename` is omitted, the runtime derives a test filename from the selected journey or use case.
 - If `journey` is omitted entirely, the runtime falls back to the legacy `spec/use-cases.txt` list.
 - The current browse phase uses Playwright MCP. Evaluation coverage is persisted, but true Python-side Phase 1 network listening is not implemented yet.
-- Local run outputs such as `generated-tests/`, `test-results/`, `runtime-results/`, and `prompt-captures/` are ignored by default. See `SUBMISSION_CLEANUP.md` before preparing a clean artifact package.
+- Local run outputs such as `generated-tests/`, `test-results/`, `runtime-results/`, and `prompt-captures/` are ignored by default.
